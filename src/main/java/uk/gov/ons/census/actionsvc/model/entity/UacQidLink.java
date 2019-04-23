@@ -17,4 +17,6 @@ public class UacQidLink {
   @Column private String uac;
 
   @ManyToOne private Case caze;
+
+  @Column private String caseId;
 }

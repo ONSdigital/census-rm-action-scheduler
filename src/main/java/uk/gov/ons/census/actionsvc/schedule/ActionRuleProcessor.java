@@ -49,7 +49,7 @@ public class ActionRuleProcessor {
     for (ActionRule triggeredActionRule : triggeredActionRules) {
       createScheduledActions(triggeredActionRule);
       triggeredActionRule.setHasTriggered(true);
-      actionRuleRepo.saveAndFlush(triggeredActionRule);
+      actionRuleRepo.save(triggeredActionRule);
     }
   }
 
@@ -85,6 +85,14 @@ public class ActionRuleProcessor {
   }
 
   private void createAndSendActionRequest(Case caze) {
+    if (caze.getUacQidLinks() == null || caze.getUacQidLinks().isEmpty()) {
+      throw new RuntimeException(); // TODO: How can we process this case without UAC?
+    } else if (caze.getUacQidLinks().size() > 1) {
+      throw new RuntimeException(); // TODO: How do we know which one to use?
+    }
+
+    String uac = caze.getUacQidLinks().get(0).getUac();
+
     ActionEvent actionEvent = new ActionEvent();
     actionEvent
         .getEvents()
@@ -107,7 +115,7 @@ public class ActionRuleProcessor {
     actionRequest.setCaseId(caze.getCaseId().toString());
     actionRequest.setPriority(Priority.MEDIUM);
     actionRequest.setCaseRef(Long.toString(caze.getCaseRef()));
-    actionRequest.setIac(caze.getUac());
+    actionRequest.setIac(uac);
     actionRequest.setEvents(actionEvent);
     actionRequest.setExerciseRef("201904");
     actionRequest.setUserDescription("Census-FNSM580JQE3M4");

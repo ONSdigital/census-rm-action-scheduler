@@ -14,6 +14,6 @@ public class CollectionCase {
 
   // OTHER STUFF WE NEED IN THE ACTION SERVICE
   private String actionPlanId;
-  private String uac;
+  //  private String uac;
   private String treatmentCode;
 }

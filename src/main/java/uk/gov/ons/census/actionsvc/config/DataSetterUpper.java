@@ -43,8 +43,8 @@ public class DataSetterUpper {
     actionPlan = actionPlanRepository.save(actionPlan);
 
     String[] treatmentCodeArray = {
-//        "HH_LF3R2E", "HH_LF3R3AE", "HH_LF3R3BE", "HH_LFNR1E", "HH_LF2R3BE"
-        "HH_LF3R2E", "HH_LF3R3AE", "HH_LF2R3BE"
+      //        "HH_LF3R2E", "HH_LF3R3AE", "HH_LF3R3BE", "HH_LFNR1E", "HH_LF2R3BE"
+      "HH_LF3R2E", "HH_LF3R3AE", "HH_LF2R3BE"
     };
     Map<String, List<String>> classifiers = new HashMap<>();
 

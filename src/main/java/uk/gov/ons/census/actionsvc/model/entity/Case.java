@@ -77,7 +77,7 @@ public class Case {
   @Column private String actionPlanId;
 
   // THIS HAS BEEN HACKED IN FOR NOW
-  @Column private String uac;
+  //  @Column private String uac;
 
   @Column
   @Enumerated(EnumType.STRING)
