@@ -42,7 +42,6 @@ public class EventReceiver {
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     newCase.setActionPlanId(collectionCase.getActionPlanId());
     newCase.setTreatmentCode(collectionCase.getTreatmentCode());
-    //    newCase.setUac(collectionCase.getUac());
     newCase.setAddressLine1(collectionCase.getAddress().getAddressLine1());
     newCase.setAddressLine2(collectionCase.getAddress().getAddressLine2());
     newCase.setAddressLine3(collectionCase.getAddress().getAddressLine3());
