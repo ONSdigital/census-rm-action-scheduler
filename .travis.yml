@@ -1,0 +1,32 @@
+sudo: required
+
+services:
+- docker
+
+language: java
+jdk: oraclejdk11
+
+env:
+  global:
+  - IMAGE_NAME="$DOCKER_GCP_LOCATION/census-rm-action-scheduler"
+
+before_install:
+  - mvn fmt:check
+  - docker login -u "${DOCKER_GCP_USERNAME}" -p "${DOCKER_GCP_PASSWORD}" "${DOCKER_GCP_REGISTRY}";
+
+script: travis_wait mvn verify jacoco:report
+
+after_success:
+- if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+  docker login -u "${DOCKER_GCP_USERNAME}" -p "${DOCKER_GCP_PASSWORD}" "${DOCKER_GCP_REGISTRY}";
+  docker push "$IMAGE_NAME";
+  fi
+- bash <(curl -s https://codecov.io/bash)
+
+cache:
+  directories:
+  - $HOME/.m2
+
+branches:
+  only:
+  - master

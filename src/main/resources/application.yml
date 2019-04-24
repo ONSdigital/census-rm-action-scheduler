@@ -12,7 +12,7 @@ spring:
       ddl-auto: create-drop
     properties:
       hibernate:
-        default_schema: actionsvcv2
+        default_schema: actionv2
         jdbc:
           lob:
             non_contextual_creation: true
@@ -30,7 +30,7 @@ queueconfig:
 
 healthcheck:
   frequency: 1000 #milliseconds
-  filename: /tmp/action-service-healthy
+  filename: /tmp/action-scheduler-healthy
 
 scheduler:
   frequency: 1000 #milliseconds
