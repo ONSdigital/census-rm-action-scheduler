@@ -4,8 +4,8 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>uk.gov.ons.census.casesvc</groupId>
-  <artifactId>census-rm-actionsvc-v2</artifactId>
+  <groupId>uk.gov.ons.census.action</groupId>
+  <artifactId>census-rm-action-scheduler</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <parent>
@@ -145,7 +145,7 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
           <executable>true</executable>
-          <mainClass>uk.gov.ons.census.actionsvc.Application</mainClass>
+          <mainClass>uk.gov.ons.census.action.Application</mainClass>
         </configuration>
         <executions>
           <execution>
