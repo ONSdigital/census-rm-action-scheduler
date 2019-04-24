@@ -31,3 +31,6 @@ queueconfig:
 healthcheck:
   frequency: 1000 #milliseconds
   filename: /tmp/action-service-healthy
+
+scheduler:
+  frequency: 1000 #milliseconds

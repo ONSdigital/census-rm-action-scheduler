@@ -20,8 +20,6 @@ import lombok.Data;
 public class Case {
 
   @Id
-  @SequenceGenerator(name = "caseRefGenerator", initialValue = 10000000)
-  @GeneratedValue(generator = "caseRefGenerator", strategy = GenerationType.SEQUENCE)
   private long caseRef;
 
   @Column private UUID caseId;
@@ -75,9 +73,6 @@ public class Case {
   @Column private String collectionExerciseId;
 
   @Column private String actionPlanId;
-
-  // THIS HAS BEEN HACKED IN FOR NOW
-  //  @Column private String uac;
 
   @Column
   @Enumerated(EnumType.STRING)

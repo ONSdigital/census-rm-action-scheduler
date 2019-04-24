@@ -14,6 +14,10 @@ public class ActionType {
 
   @Id private UUID id;
 
+  @Column private String name;
+
+  @Column private String description;
+
   @Column private String handler;
 
   @OneToMany(mappedBy = "actionType")

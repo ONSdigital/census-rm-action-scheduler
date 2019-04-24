@@ -66,7 +66,7 @@ public class ActionRuleProcessor {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
 
     try (Stream<Case> cases = caseRepository.findByActionPlanId(actionPlanId)) {
-      cases.forEach(caze -> createAndSendActionRequest(caze));
+      cases.forEach(caze -> createAndSendActionRequest(caze, triggeredActionRule));
     }
   }
 
@@ -81,10 +81,10 @@ public class ActionRuleProcessor {
     }
 
     List<Case> caseList = caseRepository.findAll(specification);
-    caseList.forEach(caze -> createAndSendActionRequest(caze));
+    caseList.forEach(caze -> createAndSendActionRequest(caze, triggeredActionRule));
   }
 
-  private void createAndSendActionRequest(Case caze) {
+  private void createAndSendActionRequest(Case caze, ActionRule actionRule) {
     if (caze.getUacQidLinks() == null || caze.getUacQidLinks().isEmpty()) {
       throw new RuntimeException(); // TODO: How can we process this case without UAC?
     } else if (caze.getUacQidLinks().size() > 1) {
@@ -107,8 +107,8 @@ public class ActionRuleProcessor {
     ActionRequest actionRequest = new ActionRequest();
     actionRequest.setActionId(UUID.randomUUID().toString());
     actionRequest.setResponseRequired(false);
-    actionRequest.setActionPlan("77056b5a-c329-4b98-b85e-c981e03f98e8");
-    actionRequest.setActionType("ICL1E");
+    actionRequest.setActionPlan(actionRule.getActionPlan().getId().toString());
+    actionRequest.setActionType(actionRule.getActionType().getName());
     actionRequest.setAddress(actionAddress);
     actionRequest.setLegalBasis("Statistics of Trade Act 1947");
     actionRequest.setCaseGroupStatus("NOTSTARTED");

@@ -11,7 +11,7 @@ public class ActionRuleScheduler {
     this.actionRuleProcessor = actionRuleProcessor;
   }
 
-  @Scheduled(fixedDelay = 60000)
+  @Scheduled(fixedDelayString = "${scheduler.frequency}")
   public void processActionRules() {
     actionRuleProcessor.processActionRules();
   }
