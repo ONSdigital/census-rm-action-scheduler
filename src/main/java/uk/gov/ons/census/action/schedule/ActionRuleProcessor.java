@@ -93,13 +93,14 @@ public class ActionRuleProcessor {
 
     List<Case> caseList = caseRepository.findAll(specification);
     List<Callable<Boolean>> callables = new ArrayList<>(caseList.size());
-    caseList.forEach(caze -> {
-      callables.add(
-          () -> {
-            createAndSendActionRequest(caze, triggeredActionRule);
-            return Boolean.TRUE;
-          });
-    });
+    caseList.forEach(
+        caze -> {
+          callables.add(
+              () -> {
+                createAndSendActionRequest(caze, triggeredActionRule);
+                return Boolean.TRUE;
+              });
+        });
 
     try {
       EXECUTOR_SERVICE.invokeAll(callables);

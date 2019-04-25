@@ -1,6 +1,5 @@
 package uk.gov.ons.census.action.messaging;
 
-import java.util.List;
 import java.util.UUID;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
