@@ -3,9 +3,13 @@ package uk.gov.ons.census.action.schedule;
 import static org.springframework.data.jpa.domain.Specification.where;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import javax.persistence.criteria.CriteriaBuilder.In;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -21,13 +25,18 @@ import uk.gov.ons.census.action.model.dto.instruction.ActionRequest;
 import uk.gov.ons.census.action.model.dto.instruction.Priority;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
+import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
+import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @Component
 public class ActionRuleProcessor {
+  private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(50);
+
   private final ActionRuleRepository actionRuleRepo;
   private final CaseRepository caseRepository;
+  private final UacQidLinkRepository uacQidLinkRepository;
   private final RabbitTemplate rabbitTemplate;
 
   @Value("${queueconfig.outbound-queue}")
@@ -36,9 +45,11 @@ public class ActionRuleProcessor {
   public ActionRuleProcessor(
       ActionRuleRepository actionRuleRepo,
       CaseRepository caseRepository,
+      UacQidLinkRepository uacQidLinkRepository,
       @Qualifier("actionInstructionRabbitTemplate") RabbitTemplate rabbitTemplate) {
     this.actionRuleRepo = actionRuleRepo;
     this.caseRepository = caseRepository;
+    this.uacQidLinkRepository = uacQidLinkRepository;
     this.rabbitTemplate = rabbitTemplate;
   }
 
@@ -81,17 +92,33 @@ public class ActionRuleProcessor {
     }
 
     List<Case> caseList = caseRepository.findAll(specification);
-    caseList.forEach(caze -> createAndSendActionRequest(caze, triggeredActionRule));
+    List<Callable<Boolean>> callables = new ArrayList<>(caseList.size());
+    caseList.forEach(caze -> {
+      callables.add(
+          () -> {
+            createAndSendActionRequest(caze, triggeredActionRule);
+            return Boolean.TRUE;
+          });
+    });
+
+    try {
+      EXECUTOR_SERVICE.invokeAll(callables);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(); // KABOOM - WHOLE THING ROLLS BACK
+    }
   }
 
   private void createAndSendActionRequest(Case caze, ActionRule actionRule) {
-    if (caze.getUacQidLinks() == null || caze.getUacQidLinks().isEmpty()) {
-      throw new RuntimeException(); // TODO: How can we process this case without UAC?
-    } else if (caze.getUacQidLinks().size() > 1) {
+
+    List<UacQidLink> uacQidLinks = uacQidLinkRepository.findByCaseId(caze.getCaseId().toString());
+
+    if (uacQidLinks == null || uacQidLinks.isEmpty()) {
+      throw new RuntimeException(); // TODO: How can we process this case without a UAC?
+    } else if (uacQidLinks.size() > 1) {
       throw new RuntimeException(); // TODO: How do we know which one to use?
     }
 
-    String uac = caze.getUacQidLinks().get(0).getUac();
+    String uac = uacQidLinks.get(0).getUac();
 
     ActionEvent actionEvent = new ActionEvent();
     actionEvent
@@ -108,7 +135,7 @@ public class ActionRuleProcessor {
     actionRequest.setActionId(UUID.randomUUID().toString());
     actionRequest.setResponseRequired(false);
     actionRequest.setActionPlan(actionRule.getActionPlan().getId().toString());
-    actionRequest.setActionType(actionRule.getActionType().getName());
+    actionRequest.setActionType(actionRule.getActionType().toString());
     actionRequest.setAddress(actionAddress);
     actionRequest.setLegalBasis("Statistics of Trade Act 1947");
     actionRequest.setCaseGroupStatus("NOTSTARTED");

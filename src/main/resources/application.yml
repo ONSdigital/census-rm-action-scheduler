@@ -5,11 +5,13 @@ spring:
     password: postgres
     driverClassName: org.postgresql.Driver
     initialization-mode: always
+    hikari:
+      maximumPoolSize: 50
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQL94Dialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     properties:
       hibernate:
         default_schema: actionv2
@@ -27,6 +29,7 @@ spring:
 queueconfig:
   inbound-queue: myfanout.actionqueue
   outbound-queue: exampleOutboundQueue
+  consumers: 50
 
 healthcheck:
   frequency: 1000 #milliseconds

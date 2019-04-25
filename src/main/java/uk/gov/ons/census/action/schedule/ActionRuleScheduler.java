@@ -13,6 +13,10 @@ public class ActionRuleScheduler {
 
   @Scheduled(fixedDelayString = "${scheduler.frequency}")
   public void processActionRules() {
-    actionRuleProcessor.processActionRules();
+    try {
+      actionRuleProcessor.processActionRules();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }

@@ -47,14 +47,7 @@ public class EventReceiver {
     newCase.setAddressLine3(collectionCase.getAddress().getAddressLine3());
     newCase.setTownName(collectionCase.getAddress().getTownName());
     newCase.setPostcode(collectionCase.getAddress().getPostcode());
-    newCase = caseRepository.save(newCase);
-
-    // Link any 'dangling' UAC/QID pairs which were waiting to be linked to their parent case
-    List<UacQidLink> uacQidLinks = uacQidLinkRepository.findByCaseId(collectionCase.getId());
-    for (UacQidLink uacQidLink : uacQidLinks) {
-      uacQidLink.setCaze(newCase);
-      uacQidLinkRepository.save(uacQidLink);
-    }
+    caseRepository.save(newCase);
   }
 
   private void processUacUpdated(Uac uac) {
@@ -63,16 +56,6 @@ public class EventReceiver {
     uacQidLink.setQid(uac.getQuestionnaireId());
     uacQidLink.setUac(uac.getUac());
     uacQidLink.setCaseId(uac.getCaseId());
-
-    Case caze = caseRepository.findByCaseId(UUID.fromString(uac.getCaseId()));
-
-    // The case might not have been received/processed yet - messages can be out of sequence.
-    // In the event that this entity is not linked to its parent case, that will be handled
-    // when the case arrives.
-    if (caze != null) {
-      uacQidLink.setCaze(caze);
-    }
-
     uacQidLinkRepository.save(uacQidLink);
   }
 }

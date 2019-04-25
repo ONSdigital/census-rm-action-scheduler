@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import lombok.Data;
@@ -23,7 +25,9 @@ public class ActionRule {
 
   @ManyToOne private ActionPlan actionPlan;
 
-  @ManyToOne private ActionType actionType;
+  @Column
+  @Enumerated(EnumType.STRING)
+  private ActionType actionType;
 
   @Column private OffsetDateTime triggerDateTime;
 

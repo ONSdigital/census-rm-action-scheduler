@@ -23,6 +23,9 @@ public class AppConfig {
   @Value("${queueconfig.inbound-queue}")
   private String inboundQueue;
 
+  @Value("${queueconfig.consumers}")
+  private int consumers;
+
   @Bean
   public MessageChannel caseCreatedInputChannel() {
     return new DirectChannel();
@@ -56,7 +59,7 @@ public class AppConfig {
     SimpleMessageListenerContainer container =
         new SimpleMessageListenerContainer(connectionFactory);
     container.setQueueNames(inboundQueue);
-    container.setConcurrentConsumers(1);
+    container.setConcurrentConsumers(consumers);
     return container;
   }
 

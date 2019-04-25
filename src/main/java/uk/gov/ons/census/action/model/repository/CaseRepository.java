@@ -10,6 +10,4 @@ import uk.gov.ons.census.action.model.entity.Case;
 @RestResource(exported = false)
 public interface CaseRepository extends JpaRepository<Case, UUID>, JpaSpecificationExecutor<Case> {
   Stream<Case> findByActionPlanId(String actionPlanId);
-
-  Case findByCaseId(UUID caseId);
 }

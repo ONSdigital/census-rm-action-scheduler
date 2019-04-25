@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.Data;
@@ -73,7 +74,4 @@ public class Case {
   @Column
   @Enumerated(EnumType.STRING)
   private CaseState state;
-
-  @OneToMany(mappedBy = "caze")
-  List<UacQidLink> uacQidLinks;
 }
