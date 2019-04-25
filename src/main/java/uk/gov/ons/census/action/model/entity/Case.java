@@ -16,8 +16,7 @@ import lombok.Data;
 @Table(name = "cases")
 public class Case {
 
-  @Id
-  private long caseRef;
+  @Id private long caseRef;
 
   @Column private UUID caseId;
 
