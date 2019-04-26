@@ -3,7 +3,7 @@ package uk.gov.ons.census.action.model.dto;
 import lombok.Data;
 
 @Data
-public class FanoutEvent {
+public class ResponseManagementEvent {
   private Event event;
   private Payload payload;
 }

@@ -6,7 +6,7 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.CollectionCase;
 import uk.gov.ons.census.action.model.dto.EventType;
-import uk.gov.ons.census.action.model.dto.FanoutEvent;
+import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
@@ -25,11 +25,11 @@ public class EventReceiver {
 
   @Transactional
   @ServiceActivator(inputChannel = "caseCreatedInputChannel")
-  public void receiveEvent(FanoutEvent fanoutEvent) {
-    if (fanoutEvent.getEvent().getType() == EventType.CASE_CREATED) {
-      processCaseCreatedEvent(fanoutEvent.getPayload().getCollectionCase());
-    } else if (fanoutEvent.getEvent().getType() == EventType.UAC_UPDATED) {
-      processUacUpdated(fanoutEvent.getPayload().getUac());
+  public void receiveEvent(ResponseManagementEvent responseManagementEvent) {
+    if (responseManagementEvent.getEvent().getType() == EventType.CASE_CREATED) {
+      processCaseCreatedEvent(responseManagementEvent.getPayload().getCollectionCase());
+    } else if (responseManagementEvent.getEvent().getType() == EventType.UAC_UPDATED) {
+      processUacUpdated(responseManagementEvent.getPayload().getUac());
     } else {
       throw new RuntimeException(); // Unexpected event type - maybe throw away?
     }
