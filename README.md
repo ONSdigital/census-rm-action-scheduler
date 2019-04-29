@@ -1,4 +1,4 @@
-# census-rm-action-scheduler-prototype
+# census-rm-action-scheduler
 Rewritten Action Service for Census - has backwards compatibility with legacy XML format for message output.
 
 The Action Scheduler consumes the CaseCreatedEvent and UacUpdated events from the fanout exchange.
