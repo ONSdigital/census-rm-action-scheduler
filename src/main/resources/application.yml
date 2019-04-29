@@ -1,6 +1,11 @@
 server:
   port: 8301
 
+info:
+  app:
+    name: Action Processor
+    version: 1.0
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:6432/postgres
