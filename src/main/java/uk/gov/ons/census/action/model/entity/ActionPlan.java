@@ -8,7 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import lombok.Data;
 
-/** Domain model object. */
 @Entity
 @Data
 public class ActionPlan {

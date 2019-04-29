@@ -9,6 +9,7 @@ import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
 import uk.gov.ons.census.action.model.entity.Case;
+import uk.gov.ons.census.action.model.entity.CaseState;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
@@ -40,12 +41,16 @@ public class EventReceiver {
     newCase.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     newCase.setActionPlanId(collectionCase.getActionPlanId());
+    newCase.setState(CaseState.valueOf(collectionCase.getState()));
     newCase.setTreatmentCode(collectionCase.getTreatmentCode());
     newCase.setAddressLine1(collectionCase.getAddress().getAddressLine1());
     newCase.setAddressLine2(collectionCase.getAddress().getAddressLine2());
     newCase.setAddressLine3(collectionCase.getAddress().getAddressLine3());
     newCase.setTownName(collectionCase.getAddress().getTownName());
     newCase.setPostcode(collectionCase.getAddress().getPostcode());
+
+    //TODO: There are extra case attributes which we are not passed in the CollectionCase message
+
     caseRepository.save(newCase);
   }
 
