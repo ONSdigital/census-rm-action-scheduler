@@ -49,7 +49,7 @@ public class EventReceiver {
     newCase.setTownName(collectionCase.getAddress().getTownName());
     newCase.setPostcode(collectionCase.getAddress().getPostcode());
 
-    //TODO: There are extra case attributes which we are not passed in the CollectionCase message
+    // TODO: There are extra case attributes which we are not passed in the CollectionCase message
 
     caseRepository.save(newCase);
   }
