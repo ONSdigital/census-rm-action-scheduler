@@ -57,6 +57,7 @@ public class ActionRuleProcessor {
   public void processActionRules() {
     List<ActionRule> triggeredActionRules =
         actionRuleRepo.findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(OffsetDateTime.now());
+
     for (ActionRule triggeredActionRule : triggeredActionRules) {
       createScheduledActions(triggeredActionRule);
       triggeredActionRule.setHasTriggered(true);
