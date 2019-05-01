@@ -120,10 +120,7 @@ public class ActionRuleProcessorTest {
     }
 
     @Test
-    public void testQidLinksNull() {
-        //Rewrite this test, check that at the end they're untriggered, then add Links and try again?
-        // The RunTimeExceptions are swallowed
-
+    public void testQidLinksNullDoesNotSendAnything() {
         //Given
         ActionRule actionRule = setUpActionRule();
 
@@ -141,11 +138,65 @@ public class ActionRuleProcessorTest {
         //when
         ActionRuleProcessor actionRuleProcessor = new ActionRuleProcessor(actionRuleRepo, fakeCaseRepository,
                 uacQidLinkRepository, rabbitTemplate);
+        actionRuleProcessor.processActionRules();
 
         //then
-        // Check nothing was sent,
-        // Check actionplan untriggered
+        ArgumentCaptor<String> outboundQueueCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> routingKeyCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<ActionInstruction> actionInstructionCaptor = ArgumentCaptor.forClass(ActionInstruction.class);
+
+        //There should be no messages sent
+        verify(rabbitTemplate,
+                times(0))
+                .convertAndSend(outboundQueueCaptor.capture(), routingKeyCaptor.capture(),
+                        actionInstructionCaptor.capture());
+
+        //There should be updates of ActionRules
+        ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+        verify(actionRuleRepo, times(0)).save(actionRuleCaptor.capture());
     }
+
+    @Test
+    public void testMulitpleQidLinkslDoesNotSendAnything() {
+        //Given
+        ActionRule actionRule = setUpActionRule();
+
+        Map<String, List<String>> classifiers = new HashMap<>();
+        List<String> columnValues = Arrays.asList("a", "b", "c");
+        classifiers.put("A_Column", columnValues);
+        actionRule.setClassifiers(classifiers);
+
+        Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
+
+        List<Case> cases = getRandomCases(51);
+        CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
+        doReturn(Arrays.asList(actionRule)).when(actionRuleRepo).findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+
+        //Force multiple QidLinks
+        setUpQidLinksForCases(cases);
+        setUpQidLinksForCases(cases);
+
+        //when
+        ActionRuleProcessor actionRuleProcessor = new ActionRuleProcessor(actionRuleRepo, fakeCaseRepository,
+                uacQidLinkRepository, rabbitTemplate);
+        actionRuleProcessor.processActionRules();
+
+        //then
+        ArgumentCaptor<String> outboundQueueCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> routingKeyCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<ActionInstruction> actionInstructionCaptor = ArgumentCaptor.forClass(ActionInstruction.class);
+
+        //There should be no messages sent
+        verify(rabbitTemplate,
+                times(0))
+                .convertAndSend(outboundQueueCaptor.capture(), routingKeyCaptor.capture(),
+                        actionInstructionCaptor.capture());
+
+        //There should be updates of ActionRules
+        ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+        verify(actionRuleRepo, times(0)).save(actionRuleCaptor.capture());
+    }
+
 
     private List<ActionInstruction> getActualActionInstructions(List<Case> cases) {
         ArgumentCaptor<String> outboundQueueCaptor = ArgumentCaptor.forClass(String.class);
