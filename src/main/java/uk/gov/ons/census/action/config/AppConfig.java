@@ -19,6 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
+@CoverageIgnore
 public class AppConfig {
   @Value("${queueconfig.inbound-queue}")
   private String inboundQueue;
