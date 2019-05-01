@@ -89,7 +89,8 @@ public class ActionRuleProcessor {
 
     Specification<Case> specification = where(isActionPlanIdEqualTo(actionPlanId));
 
-    for (Map.Entry<String, List<String>> classifier : triggeredActionRule.getClassifiers().entrySet()) {
+    for (Map.Entry<String, List<String>> classifier :
+        triggeredActionRule.getClassifiers().entrySet()) {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
     }
 

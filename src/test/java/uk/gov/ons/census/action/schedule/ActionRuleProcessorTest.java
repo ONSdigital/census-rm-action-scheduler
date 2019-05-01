@@ -7,13 +7,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.jpa.domain.Specification.where;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import javax.persistence.criteria.CriteriaBuilder;
 import org.assertj.core.api.Assertions;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
@@ -35,278 +38,306 @@ import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import java.util.Map;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
-
-import static org.springframework.data.jpa.domain.Specification.where;
-
 public class ActionRuleProcessorTest {
-    public static final String OUTBOUND_EXCHNAGE = "OUTBOUND_EXCHNAGE";
-    private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
-    private final CaseRepository caseRepository = mock(CaseRepository.class);
-    private final UacQidLinkRepository uacQidLinkRepository = mock(UacQidLinkRepository.class);
-    private final RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
+  public static final String OUTBOUND_EXCHNAGE = "OUTBOUND_EXCHNAGE";
+  private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
+  private final CaseRepository caseRepository = mock(CaseRepository.class);
+  private final UacQidLinkRepository uacQidLinkRepository = mock(UacQidLinkRepository.class);
+  private final RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
 
-    @Test
-    public void testExecuteAllCases() {
-        //Given
-        ActionRule actionRule = setUpActionRule();
+  @Test
+  public void testExecuteAllCases() {
+    // Given
+    ActionRule actionRule = setUpActionRule();
 
-        List<Case> cases = getRandomCases(50);
-        when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString())).thenReturn(cases.stream());
+    List<Case> cases = getRandomCases(50);
+    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
+        .thenReturn(cases.stream());
 
-        setUpQidLinksForCases(cases);
-        doReturn(Arrays.asList(actionRule)).when(actionRuleRepo).findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+    setUpQidLinksForCases(cases);
+    doReturn(Arrays.asList(actionRule))
+        .when(actionRuleRepo)
+        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-        //when
-        ActionRuleProcessor actionRuleProcessor = new ActionRuleProcessor(actionRuleRepo, caseRepository,
-                uacQidLinkRepository, rabbitTemplate);
-        ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHNAGE );
-        actionRuleProcessor.processActionRules();
+    // when
+    ActionRuleProcessor actionRuleProcessor =
+        new ActionRuleProcessor(
+            actionRuleRepo, caseRepository, uacQidLinkRepository, rabbitTemplate);
+    ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHNAGE);
+    actionRuleProcessor.processActionRules();
 
-        //then
-        List<ActionInstruction> actualActionInstructions = getActualActionInstructions(cases);
-        List<ActionInstruction> expectedActionInstructions =
-                getExpectedActionInstructionsWithActualActionIdUUIDs(cases, actionRule, actualActionInstructions);
-        assertThat(actualActionInstructions).isEqualToComparingFieldByFieldRecursively(expectedActionInstructions);
+    // then
+    List<ActionInstruction> actualActionInstructions = getActualActionInstructions(cases);
+    List<ActionInstruction> expectedActionInstructions =
+        getExpectedActionInstructionsWithActualActionIdUUIDs(
+            cases, actionRule, actualActionInstructions);
+    assertThat(actualActionInstructions)
+        .isEqualToComparingFieldByFieldRecursively(expectedActionInstructions);
 
-        ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
-        verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
-        ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
-        actionRule.setHasTriggered(true);
-        Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
+    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+    verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
+    ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
+    actionRule.setHasTriggered(true);
+    Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
+  }
+
+  @Test
+  public void testExecuteClassifiers() {
+    // Given
+    ActionRule actionRule = setUpActionRule();
+    Map<String, List<String>> classifiers = new HashMap<>();
+    List<String> columnValues = Arrays.asList("a", "b", "c");
+    classifiers.put("A_Column", columnValues);
+    actionRule.setClassifiers(classifiers);
+
+    Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
+
+    List<Case> cases = getRandomCases(47);
+    setUpQidLinksForCases(cases);
+
+    // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
+    // of Example<Case> any().
+    // The Fake tests the spec is as expected
+    CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
+
+    // For some reason this works and the 'normal' when.thenReturn way doesn't, might be the JPA
+    // OneToMany
+    doReturn(Arrays.asList(actionRule))
+        .when(actionRuleRepo)
+        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+
+    // when
+    ActionRuleProcessor actionRuleProcessor =
+        new ActionRuleProcessor(
+            actionRuleRepo, fakeCaseRepository, uacQidLinkRepository, rabbitTemplate);
+    ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHNAGE);
+    actionRuleProcessor.processActionRules();
+
+    // then
+    List<ActionInstruction> actualActionInstructions = getActualActionInstructions(cases);
+    List<ActionInstruction> expectedActionInstructions =
+        getExpectedActionInstructionsWithActualActionIdUUIDs(
+            cases, actionRule, actualActionInstructions);
+    assertThat(actualActionInstructions)
+        .isEqualToComparingFieldByFieldRecursively(expectedActionInstructions);
+
+    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+    verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
+    ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
+    actionRule.setHasTriggered(true);
+    Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
+  }
+
+  @Test
+  public void testQidLinksNullDoesNotSendAnything() {
+    // Given
+    ActionRule actionRule = setUpActionRule();
+
+    Map<String, List<String>> classifiers = new HashMap<>();
+    List<String> columnValues = Arrays.asList("a", "b", "c");
+    classifiers.put("A_Column", columnValues);
+    actionRule.setClassifiers(classifiers);
+
+    Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
+
+    List<Case> cases = getRandomCases(51);
+    CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
+    doReturn(Arrays.asList(actionRule))
+        .when(actionRuleRepo)
+        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+
+    // when
+    ActionRuleProcessor actionRuleProcessor =
+        new ActionRuleProcessor(
+            actionRuleRepo, fakeCaseRepository, uacQidLinkRepository, rabbitTemplate);
+    actionRuleProcessor.processActionRules();
+
+    // then
+    ArgumentCaptor<String> outboundQueueCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> routingKeyCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<ActionInstruction> actionInstructionCaptor =
+        ArgumentCaptor.forClass(ActionInstruction.class);
+
+    // There should be no messages sent
+    verify(rabbitTemplate, times(0))
+        .convertAndSend(
+            outboundQueueCaptor.capture(),
+            routingKeyCaptor.capture(),
+            actionInstructionCaptor.capture());
+
+    // There should be updates of ActionRules
+    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+    verify(actionRuleRepo, times(0)).save(actionRuleCaptor.capture());
+  }
+
+  @Test
+  public void testMulitpleQidLinkslDoesNotSendAnything() {
+    // Given
+    ActionRule actionRule = setUpActionRule();
+
+    Map<String, List<String>> classifiers = new HashMap<>();
+    List<String> columnValues = Arrays.asList("a", "b", "c");
+    classifiers.put("A_Column", columnValues);
+    actionRule.setClassifiers(classifiers);
+
+    Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
+
+    List<Case> cases = getRandomCases(51);
+    CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
+    doReturn(Arrays.asList(actionRule))
+        .when(actionRuleRepo)
+        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+
+    // Force multiple QidLinks
+    setUpQidLinksForCases(cases);
+    setUpQidLinksForCases(cases);
+
+    // when
+    ActionRuleProcessor actionRuleProcessor =
+        new ActionRuleProcessor(
+            actionRuleRepo, fakeCaseRepository, uacQidLinkRepository, rabbitTemplate);
+    actionRuleProcessor.processActionRules();
+
+    // then
+    ArgumentCaptor<String> outboundQueueCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> routingKeyCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<ActionInstruction> actionInstructionCaptor =
+        ArgumentCaptor.forClass(ActionInstruction.class);
+
+    // There should be no messages sent
+    verify(rabbitTemplate, times(0))
+        .convertAndSend(
+            outboundQueueCaptor.capture(),
+            routingKeyCaptor.capture(),
+            actionInstructionCaptor.capture());
+
+    // There should be updates of ActionRules
+    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+    verify(actionRuleRepo, times(0)).save(actionRuleCaptor.capture());
+  }
+
+  private List<ActionInstruction> getActualActionInstructions(List<Case> cases) {
+    ArgumentCaptor<String> outboundQueueCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<String> routingKeyCaptor = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<ActionInstruction> actionInstructionCaptor =
+        ArgumentCaptor.forClass(ActionInstruction.class);
+
+    verify(rabbitTemplate, times(cases.size()))
+        .convertAndSend(
+            outboundQueueCaptor.capture(),
+            routingKeyCaptor.capture(),
+            actionInstructionCaptor.capture());
+
+    // To test this or not, suppose we should
+    outboundQueueCaptor
+        .getAllValues()
+        .forEach(actualExchangeName -> assertThat(actualExchangeName).isEqualTo(OUTBOUND_EXCHNAGE));
+
+    routingKeyCaptor
+        .getAllValues()
+        .forEach(
+            actualRoutingKey -> {
+              assertThat(actualRoutingKey).isEqualTo("Action.Printer.binding");
+            });
+
+    return actionInstructionCaptor.getAllValues();
+  }
+
+  private ActionRule setUpActionRule() {
+    ActionRule actionRule = new ActionRule();
+    UUID actionRuleId = UUID.randomUUID();
+    actionRule.setId(actionRuleId);
+    actionRule.setTriggerDateTime(OffsetDateTime.now());
+    actionRule.setHasTriggered(false);
+    actionRule.setClassifiers(new HashMap<>());
+    actionRule.setActionType(ActionType.ICL1E);
+
+    ActionPlan actionPlan = new ActionPlan();
+    actionPlan.setId(UUID.randomUUID());
+
+    actionRule.setActionPlan(actionPlan);
+
+    return actionRule;
+  }
+
+  private List<Case> getRandomCases(int count) {
+    List<Case> cases = new ArrayList<>();
+
+    EasyRandom easyRandom = new EasyRandom();
+
+    for (int i = 0; i < count; i++) {
+      cases.add(easyRandom.nextObject(Case.class));
     }
 
-    @Test
-    public void testExecuteClassifiers() {
-        //Given
-        ActionRule actionRule = setUpActionRule();
-        Map<String, List<String>> classifiers = new HashMap<>();
-        List<String> columnValues = Arrays.asList("a", "b", "c");
-        classifiers.put("A_Column", columnValues);
-        actionRule.setClassifiers(classifiers);
+    return cases;
+  }
 
-        Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
+  private void setUpQidLinksForCases(List<Case> cases) {
+    cases.forEach(
+        caze -> {
+          String uac = caze.getCaseId().toString() + "uac";
+          UacQidLink uacQidLink = new UacQidLink();
+          uacQidLink.setUac(uac);
 
-        List<Case> cases = getRandomCases(47);
-        setUpQidLinksForCases(cases);
+          when(uacQidLinkRepository.findByCaseId(caze.getCaseId().toString()))
+              .thenReturn(Arrays.asList(uacQidLink));
+        });
+  }
 
-        //Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification of Example<Case> any().
-        // The Fake tests the spec is as expected
-        CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
+  private Specification<Case> getExpectedSpecification(ActionRule actionRule) {
+    Specification<Case> specification =
+        where(isActionPlanIdEqualTo(actionRule.getActionPlan().getId().toString()));
 
-        //For some reason this works and the 'normal' when.thenReturn way doesn't, might be the JPA OneToMany
-        doReturn(Arrays.asList(actionRule)).when(actionRuleRepo).findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
-
-        //when
-        ActionRuleProcessor actionRuleProcessor = new ActionRuleProcessor(actionRuleRepo, fakeCaseRepository,
-                uacQidLinkRepository, rabbitTemplate);
-        ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHNAGE);
-        actionRuleProcessor.processActionRules();
-
-        //then
-        List<ActionInstruction> actualActionInstructions = getActualActionInstructions(cases);
-        List<ActionInstruction> expectedActionInstructions =
-                getExpectedActionInstructionsWithActualActionIdUUIDs(cases, actionRule, actualActionInstructions);
-        assertThat(actualActionInstructions).isEqualToComparingFieldByFieldRecursively(expectedActionInstructions);
-
-        ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
-        verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
-        ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
-        actionRule.setHasTriggered(true);
-        Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
+    for (Map.Entry<String, List<String>> classifier : actionRule.getClassifiers().entrySet()) {
+      specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
     }
 
-    @Test
-    public void testQidLinksNullDoesNotSendAnything() {
-        //Given
-        ActionRule actionRule = setUpActionRule();
+    return specification;
+  }
 
-        Map<String, List<String>> classifiers = new HashMap<>();
-        List<String> columnValues = Arrays.asList("a", "b", "c");
-        classifiers.put("A_Column", columnValues);
-        actionRule.setClassifiers(classifiers);
+  // refactor these for test?
+  private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
+    return (Specification<Case>)
+        (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
+  }
 
-        Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
+  private Specification<Case> isClassifierIn(
+      final String fieldName, final List<String> inClauseValues) {
+    return (Specification<Case>)
+        (root, query, builder) -> {
+          CriteriaBuilder.In<String> inClause = builder.in(root.get(fieldName));
+          for (String inClauseValue : inClauseValues) {
+            inClause.value(inClauseValue);
+          }
+          return inClause;
+        };
+  }
 
-        List<Case> cases = getRandomCases(51);
-        CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
-        doReturn(Arrays.asList(actionRule)).when(actionRuleRepo).findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
-
-        //when
-        ActionRuleProcessor actionRuleProcessor = new ActionRuleProcessor(actionRuleRepo, fakeCaseRepository,
-                uacQidLinkRepository, rabbitTemplate);
-        actionRuleProcessor.processActionRules();
-
-        //then
-        ArgumentCaptor<String> outboundQueueCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> routingKeyCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<ActionInstruction> actionInstructionCaptor = ArgumentCaptor.forClass(ActionInstruction.class);
-
-        //There should be no messages sent
-        verify(rabbitTemplate,
-                times(0))
-                .convertAndSend(outboundQueueCaptor.capture(), routingKeyCaptor.capture(),
-                        actionInstructionCaptor.capture());
-
-        //There should be updates of ActionRules
-        ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
-        verify(actionRuleRepo, times(0)).save(actionRuleCaptor.capture());
-    }
-
-    @Test
-    public void testMulitpleQidLinkslDoesNotSendAnything() {
-        //Given
-        ActionRule actionRule = setUpActionRule();
-
-        Map<String, List<String>> classifiers = new HashMap<>();
-        List<String> columnValues = Arrays.asList("a", "b", "c");
-        classifiers.put("A_Column", columnValues);
-        actionRule.setClassifiers(classifiers);
-
-        Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
-
-        List<Case> cases = getRandomCases(51);
-        CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
-        doReturn(Arrays.asList(actionRule)).when(actionRuleRepo).findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
-
-        //Force multiple QidLinks
-        setUpQidLinksForCases(cases);
-        setUpQidLinksForCases(cases);
-
-        //when
-        ActionRuleProcessor actionRuleProcessor = new ActionRuleProcessor(actionRuleRepo, fakeCaseRepository,
-                uacQidLinkRepository, rabbitTemplate);
-        actionRuleProcessor.processActionRules();
-
-        //then
-        ArgumentCaptor<String> outboundQueueCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> routingKeyCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<ActionInstruction> actionInstructionCaptor = ArgumentCaptor.forClass(ActionInstruction.class);
-
-        //There should be no messages sent
-        verify(rabbitTemplate,
-                times(0))
-                .convertAndSend(outboundQueueCaptor.capture(), routingKeyCaptor.capture(),
-                        actionInstructionCaptor.capture());
-
-        //There should be updates of ActionRules
-        ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
-        verify(actionRuleRepo, times(0)).save(actionRuleCaptor.capture());
-    }
-
-
-    private List<ActionInstruction> getActualActionInstructions(List<Case> cases) {
-        ArgumentCaptor<String> outboundQueueCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> routingKeyCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<ActionInstruction> actionInstructionCaptor = ArgumentCaptor.forClass(ActionInstruction.class);
-
-        verify(rabbitTemplate,
-                times(cases.size()))
-                .convertAndSend(outboundQueueCaptor.capture(), routingKeyCaptor.capture(),
-                        actionInstructionCaptor.capture());
-
-        //To test this or not, suppose we should
-        outboundQueueCaptor.getAllValues().forEach(actualExchangeName ->
-                assertThat(actualExchangeName).isEqualTo(OUTBOUND_EXCHNAGE));
-
-        routingKeyCaptor.getAllValues().forEach(actualRoutingKey -> {
-            assertThat(actualRoutingKey).isEqualTo("Action.Printer.binding");
+  private List<ActionInstruction> getExpectedActionInstructionsWithActualActionIdUUIDs(
+      List<Case> cases, ActionRule actionRule, List<ActionInstruction> actionInstructions) {
+    Map<String, Case> caseMap = new HashMap<>();
+    cases.forEach(
+        caze -> {
+          String caseId = caze.getCaseId().toString();
+          caseMap.put(caze.getCaseId().toString(), caze);
         });
 
-        return actionInstructionCaptor.getAllValues();
-    }
+    List<ActionInstruction> expectedActionInstructions = new ArrayList<>();
 
-    private ActionRule setUpActionRule() {
-        ActionRule actionRule = new ActionRule();
-        UUID actionRuleId = UUID.randomUUID();
-        actionRule.setId(actionRuleId);
-        actionRule.setTriggerDateTime(OffsetDateTime.now());
-        actionRule.setHasTriggered(false);
-        actionRule.setClassifiers(new HashMap<>());
-        actionRule.setActionType(ActionType.ICL1E);
-
-        ActionPlan actionPlan = new ActionPlan();
-        actionPlan.setId(UUID.randomUUID());
-
-        actionRule.setActionPlan(actionPlan);
-
-        return actionRule;
-    }
-
-    private List<Case> getRandomCases(int count) {
-        List<Case> cases = new ArrayList<>();
-
-        EasyRandom easyRandom = new EasyRandom();
-
-        for (int i = 0; i < count; i++) {
-            cases.add(easyRandom.nextObject(Case.class));
-        }
-
-        return cases;
-    }
-
-    private void setUpQidLinksForCases(List<Case> cases) {
-        cases.forEach(caze -> {
-            String uac = caze.getCaseId().toString() + "uac";
-            UacQidLink uacQidLink = new UacQidLink();
-            uacQidLink.setUac(uac);
-
-            when(uacQidLinkRepository.findByCaseId(caze.getCaseId().toString())).thenReturn(Arrays.asList(uacQidLink));
-        });
-    }
-
-    private Specification<Case> getExpectedSpecification(ActionRule actionRule) {
-        Specification<Case> specification = where(isActionPlanIdEqualTo(actionRule.getActionPlan().getId().toString()));
-
-        for (Map.Entry<String, List<String>> classifier : actionRule.getClassifiers().entrySet()) {
-            specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
-        }
-
-        return specification;
-    }
-
-    //refactor these for test?
-    private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
-        return (Specification<Case>)
-                (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
-    }
-
-    private Specification<Case> isClassifierIn(
-            final String fieldName, final List<String> inClauseValues) {
-        return (Specification<Case>)
-                (root, query, builder) -> {
-                    CriteriaBuilder.In<String> inClause = builder.in(root.get(fieldName));
-                    for (String inClauseValue : inClauseValues) {
-                        inClause.value(inClauseValue);
-                    }
-                    return inClause;
-                };
-    }
-
-    private List<ActionInstruction> getExpectedActionInstructionsWithActualActionIdUUIDs(List<Case> cases,
-                                                                                         ActionRule actionRule,
-                                                                                         List<ActionInstruction>
-                                                                                                 actionInstructions) {
-        Map<String, Case> caseMap = new HashMap<>();
-        cases.forEach(caze -> {
-            String caseId = caze.getCaseId().toString();
-            caseMap.put(caze.getCaseId().toString(), caze);
+    actionInstructions.forEach(
+        actionInstruction -> {
+          String caseId = actionInstruction.getActionRequest().getCaseId();
+          String uac = caseId + "uac";
+          expectedActionInstructions.add(
+              getExpectedActionInstruction(
+                  caseMap.get(caseId),
+                  uac,
+                  actionRule,
+                  actionInstruction.getActionRequest().getActionId()));
         });
 
-        List<ActionInstruction> expectedActionInstructions = new ArrayList<>();
-
-        actionInstructions.forEach(actionInstruction -> {
-            String caseId = actionInstruction.getActionRequest().getCaseId();
-            String uac = caseId + "uac";
-            expectedActionInstructions.add(getExpectedActionInstruction(caseMap.get(caseId), uac,
-                    actionRule, actionInstruction.getActionRequest().getActionId()));
-        });
-
-        return expectedActionInstructions;
-    }
+    return expectedActionInstructions;
+  }
 
   private ActionInstruction getExpectedActionInstruction(
       Case caze, String uac, ActionRule actionRule, String actionId) {
