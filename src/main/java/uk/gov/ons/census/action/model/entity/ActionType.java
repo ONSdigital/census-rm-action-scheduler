@@ -9,7 +9,7 @@ public enum ActionType {
     this.handler = handler;
   }
 
-  String getHandler() {
+  public String getHandler() {
     return handler;
   }
 }

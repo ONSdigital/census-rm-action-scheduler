@@ -32,7 +32,8 @@ public class EventReceiver {
     } else if (responseManagementEvent.getEvent().getType() == EventType.UAC_UPDATED) {
       processUacUpdated(responseManagementEvent.getPayload().getUac());
     } else {
-      //This code can't be reached because under the class structure the EventType is limited to enums at this point?
+      // This code can't be reached because under the class structure the EventType is limited to
+      // enums at this point?
       throw new RuntimeException(); // Unexpected event type - maybe throw away?
     }
   }
