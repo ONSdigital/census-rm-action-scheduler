@@ -164,10 +164,6 @@ public class ActionRuleProcessorTest {
             outboundQueueCaptor.capture(),
             routingKeyCaptor.capture(),
             actionInstructionCaptor.capture());
-
-    // There should be updates of ActionRules
-    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
-    verify(actionRuleRepo, times(0)).save(actionRuleCaptor.capture());
   }
 
   @Test
@@ -188,9 +184,7 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    // Force multiple QidLinks
-    setUpQidLinksForCases(cases);
-    setUpQidLinksForCases(cases);
+    setUpMulitpleQidLinksForCases(cases);
 
     // when
     ActionRuleProcessor actionRuleProcessor =
@@ -210,10 +204,6 @@ public class ActionRuleProcessorTest {
             outboundQueueCaptor.capture(),
             routingKeyCaptor.capture(),
             actionInstructionCaptor.capture());
-
-    // There should be updates of ActionRules
-    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
-    verify(actionRuleRepo, times(0)).save(actionRuleCaptor.capture());
   }
 
   private List<ActionInstruction> getActualActionInstructions(List<Case> cases) {
@@ -270,6 +260,23 @@ public class ActionRuleProcessorTest {
     }
 
     return cases;
+  }
+
+  private void setUpMulitpleQidLinksForCases(List<Case> cases) {
+    cases.forEach(
+            caze -> {
+              String uac = caze.getCaseId().toString() + "uac";
+
+              List<UacQidLink> uacQuidLinks = new ArrayList<>();
+              UacQidLink uacQidLink = new UacQidLink();
+              uacQidLink.setUac(uac);
+
+              uacQuidLinks.add(uacQidLink);
+              uacQuidLinks.add(uacQidLink);
+
+              when(uacQidLinkRepository.findByCaseId(caze.getCaseId().toString()))
+                      .thenReturn(uacQuidLinks);
+            });
   }
 
   private void setUpQidLinksForCases(List<Case> cases) {
