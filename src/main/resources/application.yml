@@ -36,7 +36,9 @@ spring:
 
 queueconfig:
   inbound-queue: myfanout.actionqueue
-  outbound-queue: exampleOutboundQueue
+  outbound-printer-queue: Action.Printer
+  outbound-exchange: action-outbound-exchange
+  outbound-printer-routing-key: Action.Printer.binding
   consumers: 50
 
 healthcheck:

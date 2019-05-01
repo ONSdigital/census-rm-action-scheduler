@@ -33,14 +33,16 @@ import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 @Component
 public class ActionRuleProcessor {
   private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(50);
+  public static final String ACTION = "Action.";
+  public static final String BINDING = ".binding";
 
   private final ActionRuleRepository actionRuleRepo;
   private final CaseRepository caseRepository;
   private final UacQidLinkRepository uacQidLinkRepository;
   private final RabbitTemplate rabbitTemplate;
 
-  @Value("${queueconfig.outbound-queue}")
-  private String outboundQueue;
+  @Value("${queueconfig.outbound-exchange}")
+  private String outboundExchange;
 
   public ActionRuleProcessor(
       ActionRuleRepository actionRuleRepo,
@@ -155,7 +157,10 @@ public class ActionRuleProcessor {
     ActionInstruction actionInstruction = new ActionInstruction();
     actionInstruction.setActionRequest(actionRequest);
 
-    rabbitTemplate.convertAndSend(outboundQueue, "", actionInstruction);
+    final String routingKey =
+        String.format("%s%s%s", ACTION, actionRule.getActionType().getHandler(), BINDING);
+
+    rabbitTemplate.convertAndSend(outboundExchange, routingKey, actionInstruction);
   }
 
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {

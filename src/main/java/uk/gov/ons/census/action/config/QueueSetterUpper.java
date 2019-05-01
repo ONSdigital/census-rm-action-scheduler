@@ -14,8 +14,14 @@ public class QueueSetterUpper {
   @Value("${queueconfig.inbound-queue}")
   private String inboundQueue;
 
-  @Value("${queueconfig.outbound-queue}")
-  private String outboundQueue;
+  @Value("${queueconfig.outbound-printer-queue}")
+  private String outboundPrinterQueue;
+
+  @Value("${queueconfig.outbound-exchange}")
+  private String outboundExchange;
+
+  @Value("${queueconfig.outbound-printer-routing-key}")
+  private String outboundPrinterRoutingKey;
 
   @Bean
   public Queue inboundQueue() {
@@ -24,16 +30,17 @@ public class QueueSetterUpper {
 
   @Bean
   public Queue outboundQueue() {
-    return new Queue(outboundQueue, true);
+    return new Queue(outboundPrinterQueue, true);
   }
 
   @Bean
   public DirectExchange outboundExchange() {
-    return new DirectExchange(outboundQueue, true, false);
+    return new DirectExchange(outboundExchange, true, false);
   }
 
   @Bean
   public Binding binding() {
-    return new Binding(outboundQueue, QUEUE, outboundQueue, "", null);
+    return new Binding(
+        outboundPrinterQueue, QUEUE, outboundExchange, outboundPrinterRoutingKey, null);
   }
 }
