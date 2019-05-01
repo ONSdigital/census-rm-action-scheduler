@@ -264,19 +264,19 @@ public class ActionRuleProcessorTest {
 
   private void setUpMulitpleQidLinksForCases(List<Case> cases) {
     cases.forEach(
-            caze -> {
-              String uac = caze.getCaseId().toString() + "uac";
+        caze -> {
+          String uac = caze.getCaseId().toString() + "uac";
 
-              List<UacQidLink> uacQuidLinks = new ArrayList<>();
-              UacQidLink uacQidLink = new UacQidLink();
-              uacQidLink.setUac(uac);
+          List<UacQidLink> uacQuidLinks = new ArrayList<>();
+          UacQidLink uacQidLink = new UacQidLink();
+          uacQidLink.setUac(uac);
 
-              uacQuidLinks.add(uacQidLink);
-              uacQuidLinks.add(uacQidLink);
+          uacQuidLinks.add(uacQidLink);
+          uacQuidLinks.add(uacQidLink);
 
-              when(uacQidLinkRepository.findByCaseId(caze.getCaseId().toString()))
-                      .thenReturn(uacQuidLinks);
-            });
+          when(uacQidLinkRepository.findByCaseId(caze.getCaseId().toString()))
+              .thenReturn(uacQuidLinks);
+        });
   }
 
   private void setUpQidLinksForCases(List<Case> cases) {
