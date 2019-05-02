@@ -1,5 +1,6 @@
 package uk.gov.ons.census.action.messaging;
 
+import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertNotNull;
 
@@ -8,6 +9,7 @@ import java.io.StringReader;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -42,6 +45,7 @@ import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 @ContextConfiguration
 @SpringBootTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ConsumeAndPublishIT {
   private static final int DELAY_ACTION_BY_SECONDS = 5;
@@ -71,12 +75,12 @@ public class ConsumeAndPublishIT {
   }
 
   @Test
-  public void checkSentEventsArePersistedAndEmitted()
+  public void checkRecievedEventsAreEmitted()
       throws IOException, InterruptedException, JAXBException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
-    ActionPlan actionPlan = setUpActionPlan();
+    ActionPlan actionPlan = setUpActionPlan("happy", "path");
     actionPlanRepository.saveAndFlush(actionPlan);
     ActionRule actionRule = setUpActionRule(actionPlan);
     actionRuleRepository.saveAndFlush(actionRule);
@@ -106,18 +110,65 @@ public class ConsumeAndPublishIT {
         .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
   }
 
+  @Test
+  public void checkCaseWithNoLinkedUACQuidDoesntSendThenWorksWhenUACAdded()
+      throws IOException, InterruptedException, JAXBException {
+    // Given
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+
+    ActionPlan actionPlan = setUpActionPlan("no Quid", "or links");
+    actionPlanRepository.saveAndFlush(actionPlan);
+    ActionRule actionRule = setUpActionRule(actionPlan);
+    actionRuleRepository.saveAndFlush(actionRule);
+
+    ResponseManagementEvent caseCreatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    caseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
+
+    // WHEN
+    rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
+
+    // THEN
+    checkExpectedMessageNotReceived(outputQueue);
+
+    // Now add the UAC and check that it then runs successfully
+    Uac uac = getUac(caseCreatedEvent);
+    ResponseManagementEvent uacUpdatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    uacUpdatedEvent.getEvent().setType(EventType.UAC_UPDATED);
+    uacUpdatedEvent.getPayload().setUac(uac);
+    rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
+
+    // THEN
+    ActionInstruction actionInstruction = checkExpectedMessageReceived(outputQueue);
+
+    assertThat(actionInstruction.getActionRequest().getActionPlan())
+        .isEqualTo(actionPlan.getId().toString());
+    assertThat(actionInstruction.getActionRequest().getCaseId())
+        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
+    assertThat(actionInstruction.getActionRequest().getCaseRef())
+        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
+  }
+
   private Uac getUac(ResponseManagementEvent caseCreatedEvent) {
     Uac uac = easyRandom.nextObject(Uac.class);
     uac.setCaseId(caseCreatedEvent.getPayload().getCollectionCase().getId());
     return uac;
   }
 
-  private ActionPlan setUpActionPlan() {
+  private ActionPlan setUpActionPlan(String name, String desc) {
+    Random random = new Random();
     ActionPlan actionPlan = new ActionPlan();
-    actionPlan.setDescription("Testing testing");
-    actionPlan.setName("Test");
+    actionPlan.setName(name);
+    actionPlan.setDescription(desc);
     actionPlan.setId(UUID.randomUUID());
     return actionPlan;
+  }
+
+  private void checkExpectedMessageNotReceived(BlockingQueue<String> queue)
+      throws InterruptedException {
+    String actualMessage = queue.poll(10, TimeUnit.SECONDS);
+    assertNull("Recieved Message, expectedNone", actualMessage);
   }
 
   private ActionInstruction checkExpectedMessageReceived(BlockingQueue<String> queue)
@@ -136,7 +187,10 @@ public class ConsumeAndPublishIT {
     ResponseManagementEvent responseManagementEvent =
         easyRandom.nextObject(ResponseManagementEvent.class);
 
-    responseManagementEvent.getPayload().getCollectionCase().setCaseRef("123");
+    responseManagementEvent
+        .getPayload()
+        .getCollectionCase()
+        .setCaseRef(Integer.toString(easyRandom.nextInt()));
     responseManagementEvent.getPayload().getCollectionCase().setId(UUID.randomUUID().toString());
     responseManagementEvent.getPayload().getCollectionCase().setState("ACTIONABLE");
     responseManagementEvent.getPayload().getCollectionCase().setActionPlanId(actionPlanId);
