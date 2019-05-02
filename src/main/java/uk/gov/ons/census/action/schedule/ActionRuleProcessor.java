@@ -3,13 +3,8 @@ package uk.gov.ons.census.action.schedule;
 import static org.springframework.data.jpa.domain.Specification.where;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 import javax.persistence.criteria.CriteriaBuilder.In;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -80,7 +75,7 @@ public class ActionRuleProcessor {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
 
     try (Stream<Case> cases = caseRepository.findByActionPlanId(actionPlanId)) {
-      cases.forEach(caze -> createAndSendActionRequest(caze, triggeredActionRule));
+      executeCases(cases, triggeredActionRule);
     }
   }
 
@@ -94,9 +89,14 @@ public class ActionRuleProcessor {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
     }
 
-    List<Case> caseList = caseRepository.findAll(specification);
-    List<Callable<Boolean>> callables = new ArrayList<>(caseList.size());
-    caseList.forEach(
+    try (Stream<Case> cases = caseRepository.findAll(specification).stream()) {
+      executeCases(cases, triggeredActionRule);
+    }
+  }
+
+  private void executeCases(Stream<Case> cases, ActionRule triggeredActionRule) {
+    List<Callable<Boolean>> callables = new LinkedList<>();
+    cases.forEach(
         caze -> {
           callables.add(
               () -> {
@@ -106,9 +106,17 @@ public class ActionRuleProcessor {
         });
 
     try {
-      EXECUTOR_SERVICE.invokeAll(callables);
+      List<Future<Boolean>> results = EXECUTOR_SERVICE.invokeAll(callables);
+
+      for (Future<Boolean> result : results) {
+        if (result.get() != Boolean.TRUE) {
+          throw new RuntimeException(); // One of the threads had a problem
+        }
+      }
     } catch (InterruptedException e) {
-      throw new RuntimeException(); // KABOOM - WHOLE THING ROLLS BACK
+      throw new RuntimeException(); // Roll the whole transaction back
+    } catch (ExecutionException e) {
+      throw new RuntimeException(); // Roll the whole transaction back
     }
   }
 

@@ -128,7 +128,7 @@ public class ActionRuleProcessorTest {
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
   }
 
-  @Test
+  @Test(expected = RuntimeException.class)
   public void testQidLinksNullDoesNotSendAnything() {
     // Given
     ActionRule actionRule = setUpActionRule();
@@ -166,7 +166,7 @@ public class ActionRuleProcessorTest {
             actionInstructionCaptor.capture());
   }
 
-  @Test
+  @Test(expected = RuntimeException.class)
   public void testMulitpleQidLinkslDoesNotSendAnything() {
     // Given
     ActionRule actionRule = setUpActionRule();
