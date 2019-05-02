@@ -1,5 +1,7 @@
-package testutil;
+package uk.gov.ons.census.action.messaging;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -9,10 +11,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 @Component
 @EnableRetry
@@ -32,6 +30,7 @@ public class RabbitQueueHelper {
           String msgStr = new String(message.getBody());
           transfer.add(msgStr);
         };
+
     SimpleMessageListenerContainer container =
         new SimpleMessageListenerContainer(connectionFactory);
     container.setMessageListener(messageListener);
@@ -46,6 +45,7 @@ public class RabbitQueueHelper {
       maxAttempts = 10,
       backoff = @Backoff(delay = 5000))
   public void sendMessage(String queueName, Object message) {
+
     rabbitTemplate.convertAndSend(queueName, message);
   }
 

@@ -1,7 +1,19 @@
 package uk.gov.ons.census.action.messaging;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.assertj.core.api.Assertions;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,26 +39,11 @@ import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.IOException;
-import java.io.StringReader;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.Assert.assertNotNull;
-
 @ContextConfiguration
 @SpringBootTest
 @ActiveProfiles("test")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class EventReceiverIT {
+public class ConsumeAndPublishIT {
   private static final int DELAY_ACTION_BY_SECONDS = 5;
 
   @Value("${queueconfig.inbound-queue}")
@@ -74,8 +71,9 @@ public class EventReceiverIT {
   }
 
   @Test
-  public void checkSentEventsArePersistedAndEmitted() throws IOException, InterruptedException, JAXBException {
-    //Given
+  public void checkSentEventsArePersistedAndEmitted()
+      throws IOException, InterruptedException, JAXBException {
+    // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
     ActionPlan actionPlan = setUpActionPlan();
@@ -100,11 +98,12 @@ public class EventReceiverIT {
     // THEN
     ActionInstruction actionInstruction = checkExpectedMessageReceived(outputQueue);
 
-    assertThat(actionInstruction.getActionRequest().getActionPlan()).isEqualTo(actionPlan.getId().toString());
+    assertThat(actionInstruction.getActionRequest().getActionPlan())
+        .isEqualTo(actionPlan.getId().toString());
     assertThat(actionInstruction.getActionRequest().getCaseId())
-            .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
+        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
     assertThat(actionInstruction.getActionRequest().getCaseRef())
-            .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
+        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
   }
 
   private Uac getUac(ResponseManagementEvent caseCreatedEvent) {
@@ -122,7 +121,7 @@ public class EventReceiverIT {
   }
 
   private ActionInstruction checkExpectedMessageReceived(BlockingQueue<String> queue)
-          throws IOException, InterruptedException, JAXBException {
+      throws IOException, InterruptedException, JAXBException {
     String actualMessage = queue.poll(10, TimeUnit.SECONDS);
     assertNotNull("Did not receive message before timeout", actualMessage);
 
@@ -130,7 +129,7 @@ public class EventReceiverIT {
     Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
     StringReader reader = new StringReader(actualMessage);
-    return  (ActionInstruction) unmarshaller.unmarshal(reader);
+    return (ActionInstruction) unmarshaller.unmarshal(reader);
   }
 
   private ResponseManagementEvent getResponseManagementEvent(String actionPlanId) {
