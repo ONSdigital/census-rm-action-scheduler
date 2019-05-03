@@ -42,16 +42,27 @@ public class EventReceiver {
     Case newCase = new Case();
     newCase.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
-    newCase.setActionPlanId(collectionCase.getActionPlanId());
     newCase.setState(CaseState.valueOf(collectionCase.getState()));
-    newCase.setTreatmentCode(collectionCase.getTreatmentCode());
     newCase.setAddressLine1(collectionCase.getAddress().getAddressLine1());
     newCase.setAddressLine2(collectionCase.getAddress().getAddressLine2());
     newCase.setAddressLine3(collectionCase.getAddress().getAddressLine3());
     newCase.setTownName(collectionCase.getAddress().getTownName());
     newCase.setPostcode(collectionCase.getAddress().getPostcode());
+    newCase.setArid(collectionCase.getAddress().getArid());
+    newCase.setLatitude(collectionCase.getAddress().getLatitude());
+    newCase.setLongitude(collectionCase.getAddress().getLongitude());
+    newCase.setUprn(collectionCase.getAddress().getUprn());
+    newCase.setRgn(collectionCase.getAddress().getRegion());
 
-    // TODO: There are extra case attributes which we are not passed in the CollectionCase message
+    // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RM
+    newCase.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
+    newCase.setTreatmentCode(collectionCase.getTreatmentCode()); // This is essential
+    newCase.setOa(collectionCase.getOa());
+    newCase.setLsoa(collectionCase.getLsoa());
+    newCase.setMsoa(collectionCase.getMsoa());
+    newCase.setLad(collectionCase.getLad());
+    newCase.setHtcWillingness(collectionCase.getHtcWillingness());
+    newCase.setHtcDigital(collectionCase.getHtcDigital());
 
     caseRepository.save(newCase);
   }
