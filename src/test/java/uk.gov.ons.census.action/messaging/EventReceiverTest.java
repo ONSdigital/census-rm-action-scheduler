@@ -91,6 +91,17 @@ public class EventReceiverTest {
     newCase.setAddressLine3(collectionCase.getAddress().getAddressLine3());
     newCase.setTownName(collectionCase.getAddress().getTownName());
     newCase.setPostcode(collectionCase.getAddress().getPostcode());
+    newCase.setArid(collectionCase.getAddress().getArid());
+    newCase.setLatitude(collectionCase.getAddress().getLatitude());
+    newCase.setLongitude(collectionCase.getAddress().getLongitude());
+    newCase.setUprn(collectionCase.getAddress().getUprn());
+    newCase.setRgn(collectionCase.getAddress().getRegion());
+    newCase.setOa(collectionCase.getOa());
+    newCase.setLsoa(collectionCase.getLsoa());
+    newCase.setMsoa(collectionCase.getMsoa());
+    newCase.setLad(collectionCase.getLad());
+    newCase.setHtcWillingness(collectionCase.getHtcWillingness());
+    newCase.setHtcDigital(collectionCase.getHtcDigital());
 
     return newCase;
   }
