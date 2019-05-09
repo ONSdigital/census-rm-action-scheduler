@@ -8,13 +8,13 @@
 
 package uk.gov.ons.census.action.model.dto.instruction;
 
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import lombok.Data;
 
 /**
  * Java class for ActionEvent complex type.
@@ -37,42 +37,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(
     name = "ActionEvent",
     propOrder = {"events"})
-public class ActionEvent implements Serializable {
-
-  private static final long serialVersionUID = 8297030705722814170L;
+@Data
+public class ActionEvent {
 
   @XmlElement(name = "event")
-  protected List<String> events;
-
-  /** Default no-arg constructor */
-  public ActionEvent() {
-    super();
-  }
-
-  /** Fully-initialising value constructor */
-  public ActionEvent(final List<String> events) {
-    this.events = events;
-  }
-
-  /**
-   * Gets the value of the events property.
-   *
-   * <p>This accessor method returns a reference to the live list, not a snapshot. Therefore any
-   * modification you make to the returned list will be present inside the JAXB object. This is why
-   * there is not a <CODE>set</CODE> method for the events property.
-   *
-   * <p>For example, to add a new item, do as follows:
-   *
-   * <pre>
-   *    getEvents().add(newItem);
-   * </pre>
-   *
-   * <p>Objects of the following type(s) are allowed in the list {@link String }
-   */
-  public List<String> getEvents() {
-    if (events == null) {
-      events = new ArrayList<String>();
-    }
-    return this.events;
-  }
+  protected List<String> events = new LinkedList<>();
 }

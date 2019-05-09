@@ -8,11 +8,11 @@
 
 package uk.gov.ons.census.action.model.dto.instruction;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import lombok.Data;
 
 /**
  * Java class for ActionCancel complex type.
@@ -37,85 +37,12 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(
     name = "ActionCancel",
     propOrder = {"reason", "caseId", "caseRef"})
-public class ActionCancel extends Action implements Serializable {
-
-  private static final long serialVersionUID = 8297030705722814170L;
+@Data
+public class ActionCancel extends Action {
 
   @XmlElement(required = true)
   protected String reason;
 
   protected String caseId;
   protected String caseRef;
-
-  /** Default no-arg constructor */
-  public ActionCancel() {
-    super();
-  }
-
-  /** Fully-initialising value constructor */
-  public ActionCancel(
-      final String actionId,
-      final boolean responseRequired,
-      final String reason,
-      final String caseId,
-      final String caseRef) {
-    super(actionId, responseRequired);
-    this.reason = reason;
-    this.caseId = caseId;
-    this.caseRef = caseRef;
-  }
-
-  /**
-   * Gets the value of the reason property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getReason() {
-    return reason;
-  }
-
-  /**
-   * Sets the value of the reason property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setReason(String value) {
-    this.reason = value;
-  }
-
-  /**
-   * Gets the value of the caseId property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getCaseId() {
-    return caseId;
-  }
-
-  /**
-   * Sets the value of the caseId property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setCaseId(String value) {
-    this.caseId = value;
-  }
-
-  /**
-   * Gets the value of the caseRef property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getCaseRef() {
-    return caseRef;
-  }
-
-  /**
-   * Sets the value of the caseRef property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setCaseRef(String value) {
-    this.caseRef = value;
-  }
 }

@@ -8,11 +8,11 @@
 
 package uk.gov.ons.census.action.model.dto.instruction;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import lombok.Data;
 
 /**
  * Java class for ActionInstruction complex type.
@@ -38,79 +38,9 @@ import javax.xml.bind.annotation.XmlType;
     name = "ActionInstruction",
     propOrder = {"actionCancel", "actionUpdate", "actionRequest"})
 @XmlRootElement(name = "actionInstruction")
-public class ActionInstruction implements Serializable {
-
-  private static final long serialVersionUID = 8297030705722814170L;
+@Data
+public class ActionInstruction {
   protected ActionCancel actionCancel;
   protected ActionUpdate actionUpdate;
   protected ActionRequest actionRequest;
-
-  /** Default no-arg constructor */
-  public ActionInstruction() {
-    super();
-  }
-
-  /** Fully-initialising value constructor */
-  public ActionInstruction(
-      final ActionCancel actionCancel,
-      final ActionUpdate actionUpdate,
-      final ActionRequest actionRequest) {
-    this.actionCancel = actionCancel;
-    this.actionUpdate = actionUpdate;
-    this.actionRequest = actionRequest;
-  }
-
-  /**
-   * Gets the value of the actionCancel property.
-   *
-   * @return possible object is {@link ActionCancel }
-   */
-  public ActionCancel getActionCancel() {
-    return actionCancel;
-  }
-
-  /**
-   * Sets the value of the actionCancel property.
-   *
-   * @param value allowed object is {@link ActionCancel }
-   */
-  public void setActionCancel(ActionCancel value) {
-    this.actionCancel = value;
-  }
-
-  /**
-   * Gets the value of the actionUpdate property.
-   *
-   * @return possible object is {@link ActionUpdate }
-   */
-  public ActionUpdate getActionUpdate() {
-    return actionUpdate;
-  }
-
-  /**
-   * Sets the value of the actionUpdate property.
-   *
-   * @param value allowed object is {@link ActionUpdate }
-   */
-  public void setActionUpdate(ActionUpdate value) {
-    this.actionUpdate = value;
-  }
-
-  /**
-   * Gets the value of the actionRequest property.
-   *
-   * @return possible object is {@link ActionRequest }
-   */
-  public ActionRequest getActionRequest() {
-    return actionRequest;
-  }
-
-  /**
-   * Sets the value of the actionRequest property.
-   *
-   * @param value allowed object is {@link ActionRequest }
-   */
-  public void setActionRequest(ActionRequest value) {
-    this.actionRequest = value;
-  }
 }

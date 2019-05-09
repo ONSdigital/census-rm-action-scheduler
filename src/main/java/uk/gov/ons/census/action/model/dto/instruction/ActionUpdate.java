@@ -8,12 +8,12 @@
 
 package uk.gov.ons.census.action.model.dto.instruction;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import lombok.Data;
 
 /**
  * Java class for ActionUpdate complex type.
@@ -37,9 +37,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(
     name = "ActionUpdate",
     propOrder = {"priority", "events"})
-public class ActionUpdate extends Action implements Serializable {
-
-  private static final long serialVersionUID = 8297030705722814170L;
+@Data
+public class ActionUpdate extends Action {
 
   @XmlElement(required = true)
   @XmlSchemaType(name = "string")
@@ -47,56 +46,4 @@ public class ActionUpdate extends Action implements Serializable {
 
   @XmlElement(required = true)
   protected ActionEvent events;
-
-  /** Default no-arg constructor */
-  public ActionUpdate() {
-    super();
-  }
-
-  /** Fully-initialising value constructor */
-  public ActionUpdate(
-      final String actionId,
-      final boolean responseRequired,
-      final Priority priority,
-      final ActionEvent events) {
-    super(actionId, responseRequired);
-    this.priority = priority;
-    this.events = events;
-  }
-
-  /**
-   * Gets the value of the priority property.
-   *
-   * @return possible object is {@link Priority }
-   */
-  public Priority getPriority() {
-    return priority;
-  }
-
-  /**
-   * Sets the value of the priority property.
-   *
-   * @param value allowed object is {@link Priority }
-   */
-  public void setPriority(Priority value) {
-    this.priority = value;
-  }
-
-  /**
-   * Gets the value of the events property.
-   *
-   * @return possible object is {@link ActionEvent }
-   */
-  public ActionEvent getEvents() {
-    return events;
-  }
-
-  /**
-   * Sets the value of the events property.
-   *
-   * @param value allowed object is {@link ActionEvent }
-   */
-  public void setEvents(ActionEvent value) {
-    this.events = value;
-  }
 }
