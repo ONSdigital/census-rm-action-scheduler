@@ -131,14 +131,15 @@ public class ActionRuleProcessorTest {
     List<ActionInstruction> actualActionInstructions = getActualActionInstructions(cases);
     assertEquals(1, actualActionInstructions.size());
     ActionInstruction actualActionInstruction = actualActionInstructions.get(0);
-    ActionInstruction expectedActionInstruction = getExpectedActionInstruction(
-        testCase,
-        uacEng,
-        uacWal,
-        qidEng,
-        qidWal,
-        actionRule,
-        actualActionInstruction.getActionRequest().getActionId());
+    ActionInstruction expectedActionInstruction =
+        getExpectedActionInstruction(
+            testCase,
+            uacEng,
+            uacWal,
+            qidEng,
+            qidWal,
+            actionRule,
+            actualActionInstruction.getActionRequest().getActionId());
 
     assertThat(actualActionInstruction)
         .isEqualToComparingFieldByFieldRecursively(expectedActionInstruction);
@@ -192,14 +193,15 @@ public class ActionRuleProcessorTest {
     List<ActionInstruction> actualActionInstructions = getActualActionInstructions(cases);
     assertEquals(1, actualActionInstructions.size());
     ActionInstruction actualActionInstruction = actualActionInstructions.get(0);
-    ActionInstruction expectedActionInstruction = getExpectedActionInstruction(
-        testCase,
-        uacEng,
-        uacWal,
-        qidEng,
-        qidWal,
-        actionRule,
-        actualActionInstruction.getActionRequest().getActionId());
+    ActionInstruction expectedActionInstruction =
+        getExpectedActionInstruction(
+            testCase,
+            uacEng,
+            uacWal,
+            qidEng,
+            qidWal,
+            actionRule,
+            actualActionInstruction.getActionRequest().getActionId());
 
     assertThat(actualActionInstruction)
         .isEqualToComparingFieldByFieldRecursively(expectedActionInstruction);
@@ -516,9 +518,16 @@ public class ActionRuleProcessorTest {
   }
 
   private ActionInstruction getExpectedActionInstruction(
-      Case caze, String uac, String uacWales, String qid, String qidWales, ActionRule actionRule, String actionId) {
+      Case caze,
+      String uac,
+      String uacWales,
+      String qid,
+      String qidWales,
+      ActionRule actionRule,
+      String actionId) {
 
-    ActionInstruction actionInstruction = getExpectedActionInstruction(caze, uac, actionRule, actionId);
+    ActionInstruction actionInstruction =
+        getExpectedActionInstruction(caze, uac, actionRule, actionId);
     actionInstruction.getActionRequest().setIacWales(uacWales);
     actionInstruction.getActionRequest().setQid(qid);
     actionInstruction.getActionRequest().setQidWales(qidWales);
