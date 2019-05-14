@@ -2,7 +2,8 @@ package uk.gov.ons.census.action.model.entity;
 
 public enum ActionType {
   ICL1E("Printer"), // Census initial contact letter for England
-  ICL2E("Printer"); // Census initial contact letter for Wales
+  ICL2E("Printer"), // Census initial contact letter for Wales
+  ICHHQW("Printer"); // Census household questionnaire for Wales
 
   private final String handler;
 
