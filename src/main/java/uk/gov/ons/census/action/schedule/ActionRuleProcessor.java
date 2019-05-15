@@ -4,38 +4,30 @@ import static org.springframework.data.jpa.domain.Specification.where;
 
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 import javax.persistence.criteria.CriteriaBuilder.In;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.model.dto.instruction.ActionAddress;
-import uk.gov.ons.census.action.model.dto.instruction.ActionEvent;
-import uk.gov.ons.census.action.model.dto.instruction.ActionInstruction;
-import uk.gov.ons.census.action.model.dto.instruction.ActionRequest;
-import uk.gov.ons.census.action.model.dto.instruction.Priority;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
-import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
-import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @Component
 public class ActionRuleProcessor {
 
   private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(50);
-  public static final String ACTION = "Action.";
-  public static final String BINDING = ".binding";
 
   private final ActionRuleRepository actionRuleRepo;
   private final CaseRepository caseRepository;
-  private final UacQidLinkRepository uacQidLinkRepository;
-  private final RabbitTemplate rabbitTemplate;
+  private final ActionRequestSender actionRequestSender;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -43,12 +35,10 @@ public class ActionRuleProcessor {
   public ActionRuleProcessor(
       ActionRuleRepository actionRuleRepo,
       CaseRepository caseRepository,
-      UacQidLinkRepository uacQidLinkRepository,
-      @Qualifier("actionInstructionRabbitTemplate") RabbitTemplate rabbitTemplate) {
+      ActionRequestSender actionRequestSender) {
     this.actionRuleRepo = actionRuleRepo;
     this.caseRepository = caseRepository;
-    this.uacQidLinkRepository = uacQidLinkRepository;
-    this.rabbitTemplate = rabbitTemplate;
+    this.actionRequestSender = actionRequestSender;
   }
 
   @Transactional
@@ -101,7 +91,7 @@ public class ActionRuleProcessor {
         caze -> {
           callables.add(
               () -> {
-                createAndSendActionRequest(caze, triggeredActionRule);
+                actionRequestSender.createAndSendActionRequest(caze, triggeredActionRule);
                 return Boolean.TRUE;
               });
         });
@@ -121,80 +111,6 @@ public class ActionRuleProcessor {
     }
   }
 
-  private void createAndSendActionRequest(Case caze, ActionRule actionRule) {
-
-    List<UacQidLink> uacQidLinks = uacQidLinkRepository.findByCaseId(caze.getCaseId().toString());
-
-    UacQidLink uacQidLink;
-    Optional<UacQidLink> uacQidLinkWales = Optional.ofNullable(null);
-
-    if (uacQidLinks == null || uacQidLinks.isEmpty()) {
-      throw new RuntimeException(); // TODO: How can we process this case without a UAC?
-    } else if (uacQidLinks.size() > 1) {
-      if (isQuestionnaireWelsh(caze.getTreatmentCode()) && uacQidLinks.size() == 2) {
-        uacQidLink = getSpecificUacQidLinkByQuestionnaireType(uacQidLinks, "02", "03");
-        uacQidLinkWales =
-            Optional.ofNullable(getSpecificUacQidLinkByQuestionnaireType(uacQidLinks, "03", "02"));
-      } else {
-        throw new RuntimeException(); // TODO: How do we know which one to use?
-      }
-    } else if (!isQuestionnaireWelsh(caze.getTreatmentCode())) {
-      uacQidLink = uacQidLinks.get(0);
-    } else {
-      // Not enough UAC/QID links for a Welsh questionnaire
-      throw new RuntimeException();
-    }
-
-    ActionEvent actionEvent = new ActionEvent();
-    actionEvent
-        .getEvents()
-        .add("CASE_CREATED : null : SYSTEM : Case created when Initial creation of case");
-
-    ActionAddress actionAddress = new ActionAddress();
-    actionAddress.setLine1(caze.getAddressLine1());
-    actionAddress.setLine2(caze.getAddressLine2());
-    actionAddress.setLine3(caze.getAddressLine3());
-    actionAddress.setTownName(caze.getTownName());
-    actionAddress.setPostcode(caze.getPostcode());
-    actionAddress.setOrganisationName(caze.getOrganisationName());
-    ActionRequest actionRequest = new ActionRequest();
-    actionRequest.setActionId(UUID.randomUUID().toString());
-    actionRequest.setResponseRequired(false);
-    actionRequest.setActionPlan(actionRule.getActionPlan().getId().toString());
-
-    actionRequest.setActionType(actionRule.getActionType().toString());
-
-    actionRequest.setAddress(actionAddress);
-    actionRequest.setLegalBasis("Statistics of Trade Act 1947");
-    actionRequest.setCaseGroupStatus("NOTSTARTED");
-    actionRequest.setCaseId(caze.getCaseId().toString());
-
-    actionRequest.setPriority(Priority.MEDIUM);
-    actionRequest.setCaseRef(Long.toString(caze.getCaseRef()));
-    actionRequest.setIac(uacQidLink.getUac());
-    actionRequest.setQid(uacQidLink.getQid());
-
-    if (uacQidLinkWales.isPresent()) {
-      actionRequest.setIacWales(uacQidLinkWales.get().getUac());
-      actionRequest.setQidWales(uacQidLinkWales.get().getQid());
-    }
-
-    actionRequest.setEvents(actionEvent);
-    actionRequest.setExerciseRef("201904");
-    actionRequest.setUserDescription("Census-FNSM580JQE3M4");
-    actionRequest.setSurveyName("Census-FNSM580JQE3M4");
-    actionRequest.setSurveyRef("Census-FNSM580JQE3M4");
-    actionRequest.setReturnByDate("27/04");
-    actionRequest.setSampleUnitRef("DDR190314000000516472");
-    ActionInstruction actionInstruction = new ActionInstruction();
-    actionInstruction.setActionRequest(actionRequest);
-
-    final String routingKey =
-        String.format("%s%s%s", ACTION, actionRule.getActionType().getHandler(), BINDING);
-
-    rabbitTemplate.convertAndSend(outboundExchange, routingKey, actionInstruction);
-  }
-
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
     return (Specification<Case>)
         (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
@@ -210,25 +126,5 @@ public class ActionRuleProcessor {
           }
           return inClause;
         };
-  }
-
-  private boolean isQuestionnaireWelsh(String treatmentCode) {
-    return (treatmentCode.startsWith("HH_Q") && treatmentCode.endsWith("W"));
-  }
-
-  private UacQidLink getSpecificUacQidLinkByQuestionnaireType(
-      List<UacQidLink> uacQidLinks,
-      String wantedQuestionnaireType,
-      String otherAllowableQuestionnaireType) {
-    for (UacQidLink uacQidLink : uacQidLinks) {
-      if (uacQidLink.getQid().startsWith(wantedQuestionnaireType)) {
-        return uacQidLink;
-      } else if (!uacQidLink.getQid().startsWith(otherAllowableQuestionnaireType)) {
-        // This shouldn't happen - why have we got non allowable type on this case?
-        throw new RuntimeException();
-      }
-    }
-
-    throw new RuntimeException(); // We can't find the one we wanted
   }
 }
