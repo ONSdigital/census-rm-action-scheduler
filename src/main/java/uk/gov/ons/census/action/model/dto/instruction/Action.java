@@ -8,12 +8,12 @@
 
 package uk.gov.ons.census.action.model.dto.instruction;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import lombok.Data;
 
 /**
  * Java class for Action complex type.
@@ -38,51 +38,11 @@ import javax.xml.bind.annotation.XmlType;
     name = "Action",
     propOrder = {"actionId", "responseRequired"})
 @XmlSeeAlso({ActionCancel.class, ActionUpdate.class, ActionRequest.class})
-public class Action implements Serializable {
-
-  private static final long serialVersionUID = 8297030705722814170L;
+@Data
+public class Action {
 
   @XmlElement(required = true)
   protected String actionId;
 
   protected boolean responseRequired;
-
-  /** Default no-arg constructor */
-  public Action() {
-    super();
-  }
-
-  /** Fully-initialising value constructor */
-  public Action(final String actionId, final boolean responseRequired) {
-    this.actionId = actionId;
-    this.responseRequired = responseRequired;
-  }
-
-  /**
-   * Gets the value of the actionId property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getActionId() {
-    return actionId;
-  }
-
-  /**
-   * Sets the value of the actionId property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setActionId(String value) {
-    this.actionId = value;
-  }
-
-  /** Gets the value of the responseRequired property. */
-  public boolean isResponseRequired() {
-    return responseRequired;
-  }
-
-  /** Sets the value of the responseRequired property. */
-  public void setResponseRequired(boolean value) {
-    this.responseRequired = value;
-  }
 }

@@ -8,10 +8,10 @@
 
 package uk.gov.ons.census.action.model.dto.instruction;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import lombok.Data;
 
 /**
  * Java class for ActionContact complex type.
@@ -48,9 +48,8 @@ import javax.xml.bind.annotation.XmlType;
       "ruName",
       "tradingStyle"
     })
-public class ActionContact implements Serializable {
-
-  private static final long serialVersionUID = 8297030705722814170L;
+@Data
+public class ActionContact {
   protected String title;
   protected String forename;
   protected String surname;
@@ -58,153 +57,4 @@ public class ActionContact implements Serializable {
   protected String emailAddress;
   protected String ruName;
   protected String tradingStyle;
-
-  /** Default no-arg constructor */
-  public ActionContact() {
-    super();
-  }
-
-  /** Fully-initialising value constructor */
-  public ActionContact(
-      final String title,
-      final String forename,
-      final String surname,
-      final String phoneNumber,
-      final String emailAddress,
-      final String ruName,
-      final String tradingStyle) {
-    this.title = title;
-    this.forename = forename;
-    this.surname = surname;
-    this.phoneNumber = phoneNumber;
-    this.emailAddress = emailAddress;
-    this.ruName = ruName;
-    this.tradingStyle = tradingStyle;
-  }
-
-  /**
-   * Gets the value of the title property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getTitle() {
-    return title;
-  }
-
-  /**
-   * Sets the value of the title property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setTitle(String value) {
-    this.title = value;
-  }
-
-  /**
-   * Gets the value of the forename property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getForename() {
-    return forename;
-  }
-
-  /**
-   * Sets the value of the forename property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setForename(String value) {
-    this.forename = value;
-  }
-
-  /**
-   * Gets the value of the surname property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getSurname() {
-    return surname;
-  }
-
-  /**
-   * Sets the value of the surname property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setSurname(String value) {
-    this.surname = value;
-  }
-
-  /**
-   * Gets the value of the phoneNumber property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getPhoneNumber() {
-    return phoneNumber;
-  }
-
-  /**
-   * Sets the value of the phoneNumber property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setPhoneNumber(String value) {
-    this.phoneNumber = value;
-  }
-
-  /**
-   * Gets the value of the emailAddress property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getEmailAddress() {
-    return emailAddress;
-  }
-
-  /**
-   * Sets the value of the emailAddress property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setEmailAddress(String value) {
-    this.emailAddress = value;
-  }
-
-  /**
-   * Gets the value of the ruName property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getRuName() {
-    return ruName;
-  }
-
-  /**
-   * Sets the value of the ruName property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setRuName(String value) {
-    this.ruName = value;
-  }
-
-  /**
-   * Gets the value of the tradingStyle property.
-   *
-   * @return possible object is {@link String }
-   */
-  public String getTradingStyle() {
-    return tradingStyle;
-  }
-
-  /**
-   * Sets the value of the tradingStyle property.
-   *
-   * @param value allowed object is {@link String }
-   */
-  public void setTradingStyle(String value) {
-    this.tradingStyle = value;
-  }
 }

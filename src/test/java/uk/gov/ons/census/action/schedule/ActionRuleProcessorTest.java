@@ -1,6 +1,7 @@
 package uk.gov.ons.census.action.schedule;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -12,7 +13,9 @@ import static org.springframework.data.jpa.domain.Specification.where;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -73,6 +76,135 @@ public class ActionRuleProcessorTest {
             cases, actionRule, actualActionInstructions);
     assertThat(actualActionInstructions)
         .isEqualToComparingFieldByFieldRecursively(expectedActionInstructions);
+
+    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+    verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
+    ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
+    actionRule.setHasTriggered(true);
+    Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
+  }
+
+  @Test
+  public void testWalesQuestionnaireWithTwoQidUacs() {
+    // Given
+    ActionRule actionRule = setUpActionRule();
+
+    EasyRandom easyRandom = new EasyRandom();
+    Case testCase = easyRandom.nextObject(Case.class);
+    testCase.setTreatmentCode("HH_QF2R1W");
+    String uacEng = easyRandom.nextObject(String.class);
+    String uacWal = easyRandom.nextObject(String.class);
+    String qidEng = "0220000010732199";
+    String qidWal = "0320000002861455";
+
+    List<Case> cases = Collections.singletonList(testCase);
+    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
+        .thenReturn(cases.stream());
+
+    List<UacQidLink> uacQidLinks = new LinkedList<>();
+
+    UacQidLink uacQidLink = new UacQidLink();
+    uacQidLink.setUac(uacEng);
+    uacQidLink.setQid(qidEng);
+    uacQidLinks.add(uacQidLink);
+
+    uacQidLink = new UacQidLink();
+    uacQidLink.setUac(uacWal);
+    uacQidLink.setQid(qidWal);
+    uacQidLinks.add(uacQidLink);
+
+    when(uacQidLinkRepository.findByCaseId(testCase.getCaseId().toString()))
+        .thenReturn(uacQidLinks);
+
+    doReturn(Arrays.asList(actionRule))
+        .when(actionRuleRepo)
+        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+
+    // when
+    ActionRuleProcessor actionRuleProcessor =
+        new ActionRuleProcessor(
+            actionRuleRepo, caseRepository, uacQidLinkRepository, rabbitTemplate);
+    ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHNAGE);
+    actionRuleProcessor.processActionRules();
+
+    // then
+    List<ActionInstruction> actualActionInstructions = getActualActionInstructions(cases);
+    assertEquals(1, actualActionInstructions.size());
+    ActionInstruction actualActionInstruction = actualActionInstructions.get(0);
+    ActionInstruction expectedActionInstruction =
+        getExpectedActionInstruction(
+            testCase,
+            uacEng,
+            uacWal,
+            qidEng,
+            qidWal,
+            actionRule,
+            actualActionInstruction.getActionRequest().getActionId());
+
+    assertThat(actualActionInstruction)
+        .isEqualToComparingFieldByFieldRecursively(expectedActionInstruction);
+
+    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+    verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
+    ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
+    actionRule.setHasTriggered(true);
+    Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testWalesQuestionnaireWithMissingQidUac() {
+    // Given
+    ActionRule actionRule = setUpActionRule();
+
+    EasyRandom easyRandom = new EasyRandom();
+    Case testCase = easyRandom.nextObject(Case.class);
+    testCase.setTreatmentCode("HH_QF2R1W");
+    String uacEng = easyRandom.nextObject(String.class);
+    String uacWal = easyRandom.nextObject(String.class);
+    String qidEng = "0220000010732199";
+    String qidWal = "0320000002861455";
+
+    List<Case> cases = Collections.singletonList(testCase);
+    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
+        .thenReturn(cases.stream());
+
+    List<UacQidLink> uacQidLinks = new LinkedList<>();
+
+    UacQidLink uacQidLink = new UacQidLink();
+    uacQidLink.setUac(uacEng);
+    uacQidLink.setQid(qidEng);
+    uacQidLinks.add(uacQidLink);
+
+    when(uacQidLinkRepository.findByCaseId(testCase.getCaseId().toString()))
+        .thenReturn(uacQidLinks);
+
+    doReturn(Arrays.asList(actionRule))
+        .when(actionRuleRepo)
+        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+
+    // when
+    ActionRuleProcessor actionRuleProcessor =
+        new ActionRuleProcessor(
+            actionRuleRepo, caseRepository, uacQidLinkRepository, rabbitTemplate);
+    ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHNAGE);
+    actionRuleProcessor.processActionRules();
+
+    // then
+    List<ActionInstruction> actualActionInstructions = getActualActionInstructions(cases);
+    assertEquals(1, actualActionInstructions.size());
+    ActionInstruction actualActionInstruction = actualActionInstructions.get(0);
+    ActionInstruction expectedActionInstruction =
+        getExpectedActionInstruction(
+            testCase,
+            uacEng,
+            uacWal,
+            qidEng,
+            qidWal,
+            actionRule,
+            actualActionInstruction.getActionRequest().getActionId());
+
+    assertThat(actualActionInstruction)
+        .isEqualToComparingFieldByFieldRecursively(expectedActionInstruction);
 
     ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
     verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
@@ -381,6 +513,24 @@ public class ActionRuleProcessorTest {
     actionRequest.setSampleUnitRef("DDR190314000000516472");
     ActionInstruction actionInstruction = new ActionInstruction();
     actionInstruction.setActionRequest(actionRequest);
+
+    return actionInstruction;
+  }
+
+  private ActionInstruction getExpectedActionInstruction(
+      Case caze,
+      String uac,
+      String uacWales,
+      String qid,
+      String qidWales,
+      ActionRule actionRule,
+      String actionId) {
+
+    ActionInstruction actionInstruction =
+        getExpectedActionInstruction(caze, uac, actionRule, actionId);
+    actionInstruction.getActionRequest().setIacWales(uacWales);
+    actionInstruction.getActionRequest().setQid(qid);
+    actionInstruction.getActionRequest().setQidWales(qidWales);
 
     return actionInstruction;
   }
