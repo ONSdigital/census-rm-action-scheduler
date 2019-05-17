@@ -3,12 +3,8 @@ package uk.gov.ons.census.action.schedule;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.instruction.ActionAddress;
 import uk.gov.ons.census.action.model.dto.instruction.ActionEvent;
 import uk.gov.ons.census.action.model.dto.instruction.ActionInstruction;
@@ -20,25 +16,17 @@ import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @Component
-public class ActionRequestSender {
-  public static final String ROUTING_KEY_PREFIX = "Action.";
-  public static final String ROUTING_KEY_SUFFIX = ".binding";
-
+public class ActionInstructionBuilder {
   private final UacQidLinkRepository uacQidLinkRepository;
-  private final RabbitTemplate rabbitTemplate;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
-  public ActionRequestSender(
-      UacQidLinkRepository uacQidLinkRepository,
-      @Qualifier("actionInstructionRabbitTemplate") RabbitTemplate rabbitTemplate) {
+  public ActionInstructionBuilder(UacQidLinkRepository uacQidLinkRepository) {
     this.uacQidLinkRepository = uacQidLinkRepository;
-    this.rabbitTemplate = rabbitTemplate;
   }
 
-  @Transactional(propagation = Propagation.REQUIRED) // Participate in the caller's transaction
-  public void createAndSendActionRequest(Case caze, ActionRule actionRule) {
+  public ActionInstruction buildActionInstruction(Case caze, ActionRule actionRule) {
 
     List<UacQidLink> uacQidLinks = uacQidLinkRepository.findByCaseId(caze.getCaseId().toString());
 
@@ -106,12 +94,7 @@ public class ActionRequestSender {
     ActionInstruction actionInstruction = new ActionInstruction();
     actionInstruction.setActionRequest(actionRequest);
 
-    final String routingKey =
-        String.format(
-            "%s%s%s",
-            ROUTING_KEY_PREFIX, actionRule.getActionType().getHandler(), ROUTING_KEY_SUFFIX);
-
-    rabbitTemplate.convertAndSend(outboundExchange, routingKey, actionInstruction);
+    return actionInstruction;
   }
 
   private boolean isQuestionnaireWelsh(String treatmentCode) {

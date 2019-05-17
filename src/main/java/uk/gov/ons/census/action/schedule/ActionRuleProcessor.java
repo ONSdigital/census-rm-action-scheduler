@@ -2,6 +2,8 @@ package uk.gov.ons.census.action.schedule;
 
 import static org.springframework.data.jpa.domain.Specification.where;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -11,10 +13,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 import javax.persistence.criteria.CriteriaBuilder.In;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.census.action.model.dto.instruction.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
@@ -22,12 +27,15 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 
 @Component
 public class ActionRuleProcessor {
-
+  private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
   private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(50);
+  public static final String ROUTING_KEY_PREFIX = "Action.";
+  public static final String ROUTING_KEY_SUFFIX = ".binding";
 
   private final ActionRuleRepository actionRuleRepo;
   private final CaseRepository caseRepository;
-  private final ActionRequestSender actionRequestSender;
+  private final ActionInstructionBuilder actionInstructionBuilder;
+  private final RabbitTemplate rabbitTemplate;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -35,10 +43,12 @@ public class ActionRuleProcessor {
   public ActionRuleProcessor(
       ActionRuleRepository actionRuleRepo,
       CaseRepository caseRepository,
-      ActionRequestSender actionRequestSender) {
+      ActionInstructionBuilder actionInstructionBuilder,
+      @Qualifier("actionInstructionRabbitTemplate") RabbitTemplate rabbitTemplate) {
     this.actionRuleRepo = actionRuleRepo;
     this.caseRepository = caseRepository;
-    this.actionRequestSender = actionRequestSender;
+    this.actionInstructionBuilder = actionInstructionBuilder;
+    this.rabbitTemplate = rabbitTemplate;
   }
 
   @Transactional
@@ -86,23 +96,31 @@ public class ActionRuleProcessor {
   }
 
   private void executeCases(Stream<Case> cases, ActionRule triggeredActionRule) {
-    List<Callable<Boolean>> callables = new LinkedList<>();
+    List<Callable<ActionInstruction>> callables = new LinkedList<>();
     cases.forEach(
         caze -> {
           callables.add(
-              () -> {
-                actionRequestSender.createAndSendActionRequest(caze, triggeredActionRule);
-                return Boolean.TRUE;
-              });
+              () -> actionInstructionBuilder.buildActionInstruction(caze, triggeredActionRule));
         });
 
     try {
-      List<Future<Boolean>> results = EXECUTOR_SERVICE.invokeAll(callables);
+      final String routingKey =
+          String.format(
+              "%s%s%s",
+              ROUTING_KEY_PREFIX,
+              triggeredActionRule.getActionType().getHandler(),
+              ROUTING_KEY_SUFFIX);
 
-      for (Future<Boolean> result : results) {
-        if (result.get() != Boolean.TRUE) {
-          throw new RuntimeException(); // One of the threads had a problem
+      List<Future<ActionInstruction>> results = EXECUTOR_SERVICE.invokeAll(callables);
+
+      log.info("About to send {} ActionInstruction messages", results.size());
+      int messagesSent = 0;
+      for (Future<ActionInstruction> result : results) {
+        if (messagesSent++ % 1000 == 0) {
+          log.info("Sent {} ActionInstruction messages", messagesSent);
         }
+
+        rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
       }
     } catch (InterruptedException e) {
       throw new RuntimeException(); // Roll the whole transaction back

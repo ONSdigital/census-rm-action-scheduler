@@ -144,6 +144,38 @@ public class ConsumeAndPublishIT {
         .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
   }
 
+  @Test
+  public void checkNoMessagesSentWhenTransactionRollback() throws InterruptedException {
+    // Given
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+
+    ActionPlan actionPlan = setUpActionPlan("no Quid", "or links");
+    actionPlanRepository.saveAndFlush(actionPlan);
+    ActionRule actionRule = setUpActionRule(actionPlan);
+    actionRuleRepository.saveAndFlush(actionRule);
+
+    ResponseManagementEvent caseCreatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    caseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
+    Uac uac = getUac(caseCreatedEvent);
+    ResponseManagementEvent uacUpdatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    uacUpdatedEvent.getEvent().setType(EventType.UAC_UPDATED);
+    uacUpdatedEvent.getPayload().setUac(uac);
+
+    ResponseManagementEvent badCaseCreatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    badCaseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
+
+    // WHEN
+    rabbitQueueHelper.sendMessage(inboundQueue, badCaseCreatedEvent);
+    rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
+    rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
+
+    // THEN
+    checkExpectedMessageNotReceived(outputQueue);
+  }
+
   private Uac getUac(ResponseManagementEvent caseCreatedEvent) {
     Uac uac = easyRandom.nextObject(Uac.class);
     uac.setCaseId(caseCreatedEvent.getPayload().getCollectionCase().getId());
