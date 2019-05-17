@@ -120,10 +120,14 @@ public class ActionRuleProcessorTest {
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
+    verify(rabbitTemplate, times(47))
+        .convertAndSend(
+            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
+
   }
 
   @Test
-  public void testExceptionCausesRollback() {
+  public void testExceptionInThreadCausesException() {
     // Given
     ActionRule actionRule = setUpActionRule();
 
@@ -154,7 +158,41 @@ public class ActionRuleProcessorTest {
     // then
     assertNotNull(actualException);
     verify(actionRuleRepo, never()).save(any(ActionRule.class));
+    verify(rabbitTemplate, never())
+        .convertAndSend(
+            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
   }
+
+  @Test(expected = RuntimeException.class)
+  public void testRabbitBlowsUpThrowsException() {
+    // Given
+    ActionRule actionRule = setUpActionRule();
+
+    List<Case> cases = getRandomCases(50);
+    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
+        .thenReturn(cases.stream());
+
+    doReturn(Arrays.asList(actionRule))
+        .when(actionRuleRepo)
+        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+
+    when(actionInstructionBuilder.buildActionInstruction(any(Case.class), eq(actionRule)))
+        .thenReturn(new ActionInstruction());
+
+    doThrow(new RuntimeException()).when(rabbitTemplate).convertAndSend(
+        eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
+
+    // when
+    ActionRuleProcessor actionRuleProcessor =
+        new ActionRuleProcessor(
+            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitTemplate);
+    ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
+    actionRuleProcessor.processActionRules();
+
+    // then
+    // exception thrown
+  }
+
 
   private ActionRule setUpActionRule() {
     ActionRule actionRule = new ActionRule();
