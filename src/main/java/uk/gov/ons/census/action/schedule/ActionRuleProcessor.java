@@ -116,8 +116,8 @@ public class ActionRuleProcessor {
       log.info("About to send {} ActionInstruction messages", results.size());
       int messagesSent = 0;
       for (Future<ActionInstruction> result : results) {
-        if (messagesSent++ % 1000 == 0) {
-          log.info("Sent {} ActionInstruction messages", messagesSent);
+        if (messagesSent % 1000 == 0) {
+          log.info("Sent {} ActionInstruction messages", messagesSent++);
         }
 
         rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
