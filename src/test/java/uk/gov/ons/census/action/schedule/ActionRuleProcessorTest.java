@@ -123,7 +123,6 @@ public class ActionRuleProcessorTest {
     verify(rabbitTemplate, times(47))
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
-
   }
 
   @Test
@@ -179,8 +178,10 @@ public class ActionRuleProcessorTest {
     when(actionInstructionBuilder.buildActionInstruction(any(Case.class), eq(actionRule)))
         .thenReturn(new ActionInstruction());
 
-    doThrow(new RuntimeException()).when(rabbitTemplate).convertAndSend(
-        eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
+    doThrow(new RuntimeException())
+        .when(rabbitTemplate)
+        .convertAndSend(
+            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
 
     // when
     ActionRuleProcessor actionRuleProcessor =
@@ -192,7 +193,6 @@ public class ActionRuleProcessorTest {
     // then
     // exception thrown
   }
-
 
   private ActionRule setUpActionRule() {
     ActionRule actionRule = new ActionRule();
