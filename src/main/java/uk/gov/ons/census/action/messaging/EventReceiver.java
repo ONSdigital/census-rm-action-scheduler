@@ -43,6 +43,7 @@ public class EventReceiver {
     newCase.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     newCase.setState(CaseState.valueOf(collectionCase.getState()));
+    newCase.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
     newCase.setAddressLine1(collectionCase.getAddress().getAddressLine1());
     newCase.setAddressLine2(collectionCase.getAddress().getAddressLine2());
     newCase.setAddressLine3(collectionCase.getAddress().getAddressLine3());
@@ -54,9 +55,16 @@ public class EventReceiver {
     newCase.setUprn(collectionCase.getAddress().getUprn());
     newCase.setRgn(collectionCase.getAddress().getRegion());
 
-    // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RM
+    // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
     newCase.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
     newCase.setTreatmentCode(collectionCase.getTreatmentCode()); // This is essential
+    newCase.setAddressLevel(collectionCase.getAddress().getAddressLevel());
+    newCase.setAbpCode(collectionCase.getAddress().getApbCode());
+    newCase.setAddressType(collectionCase.getAddress().getAddressType());
+    newCase.setUprn(collectionCase.getAddress().getUprn());
+    newCase.setEstabArid(collectionCase.getAddress().getEstabArid());
+    newCase.setEstabType(collectionCase.getAddress().getEstabType());
+    newCase.setOrganisationName(collectionCase.getAddress().getOrganisationName());
     newCase.setOa(collectionCase.getOa());
     newCase.setLsoa(collectionCase.getLsoa());
     newCase.setMsoa(collectionCase.getMsoa());
