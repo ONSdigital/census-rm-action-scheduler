@@ -84,6 +84,7 @@ public class EventReceiverTest {
     newCase.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     newCase.setActionPlanId(collectionCase.getActionPlanId());
+    newCase.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
     newCase.setState(CaseState.valueOf(collectionCase.getState()));
     newCase.setTreatmentCode(collectionCase.getTreatmentCode());
     newCase.setAddressLine1(collectionCase.getAddress().getAddressLine1());
@@ -102,7 +103,13 @@ public class EventReceiverTest {
     newCase.setLad(collectionCase.getLad());
     newCase.setHtcWillingness(collectionCase.getHtcWillingness());
     newCase.setHtcDigital(collectionCase.getHtcDigital());
-
+    newCase.setAddressLevel(collectionCase.getAddress().getAddressLevel());
+    newCase.setAbpCode(collectionCase.getAddress().getApbCode());
+    newCase.setAddressType(collectionCase.getAddress().getAddressType());
+    newCase.setUprn(collectionCase.getAddress().getUprn());
+    newCase.setEstabArid(collectionCase.getAddress().getEstabArid());
+    newCase.setEstabType(collectionCase.getAddress().getEstabType());
+    newCase.setOrganisationName(collectionCase.getAddress().getOrganisationName());
     return newCase;
   }
 }
