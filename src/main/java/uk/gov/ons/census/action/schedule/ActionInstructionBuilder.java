@@ -21,7 +21,7 @@ public class ActionInstructionBuilder {
   private static final String HOUSEHLD_INITIAL_CONTACT_QUESTIONNIARE_TREATMENT_CODE_PREFIX = "HH_Q";
   private static final String WALES_TREATMENT_CODE_SUFFIX = "W";
   private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE = 2;
-  private static final int THE_NUMBER_ONE_IS_NOW_A_CONSTANT_HURRAH_THIS_IS_MUCH_BETTER = 1;
+  private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE = 1;
   private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
   private static final String WALES_IN_WELSH_QUESTIONNAIRE_TYPE = "03";
 
@@ -105,7 +105,7 @@ public class ActionInstructionBuilder {
 
     if (uacQidLinks == null || uacQidLinks.isEmpty()) {
       throw new RuntimeException(); // TODO: How can we process this case without a UAC?
-    } else if (uacQidLinks.size() > THE_NUMBER_ONE_IS_NOW_A_CONSTANT_HURRAH_THIS_IS_MUCH_BETTER) {
+    } else if (uacQidLinks.size() > NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE) {
       if (isQuestionnaireWelsh(caze.getTreatmentCode())
           && uacQidLinks.size()
               == NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE) {
@@ -124,6 +124,7 @@ public class ActionInstructionBuilder {
         throw new RuntimeException(); // TODO: How do we know which one to use?
       }
     } else if (!isQuestionnaireWelsh(caze.getTreatmentCode())) {
+      // Implicitly from the logic above, there can only be one UAC/QID pair - the right one
       uacQidTuple.setUacQidLink(uacQidLinks.get(0));
     } else {
       // Not enough UAC/QID links for a Welsh questionnaire
