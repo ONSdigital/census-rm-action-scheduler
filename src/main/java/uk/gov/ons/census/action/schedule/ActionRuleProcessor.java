@@ -122,9 +122,7 @@ public class ActionRuleProcessor {
 
         rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
       }
-    } catch (InterruptedException e) {
-      throw new RuntimeException(); // Roll the whole transaction back
-    } catch (ExecutionException e) {
+    } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(); // Roll the whole transaction back
     }
   }

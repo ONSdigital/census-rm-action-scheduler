@@ -3,6 +3,7 @@ package uk.gov.ons.census.action.schedule;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.dto.instruction.ActionAddress;
@@ -17,6 +18,13 @@ import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @Component
 public class ActionInstructionBuilder {
+  private static final String HOUSEHLD_INITIAL_CONTACT_QUESTIONNIARE_TREATMENT_CODE_PREFIX = "HH_Q";
+  private static final String WALES_TREATMENT_CODE_SUFFIX = "W";
+  private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE = 2;
+  private static final int THE_NUMBER_ONE_IS_NOW_A_CONSTANT_HURRAH_THIS_IS_MUCH_BETTER = 1;
+  private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
+  private static final String WALES_IN_WELSH_QUESTIONNAIRE_TYPE = "03";
+
   private final UacQidLinkRepository uacQidLinkRepository;
 
   @Value("${queueconfig.outbound-exchange}")
@@ -28,27 +36,7 @@ public class ActionInstructionBuilder {
 
   public ActionInstruction buildActionInstruction(Case caze, ActionRule actionRule) {
 
-    List<UacQidLink> uacQidLinks = uacQidLinkRepository.findByCaseId(caze.getCaseId().toString());
-
-    UacQidLink uacQidLink;
-    Optional<UacQidLink> uacQidLinkWales = Optional.ofNullable(null);
-
-    if (uacQidLinks == null || uacQidLinks.isEmpty()) {
-      throw new RuntimeException(); // TODO: How can we process this case without a UAC?
-    } else if (uacQidLinks.size() > 1) {
-      if (isQuestionnaireWelsh(caze.getTreatmentCode()) && uacQidLinks.size() == 2) {
-        uacQidLink = getSpecificUacQidLinkByQuestionnaireType(uacQidLinks, "02", "03");
-        uacQidLinkWales =
-            Optional.ofNullable(getSpecificUacQidLinkByQuestionnaireType(uacQidLinks, "03", "02"));
-      } else {
-        throw new RuntimeException(); // TODO: How do we know which one to use?
-      }
-    } else if (!isQuestionnaireWelsh(caze.getTreatmentCode())) {
-      uacQidLink = uacQidLinks.get(0);
-    } else {
-      // Not enough UAC/QID links for a Welsh questionnaire
-      throw new RuntimeException();
-    }
+    UacQidTuple uacQidTuple = getUacQidLinks(caze);
 
     ActionEvent actionEvent = new ActionEvent();
     actionEvent
@@ -76,12 +64,12 @@ public class ActionInstructionBuilder {
 
     actionRequest.setPriority(Priority.MEDIUM);
     actionRequest.setCaseRef(Long.toString(caze.getCaseRef()));
-    actionRequest.setIac(uacQidLink.getUac());
-    actionRequest.setQid(uacQidLink.getQid());
+    actionRequest.setIac(uacQidTuple.getUacQidLink().getUac());
+    actionRequest.setQid(uacQidTuple.getUacQidLink().getQid());
 
-    if (uacQidLinkWales.isPresent()) {
-      actionRequest.setIacWales(uacQidLinkWales.get().getUac());
-      actionRequest.setQidWales(uacQidLinkWales.get().getQid());
+    if (uacQidTuple.getUacQidLinkWales().isPresent()) {
+      actionRequest.setIacWales(uacQidTuple.getUacQidLinkWales().get().getUac());
+      actionRequest.setQidWales(uacQidTuple.getUacQidLinkWales().get().getQid());
     }
 
     actionRequest.setEvents(actionEvent);
@@ -98,7 +86,42 @@ public class ActionInstructionBuilder {
   }
 
   private boolean isQuestionnaireWelsh(String treatmentCode) {
-    return (treatmentCode.startsWith("HH_Q") && treatmentCode.endsWith("W"));
+    return (treatmentCode.startsWith(HOUSEHLD_INITIAL_CONTACT_QUESTIONNIARE_TREATMENT_CODE_PREFIX)
+        && treatmentCode.endsWith(WALES_TREATMENT_CODE_SUFFIX));
+  }
+
+  private UacQidTuple getUacQidLinks(Case caze) {
+    List<UacQidLink> uacQidLinks = uacQidLinkRepository.findByCaseId(caze.getCaseId().toString());
+    UacQidTuple uacQidTuple = new UacQidTuple();
+
+    if (uacQidLinks == null || uacQidLinks.isEmpty()) {
+      throw new RuntimeException(); // TODO: How can we process this case without a UAC?
+    } else if (uacQidLinks.size() > THE_NUMBER_ONE_IS_NOW_A_CONSTANT_HURRAH_THIS_IS_MUCH_BETTER) {
+      if (isQuestionnaireWelsh(caze.getTreatmentCode())
+          && uacQidLinks.size()
+              == NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE) {
+        uacQidTuple.setUacQidLink(
+            getSpecificUacQidLinkByQuestionnaireType(
+                uacQidLinks,
+                WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE,
+                WALES_IN_WELSH_QUESTIONNAIRE_TYPE));
+        uacQidTuple.setUacQidLinkWales(
+            Optional.ofNullable(
+                getSpecificUacQidLinkByQuestionnaireType(
+                    uacQidLinks,
+                    WALES_IN_WELSH_QUESTIONNAIRE_TYPE,
+                    WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE)));
+      } else {
+        throw new RuntimeException(); // TODO: How do we know which one to use?
+      }
+    } else if (!isQuestionnaireWelsh(caze.getTreatmentCode())) {
+      uacQidTuple.setUacQidLink(uacQidLinks.get(0));
+    } else {
+      // Not enough UAC/QID links for a Welsh questionnaire
+      throw new RuntimeException();
+    }
+
+    return uacQidTuple;
   }
 
   private UacQidLink getSpecificUacQidLinkByQuestionnaireType(
@@ -109,11 +132,17 @@ public class ActionInstructionBuilder {
       if (uacQidLink.getQid().startsWith(wantedQuestionnaireType)) {
         return uacQidLink;
       } else if (!uacQidLink.getQid().startsWith(otherAllowableQuestionnaireType)) {
-        // This shouldn't happen - why have we got non allowable type on this case?
+        // This shouldn't happen - why have we got non-allowable type on this case?
         throw new RuntimeException();
       }
     }
 
     throw new RuntimeException(); // We can't find the one we wanted
+  }
+
+  @Data
+  private class UacQidTuple {
+    private UacQidLink uacQidLink;
+    private Optional<UacQidLink> uacQidLinkWales = Optional.ofNullable(null);
   }
 }
