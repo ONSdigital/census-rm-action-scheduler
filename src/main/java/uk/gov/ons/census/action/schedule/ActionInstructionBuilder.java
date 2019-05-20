@@ -39,6 +39,7 @@ public class ActionInstructionBuilder {
     UacQidTuple uacQidTuple = getUacQidLinks(caze);
 
     ActionEvent actionEvent = new ActionEvent();
+    // Legacy hard-coded value to satisfy Action Exporter which should be refactored
     actionEvent
         .getEvents()
         .add("CASE_CREATED : null : SYSTEM : Case created when Initial creation of case");
@@ -58,8 +59,13 @@ public class ActionInstructionBuilder {
     actionRequest.setActionType(actionRule.getActionType().toString());
 
     actionRequest.setAddress(actionAddress);
+
+    // Hardcoded because this is irrelevant for Census - to be refactored away later
     actionRequest.setLegalBasis("Statistics of Trade Act 1947");
+
+    // Hardcoded because this isn't needed by Action Exporter - will be removed later
     actionRequest.setCaseGroupStatus("NOTSTARTED");
+
     actionRequest.setCaseId(caze.getCaseId().toString());
 
     actionRequest.setPriority(Priority.MEDIUM);
@@ -73,12 +79,15 @@ public class ActionInstructionBuilder {
     }
 
     actionRequest.setEvents(actionEvent);
+
+    // All hard-coded for legacy reasons - Action Exporter should not need any of these values
     actionRequest.setExerciseRef("201904");
     actionRequest.setUserDescription("Census-FNSM580JQE3M4");
     actionRequest.setSurveyName("Census-FNSM580JQE3M4");
     actionRequest.setSurveyRef("Census-FNSM580JQE3M4");
     actionRequest.setReturnByDate("27/04");
     actionRequest.setSampleUnitRef("DDR190314000000516472");
+
     ActionInstruction actionInstruction = new ActionInstruction();
     actionInstruction.setActionRequest(actionRequest);
 
