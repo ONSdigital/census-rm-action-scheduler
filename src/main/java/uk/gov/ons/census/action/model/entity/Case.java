@@ -62,7 +62,13 @@ public class Case {
 
   @Column private String htcDigital;
 
+  @Column private String fieldCoordinatorId;
+
+  @Column private String fieldOfficerId;
+
   @Column private String treatmentCode;
+
+  @Column private String ceExpectedCapacity;
 
   @Column private String collectionExerciseId;
 

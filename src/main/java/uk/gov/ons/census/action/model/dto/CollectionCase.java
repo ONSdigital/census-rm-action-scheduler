@@ -11,7 +11,6 @@ public class CollectionCase {
   private Address address;
   private String state;
   private String actionableFrom;
-
   // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
   private String actionPlanId;
   private String treatmentCode;
@@ -21,4 +20,8 @@ public class CollectionCase {
   private String lad;
   private String htcWillingness;
   private String htcDigital;
+  private String fieldCoordinatorId;
+  private String fieldOfficerId;
+  private String ceExpectedCapacity;
+
 }

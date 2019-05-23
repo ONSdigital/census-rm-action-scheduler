@@ -71,6 +71,9 @@ public class EventReceiver {
     newCase.setLad(collectionCase.getLad());
     newCase.setHtcWillingness(collectionCase.getHtcWillingness());
     newCase.setHtcDigital(collectionCase.getHtcDigital());
+    newCase.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
+    newCase.setFieldOfficerId(collectionCase.getFieldOfficerId());
+    newCase.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
 
     caseRepository.save(newCase);
   }

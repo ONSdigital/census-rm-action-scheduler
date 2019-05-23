@@ -110,6 +110,9 @@ public class EventReceiverTest {
     newCase.setEstabArid(collectionCase.getAddress().getEstabArid());
     newCase.setEstabType(collectionCase.getAddress().getEstabType());
     newCase.setOrganisationName(collectionCase.getAddress().getOrganisationName());
+    newCase.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
+    newCase.setFieldOfficerId(collectionCase.getFieldOfficerId());
+    newCase.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
     return newCase;
   }
 }
