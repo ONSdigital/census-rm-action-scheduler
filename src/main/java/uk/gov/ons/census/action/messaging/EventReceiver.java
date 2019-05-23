@@ -53,7 +53,7 @@ public class EventReceiver {
     newCase.setLatitude(collectionCase.getAddress().getLatitude());
     newCase.setLongitude(collectionCase.getAddress().getLongitude());
     newCase.setUprn(collectionCase.getAddress().getUprn());
-    newCase.setRgn(collectionCase.getAddress().getRegion());
+    newCase.setRegion(collectionCase.getAddress().getRegion());
 
     // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
     newCase.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
