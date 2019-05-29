@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
-import uk.gov.ons.census.action.model.dto.instruction.ActionInstruction;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;

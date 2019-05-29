@@ -6,27 +6,23 @@
 // Generated on: 2019.04.04 at 08:02:09 AM BST
 //
 
-package uk.gov.ons.census.action.model.dto.instruction;
+package uk.gov.ons.census.action.model.dto.instruction.field;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import lombok.Data;
 
 /**
- * Java class for ActionCancel complex type.
+ * Java class for ActionUpdate complex type.
  *
  * <p>The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="ActionCancel"&gt;
+ * &lt;complexType name="ActionUpdate"&gt;
  *   &lt;complexContent&gt;
  *     &lt;extension base="{http://ons.gov.uk/ctp/response/action/message/instruction}Action"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="reason" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
- *         &lt;element name="caseId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
- *         &lt;element name="caseRef" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="priority" type="{http://ons.gov.uk/ctp/response/action/message/instruction}Priority"/&gt;
+ *         &lt;element name="events" type="{http://ons.gov.uk/ctp/response/action/message/instruction}ActionEvent"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/extension&gt;
  *   &lt;/complexContent&gt;
@@ -35,14 +31,15 @@ import lombok.Data;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(
-    name = "ActionCancel",
-    propOrder = {"reason", "caseId", "caseRef"})
+    name = "ActionUpdate",
+    propOrder = {"priority", "events"})
 @Data
-public class ActionCancel extends Action {
+public class ActionUpdate extends Action {
 
   @XmlElement(required = true)
-  protected String reason;
+  @XmlSchemaType(name = "string")
+  protected Priority priority;
 
-  protected String caseId;
-  protected String caseRef;
+  @XmlElement(required = true)
+  protected ActionEvent events;
 }

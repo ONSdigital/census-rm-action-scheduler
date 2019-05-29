@@ -6,27 +6,27 @@
 // Generated on: 2019.04.04 at 08:02:09 AM BST
 //
 
-package uk.gov.ons.census.action.model.dto.instruction;
+package uk.gov.ons.census.action.model.dto.instruction.printer;
 
-import java.util.LinkedList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import lombok.Data;
 
 /**
- * Java class for ActionEvent complex type.
+ * Java class for Action complex type.
  *
  * <p>The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="ActionEvent"&gt;
+ * &lt;complexType name="Action"&gt;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="event" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="actionId" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+ *         &lt;element name="responseRequired" type="{http://www.w3.org/2001/XMLSchema}boolean"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -35,11 +35,14 @@ import lombok.Data;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(
-    name = "ActionEvent",
-    propOrder = {"events"})
+    name = "Action",
+    propOrder = {"actionId", "responseRequired"})
+@XmlSeeAlso({ActionCancel.class, ActionUpdate.class, ActionRequest.class})
 @Data
-public class ActionEvent {
+public class Action {
 
-  @XmlElement(name = "event")
-  protected List<String> events = new LinkedList<>();
+  @XmlElement(required = true)
+  protected String actionId;
+
+  protected boolean responseRequired;
 }

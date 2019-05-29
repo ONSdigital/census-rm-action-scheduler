@@ -19,7 +19,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.model.dto.instruction.ActionInstruction;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
+import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
@@ -96,11 +97,19 @@ public class ActionRuleProcessor {
   }
 
   private void executeCases(Stream<Case> cases, ActionRule triggeredActionRule) {
+    if (triggeredActionRule.getActionType().getHandler() == ActionHandler.PRINTER) {
+      executePrinterCases(cases, triggeredActionRule);
+    } else if (triggeredActionRule.getActionType().getHandler() == ActionHandler.FIELD) {
+      executeFieldCases(cases, triggeredActionRule);
+    }
+  }
+
+  private void executePrinterCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     List<Callable<ActionInstruction>> callables = new LinkedList<>();
     cases.forEach(
         caze -> {
           callables.add(
-              () -> actionInstructionBuilder.buildActionInstruction(caze, triggeredActionRule));
+              () -> actionInstructionBuilder.buildPrinterActionInstruction(caze, triggeredActionRule));
         });
 
     try {
@@ -108,7 +117,7 @@ public class ActionRuleProcessor {
           String.format(
               "%s%s%s",
               ROUTING_KEY_PREFIX,
-              triggeredActionRule.getActionType().getHandler(),
+              triggeredActionRule.getActionType().getHandler().getRoutingKey(),
               ROUTING_KEY_SUFFIX);
 
       List<Future<ActionInstruction>> results = EXECUTOR_SERVICE.invokeAll(callables);
@@ -116,6 +125,38 @@ public class ActionRuleProcessor {
       log.info("About to send {} ActionInstruction messages", results.size());
       int messagesSent = 0;
       for (Future<ActionInstruction> result : results) {
+        if (messagesSent++ % 1000 == 0) {
+          log.info("Sent {} ActionInstruction messages", messagesSent - 1);
+        }
+
+        rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
+      }
+    } catch (InterruptedException | ExecutionException e) {
+      throw new RuntimeException(); // Roll the whole transaction back
+    }
+  }
+
+  private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
+    List<Callable<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>> callables = new LinkedList<>();
+    cases.forEach(
+        caze -> {
+          callables.add(
+              () -> actionInstructionBuilder.buildFieldActionInstruction(caze, triggeredActionRule));
+        });
+
+    try {
+      final String routingKey =
+          String.format(
+              "%s%s%s",
+              ROUTING_KEY_PREFIX,
+              triggeredActionRule.getActionType().getHandler().getRoutingKey(),
+              ROUTING_KEY_SUFFIX);
+
+      List<Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>> results = EXECUTOR_SERVICE.invokeAll(callables);
+
+      log.info("About to send {} ActionInstruction messages", results.size());
+      int messagesSent = 0;
+      for (Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction> result : results) {
         if (messagesSent++ % 1000 == 0) {
           log.info("Sent {} ActionInstruction messages", messagesSent - 1);
         }

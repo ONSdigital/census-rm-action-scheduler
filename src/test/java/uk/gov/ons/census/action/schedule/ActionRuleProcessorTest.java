@@ -27,7 +27,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.ons.census.action.model.dto.instruction.ActionInstruction;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -57,7 +57,7 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(actionInstructionBuilder.buildActionInstruction(any(Case.class), eq(actionRule)))
+    when(actionInstructionBuilder.buildPrinterActionInstruction(any(Case.class), eq(actionRule)))
         .thenReturn(new ActionInstruction());
 
     // when
@@ -69,7 +69,7 @@ public class ActionRuleProcessorTest {
 
     // then
     verify(actionInstructionBuilder, times(50))
-        .buildActionInstruction(any(Case.class), eq(actionRule));
+        .buildPrinterActionInstruction(any(Case.class), eq(actionRule));
     ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
     verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
@@ -104,7 +104,7 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(actionInstructionBuilder.buildActionInstruction(any(Case.class), eq(actionRule)))
+    when(actionInstructionBuilder.buildPrinterActionInstruction(any(Case.class), eq(actionRule)))
         .thenReturn(new ActionInstruction());
 
     // when
@@ -140,7 +140,7 @@ public class ActionRuleProcessorTest {
 
     doThrow(RuntimeException.class)
         .when(actionInstructionBuilder)
-        .buildActionInstruction(any(Case.class), eq(actionRule));
+        .buildPrinterActionInstruction(any(Case.class), eq(actionRule));
 
     // when
     ActionRuleProcessor actionRuleProcessor =
@@ -175,7 +175,7 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(actionInstructionBuilder.buildActionInstruction(any(Case.class), eq(actionRule)))
+    when(actionInstructionBuilder.buildPrinterActionInstruction(any(Case.class), eq(actionRule)))
         .thenReturn(new ActionInstruction());
 
     doThrow(new RuntimeException())

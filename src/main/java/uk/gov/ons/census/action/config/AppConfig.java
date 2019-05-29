@@ -74,7 +74,7 @@ public class AppConfig {
   @Bean
   public Jaxb2Marshaller actionInstructionMarshaller() {
     Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
-    jaxb2Marshaller.setContextPath("uk.gov.ons.census.action.model.dto.instruction");
+    jaxb2Marshaller.setContextPath("uk.gov.ons.census.action.model.dto.instruction.printer");
     return jaxb2Marshaller;
   }
 

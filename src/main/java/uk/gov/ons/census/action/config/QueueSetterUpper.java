@@ -17,11 +17,17 @@ public class QueueSetterUpper {
   @Value("${queueconfig.outbound-printer-queue}")
   private String outboundPrinterQueue;
 
+  @Value("${queueconfig.outbound-field-queue}")
+  private String outboundFieldQueue;
+
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
   @Value("${queueconfig.outbound-printer-routing-key}")
   private String outboundPrinterRoutingKey;
+
+  @Value("${queueconfig.outbound-field-routing-key}")
+  private String outboundFieldRoutingKey;
 
   @Bean
   public Queue inboundQueue() {
@@ -29,8 +35,13 @@ public class QueueSetterUpper {
   }
 
   @Bean
-  public Queue outboundQueue() {
+  public Queue outboundPrinterQueue() {
     return new Queue(outboundPrinterQueue, true);
+  }
+
+  @Bean
+  public Queue outboundFieldQueue() {
+    return new Queue(outboundFieldQueue, true);
   }
 
   @Bean
@@ -39,8 +50,13 @@ public class QueueSetterUpper {
   }
 
   @Bean
-  public Binding binding() {
+  public Binding printerBinding() {
     return new Binding(
         outboundPrinterQueue, QUEUE, outboundExchange, outboundPrinterRoutingKey, null);
+  }
+
+  @Bean
+  public Binding fieldBinding() {
+    return new Binding(outboundFieldQueue, QUEUE, outboundExchange, outboundFieldRoutingKey, null);
   }
 }

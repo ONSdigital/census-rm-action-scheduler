@@ -6,7 +6,7 @@
 // Generated on: 2019.04.04 at 08:02:09 AM BST
 //
 
-package uk.gov.ons.census.action.model.dto.instruction;
+package uk.gov.ons.census.action.model.dto.instruction.field;
 
 import java.math.BigDecimal;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -48,6 +48,8 @@ import lombok.Data;
 @XmlType(
     name = "ActionAddress",
     propOrder = {
+      "arid",
+      "uprn",
       "type",
       "estabType",
       "locality",
@@ -61,11 +63,14 @@ import lombok.Data;
       "country",
       "ladCode",
       "latitude",
-      "longitude"
+      "longitude",
+      "oa"
     })
 @Data
 public class ActionAddress {
 
+  protected String arid;
+  protected String uprn;
   protected String type;
   protected String estabType;
   protected String locality;
@@ -80,4 +85,5 @@ public class ActionAddress {
   protected String ladCode;
   protected BigDecimal latitude;
   protected BigDecimal longitude;
+  protected String oa;
 }

@@ -10,11 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
-import uk.gov.ons.census.action.model.dto.instruction.ActionAddress;
-import uk.gov.ons.census.action.model.dto.instruction.ActionEvent;
-import uk.gov.ons.census.action.model.dto.instruction.ActionInstruction;
-import uk.gov.ons.census.action.model.dto.instruction.ActionRequest;
-import uk.gov.ons.census.action.model.dto.instruction.Priority;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionAddress;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionEvent;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionRequest;
+import uk.gov.ons.census.action.model.dto.instruction.printer.Priority;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -41,7 +41,7 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    ActionInstruction actualActionInstruction = underTest.buildActionInstruction(caze, actionRule);
+    ActionInstruction actualActionInstruction = underTest.buildPrinterActionInstruction(caze, actionRule);
 
     // Then
     ActionInstruction expectedActionInstruction =
@@ -84,7 +84,7 @@ public class ActionInstructionBuilderTest {
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
     ActionInstruction actualActionInstruction =
-        underTest.buildActionInstruction(testCase, actionRule);
+        underTest.buildPrinterActionInstruction(testCase, actionRule);
 
     // Then
     ActionInstruction expectedActionInstruction =
@@ -132,7 +132,7 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    underTest.buildActionInstruction(testCase, actionRule);
+    underTest.buildPrinterActionInstruction(testCase, actionRule);
 
     // Then
     // Expect exception to be thrown
@@ -170,7 +170,7 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    underTest.buildActionInstruction(testCase, actionRule);
+    underTest.buildPrinterActionInstruction(testCase, actionRule);
 
     // Then
     // Expect exception to be thrown
@@ -215,7 +215,7 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    underTest.buildActionInstruction(testCase, actionRule);
+    underTest.buildPrinterActionInstruction(testCase, actionRule);
 
     // Then
     // Expect exception to be thrown
@@ -246,7 +246,7 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    underTest.buildActionInstruction(testCase, actionRule);
+    underTest.buildPrinterActionInstruction(testCase, actionRule);
 
     // Then
     // Expect exception to be thrown
@@ -267,7 +267,7 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    underTest.buildActionInstruction(testCase, actionRule);
+    underTest.buildPrinterActionInstruction(testCase, actionRule);
 
     // Then
     // Expect exception to be thrown
@@ -289,7 +289,7 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    underTest.buildActionInstruction(testCase, actionRule);
+    underTest.buildPrinterActionInstruction(testCase, actionRule);
 
     // Then
     // Expect exception to be thrown
@@ -327,7 +327,7 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    underTest.buildActionInstruction(testCase, actionRule);
+    underTest.buildPrinterActionInstruction(testCase, actionRule);
 
     // Then
     // Expect exception to be thrown

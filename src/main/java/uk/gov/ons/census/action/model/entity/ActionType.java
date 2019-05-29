@@ -1,17 +1,18 @@
 package uk.gov.ons.census.action.model.entity;
 
 public enum ActionType {
-  ICL1E("Printer"), // Census initial contact letter for England
-  ICL2E("Printer"), // Census initial contact letter for Wales
-  ICHHQW("Printer"); // Census household questionnaire for Wales
+  ICL1E(ActionHandler.PRINTER), // Census initial contact letter for England
+  ICL2E(ActionHandler.PRINTER), // Census initial contact letter for Wales
+  ICHHQW(ActionHandler.PRINTER), // Census household questionnaire for Wales
+  FF2QE(ActionHandler.FIELD); // Fieldwork follow up F2 questionnaire for England
 
-  private final String handler;
+  private final ActionHandler handler;
 
-  ActionType(String handler) {
+  ActionType(ActionHandler handler) {
     this.handler = handler;
   }
 
-  public String getHandler() {
+  public ActionHandler getHandler() {
     return handler;
   }
 }

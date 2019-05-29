@@ -37,8 +37,10 @@ spring:
 queueconfig:
   inbound-queue: case.action
   outbound-printer-queue: Action.Printer
+  outbound-field-queue: Action.Field
   outbound-exchange: action-outbound-exchange
   outbound-printer-routing-key: Action.Printer.binding
+  outbound-field-routing-key: Action.Field.binding
   consumers: 50
 
 healthcheck:
