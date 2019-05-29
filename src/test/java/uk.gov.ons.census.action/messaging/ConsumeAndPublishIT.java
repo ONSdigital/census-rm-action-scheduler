@@ -4,12 +4,9 @@ import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -35,8 +32,6 @@ import uk.gov.ons.census.action.model.dto.instruction.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
-import uk.gov.ons.census.action.model.entity.Case;
-import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.ActionPlanRepository;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
@@ -75,8 +70,7 @@ public class ConsumeAndPublishIT {
   }
 
   @Test
-  public void checkRecievedEventsAreEmitted()
-      throws IOException, InterruptedException, JAXBException {
+  public void checkRecievedEventsAreEmitted() throws InterruptedException, JAXBException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -112,7 +106,7 @@ public class ConsumeAndPublishIT {
 
   @Test
   public void checkCaseWithNoLinkedUACQuidDoesntSendThenWorksWhenUACAdded()
-      throws IOException, InterruptedException, JAXBException {
+      throws InterruptedException, JAXBException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -150,6 +144,38 @@ public class ConsumeAndPublishIT {
         .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
   }
 
+  @Test
+  public void checkNoMessagesSentWhenTransactionRollback() throws InterruptedException {
+    // Given
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+
+    ActionPlan actionPlan = setUpActionPlan("no Quid", "or links");
+    actionPlanRepository.saveAndFlush(actionPlan);
+    ActionRule actionRule = setUpActionRule(actionPlan);
+    actionRuleRepository.saveAndFlush(actionRule);
+
+    ResponseManagementEvent caseCreatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    caseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
+    Uac uac = getUac(caseCreatedEvent);
+    ResponseManagementEvent uacUpdatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    uacUpdatedEvent.getEvent().setType(EventType.UAC_UPDATED);
+    uacUpdatedEvent.getPayload().setUac(uac);
+
+    ResponseManagementEvent badCaseCreatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    badCaseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
+
+    // WHEN
+    rabbitQueueHelper.sendMessage(inboundQueue, badCaseCreatedEvent);
+    rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
+    rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
+
+    // THEN
+    checkExpectedMessageNotReceived(outputQueue);
+  }
+
   private Uac getUac(ResponseManagementEvent caseCreatedEvent) {
     Uac uac = easyRandom.nextObject(Uac.class);
     uac.setCaseId(caseCreatedEvent.getPayload().getCollectionCase().getId());
@@ -157,7 +183,6 @@ public class ConsumeAndPublishIT {
   }
 
   private ActionPlan setUpActionPlan(String name, String desc) {
-    Random random = new Random();
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setName(name);
     actionPlan.setDescription(desc);
@@ -168,11 +193,11 @@ public class ConsumeAndPublishIT {
   private void checkExpectedMessageNotReceived(BlockingQueue<String> queue)
       throws InterruptedException {
     String actualMessage = queue.poll(10, TimeUnit.SECONDS);
-    assertNull("Recieved Message, expectedNone", actualMessage);
+    assertNull("Recieved Message, expected none", actualMessage);
   }
 
   private ActionInstruction checkExpectedMessageReceived(BlockingQueue<String> queue)
-      throws IOException, InterruptedException, JAXBException {
+      throws InterruptedException, JAXBException {
     String actualMessage = queue.poll(10, TimeUnit.SECONDS);
     assertNotNull("Did not receive message before timeout", actualMessage);
 
@@ -209,16 +234,5 @@ public class ConsumeAndPublishIT {
     actionRule.setActionPlan(actionPlan);
 
     return actionRule;
-  }
-
-  private void setUpQidLinksForCases(List<Case> cases) {
-    cases.forEach(
-        caze -> {
-          String uac = caze.getCaseId().toString() + "uac";
-          UacQidLink uacQidLink = new UacQidLink();
-          uacQidLink.setUac(uac);
-
-          uacQidLinkRepository.save(uacQidLink);
-        });
   }
 }

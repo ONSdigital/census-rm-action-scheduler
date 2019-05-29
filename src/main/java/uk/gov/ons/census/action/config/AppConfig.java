@@ -16,9 +16,11 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableScheduling
+@EnableTransactionManagement
 public class AppConfig {
   @Value("${queueconfig.inbound-queue}")
   private String inboundQueue;
