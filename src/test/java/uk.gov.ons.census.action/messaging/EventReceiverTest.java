@@ -96,7 +96,7 @@ public class EventReceiverTest {
     newCase.setLatitude(collectionCase.getAddress().getLatitude());
     newCase.setLongitude(collectionCase.getAddress().getLongitude());
     newCase.setUprn(collectionCase.getAddress().getUprn());
-    newCase.setRgn(collectionCase.getAddress().getRegion());
+    newCase.setRegion(collectionCase.getAddress().getRegion());
     newCase.setOa(collectionCase.getOa());
     newCase.setLsoa(collectionCase.getLsoa());
     newCase.setMsoa(collectionCase.getMsoa());
@@ -110,6 +110,9 @@ public class EventReceiverTest {
     newCase.setEstabArid(collectionCase.getAddress().getEstabArid());
     newCase.setEstabType(collectionCase.getAddress().getEstabType());
     newCase.setOrganisationName(collectionCase.getAddress().getOrganisationName());
+    newCase.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
+    newCase.setFieldOfficerId(collectionCase.getFieldOfficerId());
+    newCase.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
     return newCase;
   }
 }
