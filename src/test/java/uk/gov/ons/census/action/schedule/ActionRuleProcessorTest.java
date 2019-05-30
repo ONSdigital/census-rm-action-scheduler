@@ -42,7 +42,8 @@ public class ActionRuleProcessorTest {
   private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final ActionInstructionBuilder actionInstructionBuilder =
       mock(ActionInstructionBuilder.class);
-  private final RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
+  private final RabbitTemplate rabbitPrinterTemplate = mock(RabbitTemplate.class);
+  private final RabbitTemplate rabbitFieldTemplate = mock(RabbitTemplate.class);
 
   @Test
   public void testExecuteAllCases() {
@@ -63,7 +64,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitTemplate);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -75,9 +76,47 @@ public class ActionRuleProcessorTest {
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
-    verify(rabbitTemplate, times(50))
+    verify(rabbitPrinterTemplate, times(50))
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
+  }
+
+  @Test
+  public void testExecuteAllCasesField() {
+    // Given
+    ActionRule actionRule = setUpActionRuleField();
+
+    List<Case> cases = getRandomCases(50);
+    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
+        .thenReturn(cases.stream());
+
+    doReturn(Arrays.asList(actionRule))
+        .when(actionRuleRepo)
+        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+
+    when(actionInstructionBuilder.buildFieldActionInstruction(any(Case.class), eq(actionRule)))
+        .thenReturn(new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction());
+
+    // when
+    ActionRuleProcessor actionRuleProcessor =
+        new ActionRuleProcessor(
+            actionRuleRepo, caseRepository, actionInstructionBuilder, null, rabbitFieldTemplate);
+    ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
+    actionRuleProcessor.processActionRules();
+
+    // then
+    verify(actionInstructionBuilder, times(50))
+        .buildFieldActionInstruction(any(Case.class), eq(actionRule));
+    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+    verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
+    ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
+    actionRule.setHasTriggered(true);
+    Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
+    verify(rabbitFieldTemplate, times(50))
+        .convertAndSend(
+            eq(OUTBOUND_EXCHANGE),
+            eq("Action.Field.binding"),
+            any(uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction.class));
   }
 
   @Test
@@ -110,7 +149,11 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, fakeCaseRepository, actionInstructionBuilder, rabbitTemplate);
+            actionRuleRepo,
+            fakeCaseRepository,
+            actionInstructionBuilder,
+            rabbitPrinterTemplate,
+            null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -120,7 +163,7 @@ public class ActionRuleProcessorTest {
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
-    verify(rabbitTemplate, times(47))
+    verify(rabbitPrinterTemplate, times(47))
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
   }
@@ -145,7 +188,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitTemplate);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     RuntimeException actualException = null;
     try {
@@ -157,7 +200,7 @@ public class ActionRuleProcessorTest {
     // then
     assertNotNull(actualException);
     verify(actionRuleRepo, never()).save(any(ActionRule.class));
-    verify(rabbitTemplate, never())
+    verify(rabbitPrinterTemplate, never())
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
   }
@@ -179,14 +222,14 @@ public class ActionRuleProcessorTest {
         .thenReturn(new ActionInstruction());
 
     doThrow(new RuntimeException())
-        .when(rabbitTemplate)
+        .when(rabbitPrinterTemplate)
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
 
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitTemplate);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -202,6 +245,23 @@ public class ActionRuleProcessorTest {
     actionRule.setHasTriggered(false);
     actionRule.setClassifiers(new HashMap<>());
     actionRule.setActionType(ActionType.ICL1E);
+
+    ActionPlan actionPlan = new ActionPlan();
+    actionPlan.setId(UUID.randomUUID());
+
+    actionRule.setActionPlan(actionPlan);
+
+    return actionRule;
+  }
+
+  private ActionRule setUpActionRuleField() {
+    ActionRule actionRule = new ActionRule();
+    UUID actionRuleId = UUID.randomUUID();
+    actionRule.setId(actionRuleId);
+    actionRule.setTriggerDateTime(OffsetDateTime.now());
+    actionRule.setHasTriggered(false);
+    actionRule.setClassifiers(new HashMap<>());
+    actionRule.setActionType(ActionType.FF2QE);
 
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());

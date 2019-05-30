@@ -41,7 +41,8 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    ActionInstruction actualActionInstruction = underTest.buildPrinterActionInstruction(caze, actionRule);
+    ActionInstruction actualActionInstruction =
+        underTest.buildPrinterActionInstruction(caze, actionRule);
 
     // Then
     ActionInstruction expectedActionInstruction =

@@ -36,7 +36,8 @@ public class ActionRuleProcessor {
   private final ActionRuleRepository actionRuleRepo;
   private final CaseRepository caseRepository;
   private final ActionInstructionBuilder actionInstructionBuilder;
-  private final RabbitTemplate rabbitTemplate;
+  private final RabbitTemplate rabbitPrinterTemplate;
+  private final RabbitTemplate rabbitFieldTemplate;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -45,11 +46,13 @@ public class ActionRuleProcessor {
       ActionRuleRepository actionRuleRepo,
       CaseRepository caseRepository,
       ActionInstructionBuilder actionInstructionBuilder,
-      @Qualifier("actionInstructionRabbitTemplate") RabbitTemplate rabbitTemplate) {
+      @Qualifier("actionInstructionPrinterRabbitTemplate") RabbitTemplate rabbitPrinterTemplate,
+      @Qualifier("actionInstructionFieldRabbitTemplate") RabbitTemplate rabbitFieldTemplate) {
     this.actionRuleRepo = actionRuleRepo;
     this.caseRepository = caseRepository;
     this.actionInstructionBuilder = actionInstructionBuilder;
-    this.rabbitTemplate = rabbitTemplate;
+    this.rabbitPrinterTemplate = rabbitPrinterTemplate;
+    this.rabbitFieldTemplate = rabbitFieldTemplate;
   }
 
   @Transactional
@@ -109,7 +112,9 @@ public class ActionRuleProcessor {
     cases.forEach(
         caze -> {
           callables.add(
-              () -> actionInstructionBuilder.buildPrinterActionInstruction(caze, triggeredActionRule));
+              () ->
+                  actionInstructionBuilder.buildPrinterActionInstruction(
+                      caze, triggeredActionRule));
         });
 
     try {
@@ -129,7 +134,7 @@ public class ActionRuleProcessor {
           log.info("Sent {} ActionInstruction messages", messagesSent - 1);
         }
 
-        rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
+        rabbitPrinterTemplate.convertAndSend(outboundExchange, routingKey, result.get());
       }
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(); // Roll the whole transaction back
@@ -137,11 +142,13 @@ public class ActionRuleProcessor {
   }
 
   private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
-    List<Callable<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>> callables = new LinkedList<>();
+    List<Callable<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>>
+        callables = new LinkedList<>();
     cases.forEach(
         caze -> {
           callables.add(
-              () -> actionInstructionBuilder.buildFieldActionInstruction(caze, triggeredActionRule));
+              () ->
+                  actionInstructionBuilder.buildFieldActionInstruction(caze, triggeredActionRule));
         });
 
     try {
@@ -152,19 +159,21 @@ public class ActionRuleProcessor {
               triggeredActionRule.getActionType().getHandler().getRoutingKey(),
               ROUTING_KEY_SUFFIX);
 
-      List<Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>> results = EXECUTOR_SERVICE.invokeAll(callables);
+      List<Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>> results =
+          EXECUTOR_SERVICE.invokeAll(callables);
 
       log.info("About to send {} ActionInstruction messages", results.size());
       int messagesSent = 0;
-      for (Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction> result : results) {
+      for (Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction> result :
+          results) {
         if (messagesSent++ % 1000 == 0) {
           log.info("Sent {} ActionInstruction messages", messagesSent - 1);
         }
 
-        rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
+        rabbitFieldTemplate.convertAndSend(outboundExchange, routingKey, result.get());
       }
     } catch (InterruptedException | ExecutionException e) {
-      throw new RuntimeException(); // Roll the whole transaction back
+      throw new RuntimeException(e); // Roll the whole transaction back
     }
   }
 

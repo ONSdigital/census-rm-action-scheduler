@@ -8,7 +8,7 @@ import lombok.Data;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(
-    name = "ActionContact",
+    name = "ActionPause",
     propOrder = {"effectiveDate", "code", "reason", "holdUntil"})
 @Data
 public class ActionPause {
