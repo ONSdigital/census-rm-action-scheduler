@@ -6,7 +6,7 @@
 // Generated on: 2019.04.04 at 08:02:09 AM BST
 //
 
-package uk.gov.ons.census.action.model.dto.instruction;
+package uk.gov.ons.census.action.model.dto.instruction.printer;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

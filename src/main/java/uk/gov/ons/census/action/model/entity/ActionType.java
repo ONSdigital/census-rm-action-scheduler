@@ -1,25 +1,23 @@
 package uk.gov.ons.census.action.model.entity;
 
 public enum ActionType {
-  ICL1E(Constants.PRINTER), // Census initial contact letter for England
-  ICL2W(Constants.PRINTER), // Census initial contact letter for Wales
-  ICL4E(Constants.PRINTER), // Census intiial contact letter for NI
+  ICL1E(ActionHandler.PRINTER), // Census initial contact letter for England
+  ICL2W(ActionHandler.PRINTER), // Census initial contact letter for Wales
+  ICL4E(ActionHandler.PRINTER), // Census intiial contact letter for NI
 
-  ICHHQE(Constants.PRINTER), // Census household questionnaire for England
-  ICHHQW(Constants.PRINTER), // Census household questionnaire for Wales
-  ICHHQN(Constants.PRINTER); // Census household questionnaire for NI
+  ICHHQE(ActionHandler.PRINTER), // Census household questionnaire for England
+  ICHHQW(ActionHandler.PRINTER), // Census household questionnaire for Wales
+  ICHHQN(ActionHandler.PRINTER), // Census household questionnaire for NI
 
-  private final String handler;
+  FF2QE(ActionHandler.FIELD); // Fieldwork follow up F2 questionnaire for England
 
-  ActionType(String handler) {
+  private final ActionHandler handler;
+
+  ActionType(ActionHandler handler) {
     this.handler = handler;
   }
 
-  public String getHandler() {
+  public ActionHandler getHandler() {
     return handler;
-  }
-
-  private static class Constants {
-    public static final String PRINTER = "Printer";
   }
 }

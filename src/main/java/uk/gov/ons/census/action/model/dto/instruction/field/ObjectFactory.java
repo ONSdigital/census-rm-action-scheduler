@@ -6,7 +6,7 @@
 // Generated on: 2019.04.04 at 08:02:09 AM BST
 //
 
-package uk.gov.ons.census.action.model.dto.instruction;
+package uk.gov.ons.census.action.model.dto.instruction.field;
 
 import javax.xml.bind.annotation.XmlRegistry;
 
@@ -66,5 +66,10 @@ public class ObjectFactory {
   /** Create an instance of {@link Action } */
   public Action createAction() {
     return new Action();
+  }
+
+  /** Create an instance of {@link ActionPause } */
+  public ActionPause createActionPause() {
+    return new ActionPause();
   }
 }

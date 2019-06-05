@@ -72,27 +72,53 @@ public class AppConfig {
   }
 
   @Bean
-  public Jaxb2Marshaller actionInstructionMarshaller() {
+  public Jaxb2Marshaller actionInstructionFieldMarshaller() {
     Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
-    jaxb2Marshaller.setContextPath("uk.gov.ons.census.action.model.dto.instruction");
+    jaxb2Marshaller.setContextPath("uk.gov.ons.census.action.model.dto.instruction.field");
     return jaxb2Marshaller;
   }
 
   @Bean
-  public MarshallingMessageConverter actionInstructionMarshallingMessageConverter(
-      Jaxb2Marshaller actionInstructionMarshaller) {
+  public MarshallingMessageConverter actionInstructionFieldMarshallingMessageConverter(
+      Jaxb2Marshaller actionInstructionFieldMarshaller) {
     MarshallingMessageConverter marshallingMessageConverter =
-        new MarshallingMessageConverter(actionInstructionMarshaller);
+        new MarshallingMessageConverter(actionInstructionFieldMarshaller);
     marshallingMessageConverter.setContentType("text/xml");
     return marshallingMessageConverter;
   }
 
   @Bean
-  public RabbitTemplate actionInstructionRabbitTemplate(
+  public RabbitTemplate actionInstructionFieldRabbitTemplate(
       ConnectionFactory connectionFactory,
-      MarshallingMessageConverter actionInstructionMarshallingMessageConverter) {
+      MarshallingMessageConverter actionInstructionFieldMarshallingMessageConverter) {
     RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-    rabbitTemplate.setMessageConverter(actionInstructionMarshallingMessageConverter);
+    rabbitTemplate.setMessageConverter(actionInstructionFieldMarshallingMessageConverter);
+    rabbitTemplate.setChannelTransacted(true);
+    return rabbitTemplate;
+  }
+
+  @Bean
+  public Jaxb2Marshaller actionInstructionPrinterMarshaller() {
+    Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
+    jaxb2Marshaller.setContextPath("uk.gov.ons.census.action.model.dto.instruction.printer");
+    return jaxb2Marshaller;
+  }
+
+  @Bean
+  public MarshallingMessageConverter actionInstructionPrinterMarshallingMessageConverter(
+      Jaxb2Marshaller actionInstructionPrinterMarshaller) {
+    MarshallingMessageConverter marshallingMessageConverter =
+        new MarshallingMessageConverter(actionInstructionPrinterMarshaller);
+    marshallingMessageConverter.setContentType("text/xml");
+    return marshallingMessageConverter;
+  }
+
+  @Bean
+  public RabbitTemplate actionInstructionPrinterRabbitTemplate(
+      ConnectionFactory connectionFactory,
+      MarshallingMessageConverter actionInstructionPrinterMarshallingMessageConverter) {
+    RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+    rabbitTemplate.setMessageConverter(actionInstructionPrinterMarshallingMessageConverter);
     rabbitTemplate.setChannelTransacted(true);
     return rabbitTemplate;
   }

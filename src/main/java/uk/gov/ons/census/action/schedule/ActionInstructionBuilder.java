@@ -6,11 +6,11 @@ import java.util.UUID;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.ons.census.action.model.dto.instruction.ActionAddress;
-import uk.gov.ons.census.action.model.dto.instruction.ActionEvent;
-import uk.gov.ons.census.action.model.dto.instruction.ActionInstruction;
-import uk.gov.ons.census.action.model.dto.instruction.ActionRequest;
-import uk.gov.ons.census.action.model.dto.instruction.Priority;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionAddress;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionEvent;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
+import uk.gov.ons.census.action.model.dto.instruction.printer.ActionRequest;
+import uk.gov.ons.census.action.model.dto.instruction.printer.Priority;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
@@ -34,7 +34,7 @@ public class ActionInstructionBuilder {
     this.uacQidLinkRepository = uacQidLinkRepository;
   }
 
-  public ActionInstruction buildActionInstruction(Case caze, ActionRule actionRule) {
+  public ActionInstruction buildPrinterActionInstruction(Case caze, ActionRule actionRule) {
 
     UacQidTuple uacQidTuple = getUacQidLinks(caze);
 
@@ -89,6 +89,51 @@ public class ActionInstructionBuilder {
     actionRequest.setSampleUnitRef("DDR190314000000516472");
 
     ActionInstruction actionInstruction = new ActionInstruction();
+    actionInstruction.setActionRequest(actionRequest);
+
+    return actionInstruction;
+  }
+
+  public uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction
+      buildFieldActionInstruction(Case caze, ActionRule actionRule) {
+
+    UacQidTuple uacQidTuple = getUacQidLinks(caze);
+
+    uk.gov.ons.census.action.model.dto.instruction.field.ActionAddress actionAddress =
+        new uk.gov.ons.census.action.model.dto.instruction.field.ActionAddress();
+    actionAddress.setLine1(caze.getAddressLine1());
+    actionAddress.setLine2(caze.getAddressLine2());
+    actionAddress.setLine3(caze.getAddressLine3());
+    actionAddress.setTownName(caze.getTownName());
+    actionAddress.setPostcode(caze.getPostcode());
+    actionAddress.setOrganisationName(caze.getOrganisationName());
+    actionAddress.setArid(caze.getArid());
+    actionAddress.setUprn(caze.getUprn());
+    actionAddress.setOa(caze.getOa());
+
+    uk.gov.ons.census.action.model.dto.instruction.field.ActionRequest actionRequest =
+        new uk.gov.ons.census.action.model.dto.instruction.field.ActionRequest();
+    actionRequest.setActionId(UUID.randomUUID().toString());
+    actionRequest.setResponseRequired(false);
+    actionRequest.setActionPlan(actionRule.getActionPlan().getId().toString());
+    actionRequest.setActionType(actionRule.getActionType().toString());
+    actionRequest.setAddress(actionAddress);
+    actionRequest.setCaseId(caze.getCaseId().toString());
+    actionRequest.setPriority(uk.gov.ons.census.action.model.dto.instruction.field.Priority.MEDIUM);
+    actionRequest.setCaseRef(Long.toString(caze.getCaseRef()));
+    actionRequest.setIac(uacQidTuple.getUacQidLink().getUac());
+    actionRequest.setAddressType(caze.getAddressType());
+    actionRequest.setAddressLevel(caze.getAddressLevel());
+    actionRequest.setTreatmentId(caze.getTreatmentCode());
+    actionRequest.setFieldOfficerId(caze.getFieldOfficerId());
+    actionRequest.setCoordinatorId(caze.getFieldCoordinatorId());
+    if (caze.getCeExpectedCapacity() != null && !caze.getCeExpectedCapacity().isEmpty()) {
+      actionRequest.setCeExpectedResponses(Integer.parseInt(caze.getCeExpectedCapacity()));
+    }
+    // TODO undeliveredAsAddress, blankQreReturned, ccsQuestionnaireUrl, ceDeliveryReqd,
+    // ceCE1Complete, ceActualResponses
+    uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction actionInstruction =
+        new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction();
     actionInstruction.setActionRequest(actionRequest);
 
     return actionInstruction;
