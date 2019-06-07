@@ -287,6 +287,8 @@ public class ActionRuleProcessorTest {
     Specification<Case> specification =
         where(isActionPlanIdEqualTo(actionRule.getActionPlan().getId().toString()));
 
+    specification = specification.and(isReceiptReceivedEqualTo(false));
+
     for (Map.Entry<String, List<String>> classifier : actionRule.getClassifiers().entrySet()) {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
     }
@@ -298,6 +300,11 @@ public class ActionRuleProcessorTest {
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
     return (Specification<Case>)
         (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
+  }
+
+  private Specification<Case> isReceiptReceivedEqualTo(boolean receiptReceived) {
+    return (Specification<Case>)
+        (root, query, builder) -> builder.equal(root.get("receiptReceived"), receiptReceived);
   }
 
   private Specification<Case> isClassifierIn(

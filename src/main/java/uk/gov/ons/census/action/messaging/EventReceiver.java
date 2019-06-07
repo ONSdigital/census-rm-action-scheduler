@@ -88,6 +88,7 @@ public class EventReceiver {
     uacQidLink.setQid(uac.getQuestionnaireId());
     uacQidLink.setUac(uac.getUac());
     uacQidLink.setCaseId(uac.getCaseId());
+    uacQidLink.setActive(uac.isActive());
     uacQidLinkRepository.save(uacQidLink);
   }
 }

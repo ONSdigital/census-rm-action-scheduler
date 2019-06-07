@@ -5,7 +5,9 @@ import static org.springframework.data.jpa.domain.Specification.where;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -88,6 +90,8 @@ public class ActionRuleProcessor {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
 
     Specification<Case> specification = where(isActionPlanIdEqualTo(actionPlanId));
+
+    specification = specification.and(isReceiptReceivedEqualTo(false));
 
     for (Map.Entry<String, List<String>> classifier :
         triggeredActionRule.getClassifiers().entrySet()) {
@@ -180,6 +184,11 @@ public class ActionRuleProcessor {
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
     return (Specification<Case>)
         (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
+  }
+
+  private Specification<Case> isReceiptReceivedEqualTo(boolean receiptReceived) {
+    return (Specification<Case>)
+        (root, query, builder) -> builder.equal(root.get("receiptReceived"), receiptReceived);
   }
 
   private Specification<Case> isClassifierIn(
