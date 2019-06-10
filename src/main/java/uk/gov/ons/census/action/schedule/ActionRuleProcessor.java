@@ -89,9 +89,8 @@ public class ActionRuleProcessor {
   private void executeClassifiedCases(ActionRule triggeredActionRule) {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
 
-    Specification<Case> specification = where(isActionPlanIdEqualTo(actionPlanId));
-
-    specification = specification.and(isReceiptReceivedEqualTo(false));
+    Specification<Case> specification = where(isActionPlanIdEqualTo(actionPlanId))
+        .and(excludeReceiptReceivedCases());
 
     for (Map.Entry<String, List<String>> classifier :
         triggeredActionRule.getClassifiers().entrySet()) {
@@ -186,9 +185,9 @@ public class ActionRuleProcessor {
         (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
   }
 
-  private Specification<Case> isReceiptReceivedEqualTo(boolean receiptReceived) {
+  private Specification<Case> excludeReceiptReceivedCases() {
     return (Specification<Case>)
-        (root, query, builder) -> builder.equal(root.get("receiptReceived"), receiptReceived);
+        (root, query, builder) -> builder.equal(root.get("receiptReceived"), false);
   }
 
   private Specification<Case> isClassifierIn(
