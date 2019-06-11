@@ -23,8 +23,8 @@ public class EventReceiver {
   private static final Logger log = LoggerFactory.getLogger(EventReceiver.class);
   private static final String CASE_NOT_FOUND_ERROR = "Failed to find case by case id '%s'";
 
-  private CaseRepository caseRepository;
-  private UacQidLinkRepository uacQidLinkRepository;
+  private final CaseRepository caseRepository;
+  private final UacQidLinkRepository uacQidLinkRepository;
 
   public EventReceiver(CaseRepository caseRepository, UacQidLinkRepository uacQidLinkRepository) {
     this.caseRepository = caseRepository;
@@ -101,7 +101,6 @@ public class EventReceiver {
     }
 
     Case updatedCase = cazeOpt.get();
-    updatedCase.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
     updatedCase.setCaseId(UUID.fromString(caseId));
     updatedCase.setState(CaseState.valueOf(collectionCase.getState()));
     updatedCase.setCollectionExerciseId(collectionCase.getCollectionExerciseId());

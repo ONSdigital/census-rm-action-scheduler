@@ -36,7 +36,7 @@ import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 
 public class ActionRuleProcessorTest {
-  public static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
+  private static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
   private final CaseRepository caseRepository = mock(CaseRepository.class);
@@ -285,9 +285,8 @@ public class ActionRuleProcessorTest {
 
   private Specification<Case> getExpectedSpecification(ActionRule actionRule) {
     Specification<Case> specification =
-        where(isActionPlanIdEqualTo(actionRule.getActionPlan().getId().toString()));
-
-    specification = specification.and(isReceiptReceivedEqualTo(false));
+        where(isActionPlanIdEqualTo(actionRule.getActionPlan().getId().toString()))
+            .and(excludeReceiptReceivedCases());
 
     for (Map.Entry<String, List<String>> classifier : actionRule.getClassifiers().entrySet()) {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
@@ -302,9 +301,9 @@ public class ActionRuleProcessorTest {
         (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
   }
 
-  private Specification<Case> isReceiptReceivedEqualTo(boolean receiptReceived) {
+  private Specification<Case> excludeReceiptReceivedCases() {
     return (Specification<Case>)
-        (root, query, builder) -> builder.equal(root.get("receiptReceived"), receiptReceived);
+        (root, query, builder) -> builder.equal(root.get("receiptReceived"), false);
   }
 
   private Specification<Case> isClassifierIn(
