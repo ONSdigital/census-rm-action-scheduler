@@ -28,6 +28,11 @@ public class FakeCaseRepository implements CaseRepository {
   }
 
   @Override
+  public Optional<Case> findByCaseId(UUID caseId) {
+    return Optional.empty();
+  }
+
+  @Override
   public Optional<Case> findOne(Specification<Case> specification) {
     return Optional.empty();
   }
