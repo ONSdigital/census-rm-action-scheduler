@@ -5,7 +5,9 @@ import static org.springframework.data.jpa.domain.Specification.where;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -30,8 +32,8 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 public class ActionRuleProcessor {
   private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
   private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(50);
-  public static final String ROUTING_KEY_PREFIX = "Action.";
-  public static final String ROUTING_KEY_SUFFIX = ".binding";
+  private static final String ROUTING_KEY_PREFIX = "Action.";
+  private static final String ROUTING_KEY_SUFFIX = ".binding";
 
   private final ActionRuleRepository actionRuleRepo;
   private final CaseRepository caseRepository;
@@ -79,7 +81,9 @@ public class ActionRuleProcessor {
   private void executeAllCases(ActionRule triggeredActionRule) {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
 
-    try (Stream<Case> cases = caseRepository.findByActionPlanId(actionPlanId)) {
+    Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
+
+    try (Stream<Case> cases = caseRepository.findAll(specification).stream()) {
       executeCases(cases, triggeredActionRule);
     }
   }
@@ -87,7 +91,7 @@ public class ActionRuleProcessor {
   private void executeClassifiedCases(ActionRule triggeredActionRule) {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
 
-    Specification<Case> specification = where(isActionPlanIdEqualTo(actionPlanId));
+    Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
 
     for (Map.Entry<String, List<String>> classifier :
         triggeredActionRule.getClassifiers().entrySet()) {
@@ -177,9 +181,19 @@ public class ActionRuleProcessor {
     }
   }
 
+  private Specification<Case> createSpecificationForUnreceiptedCases(String actionPlanId) {
+    return where(isActionPlanIdEqualTo(actionPlanId))
+        .and(excludeReceiptedCases());
+  }
+
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
     return (Specification<Case>)
         (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
+  }
+
+  private Specification<Case> excludeReceiptedCases() {
+    return (Specification<Case>)
+        (root, query, builder) -> builder.equal(root.get("receiptReceived"), false);
   }
 
   private Specification<Case> isClassifierIn(

@@ -36,7 +36,7 @@ import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 
 public class ActionRuleProcessorTest {
-  public static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
+  private static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
   private final CaseRepository caseRepository = mock(CaseRepository.class);
@@ -51,8 +51,7 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
-        .thenReturn(cases.stream());
+    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -87,8 +86,7 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRuleField();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
-        .thenReturn(cases.stream());
+    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -174,8 +172,7 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
-        .thenReturn(cases.stream());
+    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -211,8 +208,7 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
-        .thenReturn(cases.stream());
+    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -285,7 +281,8 @@ public class ActionRuleProcessorTest {
 
   private Specification<Case> getExpectedSpecification(ActionRule actionRule) {
     Specification<Case> specification =
-        where(isActionPlanIdEqualTo(actionRule.getActionPlan().getId().toString()));
+        where(isActionPlanIdEqualTo(actionRule.getActionPlan().getId().toString()))
+            .and(excludeReceiptedCases());
 
     for (Map.Entry<String, List<String>> classifier : actionRule.getClassifiers().entrySet()) {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
@@ -294,10 +291,14 @@ public class ActionRuleProcessorTest {
     return specification;
   }
 
-  // refactor these for test?
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
     return (Specification<Case>)
         (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
+  }
+
+  private Specification<Case> excludeReceiptedCases() {
+    return (Specification<Case>)
+        (root, query, builder) -> builder.equal(root.get("receiptReceived"), false);
   }
 
   private Specification<Case> isClassifierIn(
