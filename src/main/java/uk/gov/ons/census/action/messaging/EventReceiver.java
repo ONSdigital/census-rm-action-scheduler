@@ -39,7 +39,8 @@ public class EventReceiver {
     } else if (responseManagementEvent.getEvent().getType() == EventType.UAC_UPDATED) {
       processUacUpdated(responseManagementEvent.getPayload().getUac());
     } else if (responseManagementEvent.getEvent().getType() == EventType.CASE_UPDATED) {
-      processCaseUpdatedEvent(responseManagementEvent);
+      processCaseUpdatedEvent(responseManagementEvent.getEvent(),
+          responseManagementEvent.getPayload().getCollectionCase());
     } else {
       // This code can't be reached because under the class structure the EventType is limited to
       // enums at this point?
@@ -88,9 +89,7 @@ public class EventReceiver {
     caseRepository.save(newCase);
   }
 
-  private void processCaseUpdatedEvent(ResponseManagementEvent responseManagementEvent) {
-    Event event = responseManagementEvent.getEvent();
-    CollectionCase collectionCase = responseManagementEvent.getPayload().getCollectionCase();
+  private void processCaseUpdatedEvent(Event event, CollectionCase collectionCase) {
     String caseId = collectionCase.getId();
 
     Optional<Case> cazeOpt = caseRepository.findByCaseId(UUID.fromString(caseId));
