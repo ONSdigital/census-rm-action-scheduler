@@ -50,8 +50,14 @@ public class ActionRuleProcessorTest {
     // Given
     ActionRule actionRule = setUpActionRule();
 
+    Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
+
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+
+    // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
+    // of Example<Case> any().
+    // The Fake tests the spec is as expected
+    CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -63,7 +69,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
+            actionRuleRepo, fakeCaseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -85,8 +91,14 @@ public class ActionRuleProcessorTest {
     // Given
     ActionRule actionRule = setUpActionRuleField();
 
+    Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
+
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+
+    // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
+    // of Example<Case> any().
+    // The Fake tests the spec is as expected
+    CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -98,7 +110,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, null, rabbitFieldTemplate);
+            actionRuleRepo, fakeCaseRepository, actionInstructionBuilder, null, rabbitFieldTemplate);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -126,7 +138,7 @@ public class ActionRuleProcessorTest {
     classifiers.put("A_Column", columnValues);
     actionRule.setClassifiers(classifiers);
 
-    Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
+    Specification<Case> expectedSpecification = getExpectedClassifiersSpecification(actionRule);
 
     List<Case> cases = getRandomCases(47);
 
@@ -280,15 +292,28 @@ public class ActionRuleProcessorTest {
   }
 
   private Specification<Case> getExpectedSpecification(ActionRule actionRule) {
-    Specification<Case> specification =
-        where(isActionPlanIdEqualTo(actionRule.getActionPlan().getId().toString()))
-            .and(excludeReceiptedCases());
+    String actionPlanId = actionRule.getActionPlan().getId().toString();
+
+    Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
+
+    return specification;
+  }
+
+  private Specification<Case> getExpectedClassifiersSpecification(ActionRule actionRule) {
+    String actionPlanId = actionRule.getActionPlan().getId().toString();
+
+    Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
 
     for (Map.Entry<String, List<String>> classifier : actionRule.getClassifiers().entrySet()) {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
     }
 
     return specification;
+  }
+
+  private Specification<Case> createSpecificationForUnreceiptedCases(String actionPlanId) {
+    return where(isActionPlanIdEqualTo(actionPlanId))
+        .and(excludeReceiptedCases());
   }
 
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
