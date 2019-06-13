@@ -294,9 +294,7 @@ public class ActionRuleProcessorTest {
   private Specification<Case> getExpectedSpecification(ActionRule actionRule) {
     String actionPlanId = actionRule.getActionPlan().getId().toString();
 
-    Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
-
-    return specification;
+    return createSpecificationForUnreceiptedCases(actionPlanId);
   }
 
   private Specification<Case> getExpectedClassifiersSpecification(ActionRule actionRule) {
