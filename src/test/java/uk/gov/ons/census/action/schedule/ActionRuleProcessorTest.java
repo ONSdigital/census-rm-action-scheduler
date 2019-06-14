@@ -69,7 +69,11 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, fakeCaseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
+            actionRuleRepo,
+            fakeCaseRepository,
+            actionInstructionBuilder,
+            rabbitPrinterTemplate,
+            null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -110,7 +114,11 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, fakeCaseRepository, actionInstructionBuilder, null, rabbitFieldTemplate);
+            actionRuleRepo,
+            fakeCaseRepository,
+            actionInstructionBuilder,
+            null,
+            rabbitFieldTemplate);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -310,8 +318,7 @@ public class ActionRuleProcessorTest {
   }
 
   private Specification<Case> createSpecificationForUnreceiptedCases(String actionPlanId) {
-    return where(isActionPlanIdEqualTo(actionPlanId))
-        .and(excludeReceiptedCases());
+    return where(isActionPlanIdEqualTo(actionPlanId)).and(excludeReceiptedCases());
   }
 
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {

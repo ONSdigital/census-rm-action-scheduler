@@ -78,6 +78,5 @@ public class Case {
   @Enumerated(EnumType.STRING)
   private CaseState state;
 
-  @Column
-  private boolean receiptReceived;
+  @Column private boolean receiptReceived;
 }

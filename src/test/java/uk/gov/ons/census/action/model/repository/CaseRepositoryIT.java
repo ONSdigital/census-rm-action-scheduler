@@ -27,16 +27,25 @@ public class CaseRepositoryIT {
   private static final String TEST_ACTION_PLAN_ID;
   private static final Map<String, List<String>> TEST_CLASSIFIERS;
 
-  @Autowired
-  private CaseRepository caseRepository;
+  @Autowired private CaseRepository caseRepository;
 
   static {
     TEST_ACTION_PLAN_ID = "ddbd26c2-15af-4055-aab9-591b3735b8d3";
 
     TEST_CLASSIFIERS = new HashMap<>();
-    TEST_CLASSIFIERS.put("treatmentCode", Arrays
-        .asList("HH_LF2R3AE", "HH_LF3R3BE", "HH_LF3R3AE", "HH_LF2R1E", "HH_LFNR2E", "HH_LFNR3AE", "HH_LF2R3BE",
-            "HH_LF3R2E", "HH_LF2R2E", "HH_LF3R1E"));
+    TEST_CLASSIFIERS.put(
+        "treatmentCode",
+        Arrays.asList(
+            "HH_LF2R3AE",
+            "HH_LF3R3BE",
+            "HH_LF3R3AE",
+            "HH_LF2R1E",
+            "HH_LFNR2E",
+            "HH_LFNR3AE",
+            "HH_LF2R3BE",
+            "HH_LF3R2E",
+            "HH_LF2R2E",
+            "HH_LF3R1E"));
   }
 
   @Transactional
@@ -106,8 +115,7 @@ public class CaseRepositoryIT {
   }
 
   private Specification<Case> createSpecificationForUnreceiptedCases() {
-    return where(isActionPlanIdEqualTo())
-        .and(excludeReceiptedCases());
+    return where(isActionPlanIdEqualTo()).and(excludeReceiptedCases());
   }
 
   private Specification<Case> isActionPlanIdEqualTo() {
@@ -131,5 +139,4 @@ public class CaseRepositoryIT {
           return inClause;
         };
   }
-
 }

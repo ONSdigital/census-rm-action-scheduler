@@ -182,8 +182,7 @@ public class ActionRuleProcessor {
   }
 
   private Specification<Case> createSpecificationForUnreceiptedCases(String actionPlanId) {
-    return where(isActionPlanIdEqualTo(actionPlanId))
-        .and(excludeReceiptedCases());
+    return where(isActionPlanIdEqualTo(actionPlanId)).and(excludeReceiptedCases());
   }
 
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
