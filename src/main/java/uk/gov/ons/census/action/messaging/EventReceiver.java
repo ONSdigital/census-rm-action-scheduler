@@ -53,40 +53,8 @@ public class EventReceiver {
     Case newCase = new Case();
     newCase.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
-    newCase.setState(CaseState.valueOf(collectionCase.getState()));
-    newCase.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
-    newCase.setAddressLine1(collectionCase.getAddress().getAddressLine1());
-    newCase.setAddressLine2(collectionCase.getAddress().getAddressLine2());
-    newCase.setAddressLine3(collectionCase.getAddress().getAddressLine3());
-    newCase.setTownName(collectionCase.getAddress().getTownName());
-    newCase.setPostcode(collectionCase.getAddress().getPostcode());
-    newCase.setArid(collectionCase.getAddress().getArid());
-    newCase.setLatitude(collectionCase.getAddress().getLatitude());
-    newCase.setLongitude(collectionCase.getAddress().getLongitude());
-    newCase.setUprn(collectionCase.getAddress().getUprn());
-    newCase.setRegion(collectionCase.getAddress().getRegion());
-
-    // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
-    newCase.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
-    newCase.setTreatmentCode(collectionCase.getTreatmentCode()); // This is essential
-    newCase.setAddressLevel(collectionCase.getAddress().getAddressLevel());
-    newCase.setAbpCode(collectionCase.getAddress().getApbCode());
-    newCase.setAddressType(collectionCase.getAddress().getAddressType());
-    newCase.setUprn(collectionCase.getAddress().getUprn());
-    newCase.setEstabArid(collectionCase.getAddress().getEstabArid());
-    newCase.setEstabType(collectionCase.getAddress().getEstabType());
-    newCase.setOrganisationName(collectionCase.getAddress().getOrganisationName());
-    newCase.setOa(collectionCase.getOa());
-    newCase.setLsoa(collectionCase.getLsoa());
-    newCase.setMsoa(collectionCase.getMsoa());
-    newCase.setLad(collectionCase.getLad());
-    newCase.setHtcWillingness(collectionCase.getHtcWillingness());
-    newCase.setHtcDigital(collectionCase.getHtcDigital());
-    newCase.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
-    newCase.setFieldOfficerId(collectionCase.getFieldOfficerId());
-    newCase.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
+    setCaseDetails(collectionCase, newCase);
     newCase.setReceiptReceived(false);
-
     caseRepository.save(newCase);
   }
 
@@ -102,40 +70,44 @@ public class EventReceiver {
 
     Case updatedCase = cazeOpt.get();
     updatedCase.setCaseId(UUID.fromString(caseId));
-    updatedCase.setState(CaseState.valueOf(collectionCase.getState()));
-    updatedCase.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
-    updatedCase.setAddressLine1(collectionCase.getAddress().getAddressLine1());
-    updatedCase.setAddressLine2(collectionCase.getAddress().getAddressLine2());
-    updatedCase.setAddressLine3(collectionCase.getAddress().getAddressLine3());
-    updatedCase.setTownName(collectionCase.getAddress().getTownName());
-    updatedCase.setPostcode(collectionCase.getAddress().getPostcode());
-    updatedCase.setArid(collectionCase.getAddress().getArid());
-    updatedCase.setLatitude(collectionCase.getAddress().getLatitude());
-    updatedCase.setLongitude(collectionCase.getAddress().getLongitude());
-    updatedCase.setUprn(collectionCase.getAddress().getUprn());
-    updatedCase.setRegion(collectionCase.getAddress().getRegion());
-    updatedCase.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
-    updatedCase.setTreatmentCode(collectionCase.getTreatmentCode()); // This is essential
-    updatedCase.setAddressLevel(collectionCase.getAddress().getAddressLevel());
-    updatedCase.setAbpCode(collectionCase.getAddress().getApbCode());
-    updatedCase.setAddressType(collectionCase.getAddress().getAddressType());
-    updatedCase.setUprn(collectionCase.getAddress().getUprn());
-    updatedCase.setEstabArid(collectionCase.getAddress().getEstabArid());
-    updatedCase.setEstabType(collectionCase.getAddress().getEstabType());
-    updatedCase.setOrganisationName(collectionCase.getAddress().getOrganisationName());
-    updatedCase.setOa(collectionCase.getOa());
-    updatedCase.setLsoa(collectionCase.getLsoa());
-    updatedCase.setMsoa(collectionCase.getMsoa());
-    updatedCase.setLad(collectionCase.getLad());
-    updatedCase.setHtcWillingness(collectionCase.getHtcWillingness());
-    updatedCase.setHtcDigital(collectionCase.getHtcDigital());
-    updatedCase.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
-    updatedCase.setFieldOfficerId(collectionCase.getFieldOfficerId());
-    updatedCase.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
-
+    setCaseDetails(collectionCase, updatedCase);
     updatedCase.setReceiptReceived(event.isReceiptReceived());
-
     caseRepository.save(updatedCase);
+  }
+
+  private void setCaseDetails(CollectionCase collectionCase, Case caseDetails) {
+    caseDetails.setState(CaseState.valueOf(collectionCase.getState()));
+    caseDetails.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
+    caseDetails.setAddressLine1(collectionCase.getAddress().getAddressLine1());
+    caseDetails.setAddressLine2(collectionCase.getAddress().getAddressLine2());
+    caseDetails.setAddressLine3(collectionCase.getAddress().getAddressLine3());
+    caseDetails.setTownName(collectionCase.getAddress().getTownName());
+    caseDetails.setPostcode(collectionCase.getAddress().getPostcode());
+    caseDetails.setArid(collectionCase.getAddress().getArid());
+    caseDetails.setLatitude(collectionCase.getAddress().getLatitude());
+    caseDetails.setLongitude(collectionCase.getAddress().getLongitude());
+    caseDetails.setUprn(collectionCase.getAddress().getUprn());
+    caseDetails.setRegion(collectionCase.getAddress().getRegion());
+
+    // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
+    caseDetails.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
+    caseDetails.setTreatmentCode(collectionCase.getTreatmentCode()); // This is essential
+    caseDetails.setAddressLevel(collectionCase.getAddress().getAddressLevel());
+    caseDetails.setAbpCode(collectionCase.getAddress().getApbCode());
+    caseDetails.setAddressType(collectionCase.getAddress().getAddressType());
+    caseDetails.setUprn(collectionCase.getAddress().getUprn());
+    caseDetails.setEstabArid(collectionCase.getAddress().getEstabArid());
+    caseDetails.setEstabType(collectionCase.getAddress().getEstabType());
+    caseDetails.setOrganisationName(collectionCase.getAddress().getOrganisationName());
+    caseDetails.setOa(collectionCase.getOa());
+    caseDetails.setLsoa(collectionCase.getLsoa());
+    caseDetails.setMsoa(collectionCase.getMsoa());
+    caseDetails.setLad(collectionCase.getLad());
+    caseDetails.setHtcWillingness(collectionCase.getHtcWillingness());
+    caseDetails.setHtcDigital(collectionCase.getHtcDigital());
+    caseDetails.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
+    caseDetails.setFieldOfficerId(collectionCase.getFieldOfficerId());
+    caseDetails.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
   }
 
   private void processUacUpdated(Uac uac) {
