@@ -81,7 +81,8 @@ public class ActionRuleProcessor {
   private void executeAllCases(ActionRule triggeredActionRule) {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
 
-    try (Stream<Case> stream = caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionPlanId)) {
+    try (Stream<Case> stream =
+        caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionPlanId)) {
       executeCases(stream, triggeredActionRule);
     }
   }

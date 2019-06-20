@@ -57,8 +57,10 @@ public class ActionRuleProcessorTest {
     // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
     // of Example<Case> any().
     // The Fake tests the spec is as expected
-    //CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
-    when( caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionRule.getActionPlan().getId().toString()) ).thenReturn(cases.stream());
+    // CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
+    when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
+            actionRule.getActionPlan().getId().toString()))
+        .thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -70,11 +72,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo,
-            caseRepository,
-            actionInstructionBuilder,
-            rabbitPrinterTemplate,
-            null);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -100,7 +98,9 @@ public class ActionRuleProcessorTest {
 
     List<Case> cases = getRandomCases(50);
 
-    when( caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionRule.getActionPlan().getId().toString()) ).thenReturn(cases.stream());
+    when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
+            actionRule.getActionPlan().getId().toString()))
+        .thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -112,11 +112,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo,
-            caseRepository,
-            actionInstructionBuilder,
-            null,
-            rabbitFieldTemplate);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, null, rabbitFieldTemplate);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -152,7 +148,6 @@ public class ActionRuleProcessorTest {
     // of Example<Case> any().
     // The Fake tests the spec is as expected
     CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
-
 
     // For some reason this works and the 'normal' when.thenReturn way doesn't, might be the JPA
     // OneToMany
@@ -191,8 +186,10 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    //when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
-    when( caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionRule.getActionPlan().getId().toString()) ).thenReturn(cases.stream());
+    // when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+    when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
+            actionRule.getActionPlan().getId().toString()))
+        .thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -228,9 +225,10 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    //when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
-    when( caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionRule.getActionPlan().getId().toString()) ).thenReturn(cases.stream());
-
+    // when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+    when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
+            actionRule.getActionPlan().getId().toString()))
+        .thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
