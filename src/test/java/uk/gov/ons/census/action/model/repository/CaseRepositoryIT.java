@@ -3,11 +3,10 @@ package uk.gov.ons.census.action.model.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.jpa.domain.Specification.where;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.persistence.criteria.CriteriaBuilder;
+
+import org.jeasy.random.EasyRandom;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,7 @@ public class CaseRepositoryIT {
 
   private static final String TEST_ACTION_PLAN_ID;
   private static final Map<String, List<String>> TEST_CLASSIFIERS;
+  private EasyRandom easyRandom = new EasyRandom();
 
   @Autowired private CaseRepository caseRepository;
 
@@ -48,10 +48,41 @@ public class CaseRepositoryIT {
             "HH_LF3R1E"));
   }
 
+  private void setupTenUnReceiptedCases() {
+    List<Case> unReceiptedCases = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      Case unReceiptedCase = easyRandom.nextObject(Case.class);
+      unReceiptedCase.setActionPlanId(TEST_ACTION_PLAN_ID);
+      unReceiptedCase.setReceiptReceived(false);
+      unReceiptedCases.add(unReceiptedCase);
+      unReceiptedCase.setTreatmentCode("HH_LF3R1E");
+    }
+    caseRepository.saveAll(unReceiptedCases);
+  }
+
+  private void setupThreeOfTenReceiptedCases() {
+    List<Case> unReceiptedCases = new ArrayList<>();
+    for (int i = 0; i < 7; i++) {
+      Case unReceiptedCase = easyRandom.nextObject(Case.class);
+      unReceiptedCase.setActionPlanId(TEST_ACTION_PLAN_ID);
+      unReceiptedCase.setReceiptReceived(false);
+      unReceiptedCases.add(unReceiptedCase);
+      unReceiptedCase.setTreatmentCode("HH_LF3R1E");
+    }
+    for (int i = 0; i < 3; i++) {
+      Case unReceiptedCase = easyRandom.nextObject(Case.class);
+      unReceiptedCase.setActionPlanId(TEST_ACTION_PLAN_ID);
+      unReceiptedCase.setReceiptReceived(true);
+      unReceiptedCases.add(unReceiptedCase);
+      unReceiptedCase.setTreatmentCode("HH_LF3R1E");
+    }
+    caseRepository.saveAll(unReceiptedCases);
+  }
+
   @Transactional
   @Test
-  @Sql(scripts = {"/data-test-10of10-unreceipted.sql"})
   public void shouldRetrieveTenCasesWhenNoneReceiptedAndWithoutClassifiers() {
+    setupTenUnReceiptedCases();
     int expectedCaseCount = 10;
 
     Specification<Case> expectedSpecification = getSpecificationWithoutClassifiers();
@@ -63,8 +94,8 @@ public class CaseRepositoryIT {
 
   @Transactional
   @Test
-  @Sql(scripts = {"/data-test-03of10-receipted.sql"})
   public void shouldRetrieveSevenCasesWhenThreeReceiptedAndWithoutClassifiers() {
+    setupThreeOfTenReceiptedCases();
     int expectedCaseSize = 7;
 
     Specification<Case> expectedSpecification = getSpecificationWithoutClassifiers();
@@ -76,8 +107,8 @@ public class CaseRepositoryIT {
 
   @Transactional
   @Test
-  @Sql(scripts = {"/data-test-10of10-unreceipted.sql"})
   public void shouldRetrieveTenCasesWhenZeroReceiptedAndWithClassifiers() {
+    setupTenUnReceiptedCases();
     int expectedCaseSize = 10;
 
     Specification<Case> expectedSpecification = getSpecificationWithClassifiers();
@@ -89,8 +120,8 @@ public class CaseRepositoryIT {
 
   @Transactional
   @Test
-  @Sql(scripts = {"/data-test-03of10-receipted.sql"})
   public void shouldRetrieveSevenCasesWhenThreeReceiptedAndWithClassifiers() {
+    setupThreeOfTenReceiptedCases();
     int expectedCaseSize = 7;
 
     Specification<Case> expectedSpecification = getSpecificationWithClassifiers();
