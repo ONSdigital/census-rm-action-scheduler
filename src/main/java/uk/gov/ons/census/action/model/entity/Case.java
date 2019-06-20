@@ -1,22 +1,20 @@
 package uk.gov.ons.census.action.model.entity;
 
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "cases")
+@Table(name = "cases", indexes = { @Index(name = "receipt_received_idx", columnList = "receipt_received"),
+                        @Index(name = "case_id_idx", columnList = "case_id", unique = true),
+                        @Index(name = "treatment_code_idx", columnList = "treatment_code")})
 public class Case {
 
   @Id private long caseRef;
 
-  @Column private UUID caseId;
+  @Column(name = "case_id")  private UUID caseId;
 
   @Column private String arid;
 
@@ -66,7 +64,7 @@ public class Case {
 
   @Column private String fieldOfficerId;
 
-  @Column private String treatmentCode;
+  @Column(name = "treatment_code") private String treatmentCode;
 
   @Column private String ceExpectedCapacity;
 
@@ -78,5 +76,5 @@ public class Case {
   @Enumerated(EnumType.STRING)
   private CaseState state;
 
-  @Column private boolean receiptReceived;
+  @Column(name = "receipt_received") private boolean receiptReceived;
 }
