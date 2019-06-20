@@ -3,6 +3,8 @@ package uk.gov.ons.census.action.schedule;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
+
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,9 @@ public class FakeCaseRepository implements CaseRepository {
   public Optional<Case> findByCaseId(UUID caseId) {
     return Optional.empty();
   }
+
+  @Override
+  public Stream<Case> findByActionPlanIdAndReceiptReceivedIsFalse(String actionPlanId) { return Stream.empty(); }
 
   @Override
   public Optional<Case> findOne(Specification<Case> specification) {

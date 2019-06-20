@@ -57,7 +57,8 @@ public class ActionRuleProcessorTest {
     // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
     // of Example<Case> any().
     // The Fake tests the spec is as expected
-    CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
+    //CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
+    when( caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionRule.getActionPlan().getId().toString()) ).thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -70,7 +71,7 @@ public class ActionRuleProcessorTest {
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            fakeCaseRepository,
+            caseRepository,
             actionInstructionBuilder,
             rabbitPrinterTemplate,
             null);
@@ -99,10 +100,7 @@ public class ActionRuleProcessorTest {
 
     List<Case> cases = getRandomCases(50);
 
-    // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
-    // of Example<Case> any().
-    // The Fake tests the spec is as expected
-    CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
+    when( caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionRule.getActionPlan().getId().toString()) ).thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -115,7 +113,7 @@ public class ActionRuleProcessorTest {
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            fakeCaseRepository,
+            caseRepository,
             actionInstructionBuilder,
             null,
             rabbitFieldTemplate);
@@ -155,6 +153,7 @@ public class ActionRuleProcessorTest {
     // The Fake tests the spec is as expected
     CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
 
+
     // For some reason this works and the 'normal' when.thenReturn way doesn't, might be the JPA
     // OneToMany
     doReturn(Arrays.asList(actionRule))
@@ -192,7 +191,8 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+    //when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+    when( caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionRule.getActionPlan().getId().toString()) ).thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
@@ -228,7 +228,9 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+    //when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+    when( caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionRule.getActionPlan().getId().toString()) ).thenReturn(cases.stream());
+
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
