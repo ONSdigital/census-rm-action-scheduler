@@ -57,7 +57,6 @@ public class ActionRuleProcessorTest {
     // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
     // of Example<Case> any().
     // The Fake tests the spec is as expected
-    // CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
     when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
             actionRule.getActionPlan().getId().toString()))
         .thenReturn(cases.stream());

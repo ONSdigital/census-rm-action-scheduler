@@ -68,11 +68,11 @@ public class CaseRepositoryIT {
       unReceiptedCase.setTreatmentCode("HH_LF3R1E");
     }
     for (int i = 0; i < 3; i++) {
-      Case unReceiptedCase = easyRandom.nextObject(Case.class);
-      unReceiptedCase.setActionPlanId(TEST_ACTION_PLAN_ID);
-      unReceiptedCase.setReceiptReceived(true);
-      unReceiptedCases.add(unReceiptedCase);
-      unReceiptedCase.setTreatmentCode("HH_LF3R1E");
+      Case receiptedCase = easyRandom.nextObject(Case.class);
+      receiptedCase.setActionPlanId(TEST_ACTION_PLAN_ID);
+      receiptedCase.setReceiptReceived(true);
+      unReceiptedCases.add(receiptedCase);
+      receiptedCase.setTreatmentCode("HH_LF3R1E");
     }
     caseRepository.saveAll(unReceiptedCases);
   }
