@@ -1,4 +1,3 @@
-
 package uk.gov.ons.census.action.schedule;
 
 import static junit.framework.TestCase.assertNotNull;
@@ -147,11 +146,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo,
-            caseRepository,
-            actionInstructionBuilder,
-            rabbitPrinterTemplate,
-            null);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
