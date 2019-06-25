@@ -50,8 +50,6 @@ public class ActionRuleProcessorTest {
     // Given
     ActionRule actionRule = setUpActionRule();
 
-    Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
-
     List<Case> cases = getRandomCases(50);
 
     when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
@@ -140,11 +138,6 @@ public class ActionRuleProcessorTest {
 
     List<Case> cases = getRandomCases(47);
 
-    // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
-    // of Example<Case> any().
-    // The Fake tests the spec is as expected
-    CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
-
     // For some reason this works and the 'normal' when.thenReturn way doesn't, might be the JPA
     // OneToMany
     doReturn(Arrays.asList(actionRule))
@@ -154,11 +147,13 @@ public class ActionRuleProcessorTest {
     when(actionInstructionBuilder.buildPrinterActionInstruction(any(Case.class), eq(actionRule)))
         .thenReturn(new ActionInstruction());
 
+    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            fakeCaseRepository,
+            caseRepository,
             actionInstructionBuilder,
             rabbitPrinterTemplate,
             null);
