@@ -1,3 +1,4 @@
+
 package uk.gov.ons.census.action.schedule;
 
 import static junit.framework.TestCase.assertNotNull;
@@ -10,7 +11,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.data.jpa.domain.Specification.where;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.persistence.criteria.CriteriaBuilder;
 import org.assertj.core.api.Assertions;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
@@ -88,8 +87,6 @@ public class ActionRuleProcessorTest {
     // Given
     ActionRule actionRule = setUpActionRuleField();
 
-    Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
-
     List<Case> cases = getRandomCases(50);
 
     when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
@@ -133,8 +130,6 @@ public class ActionRuleProcessorTest {
     List<String> columnValues = Arrays.asList("a", "b", "c");
     classifiers.put("A_Column", columnValues);
     actionRule.setClassifiers(classifiers);
-
-    Specification<Case> expectedSpecification = getExpectedClassifiersSpecification(actionRule);
 
     List<Case> cases = getRandomCases(47);
 
@@ -288,49 +283,5 @@ public class ActionRuleProcessorTest {
     }
 
     return cases;
-  }
-
-  private Specification<Case> getExpectedSpecification(ActionRule actionRule) {
-    String actionPlanId = actionRule.getActionPlan().getId().toString();
-
-    return createSpecificationForUnreceiptedCases(actionPlanId);
-  }
-
-  private Specification<Case> getExpectedClassifiersSpecification(ActionRule actionRule) {
-    String actionPlanId = actionRule.getActionPlan().getId().toString();
-
-    Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
-
-    for (Map.Entry<String, List<String>> classifier : actionRule.getClassifiers().entrySet()) {
-      specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
-    }
-
-    return specification;
-  }
-
-  private Specification<Case> createSpecificationForUnreceiptedCases(String actionPlanId) {
-    return where(isActionPlanIdEqualTo(actionPlanId)).and(excludeReceiptedCases());
-  }
-
-  private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
-    return (Specification<Case>)
-        (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
-  }
-
-  private Specification<Case> excludeReceiptedCases() {
-    return (Specification<Case>)
-        (root, query, builder) -> builder.equal(root.get("receiptReceived"), false);
-  }
-
-  private Specification<Case> isClassifierIn(
-      final String fieldName, final List<String> inClauseValues) {
-    return (Specification<Case>)
-        (root, query, builder) -> {
-          CriteriaBuilder.In<String> inClause = builder.in(root.get(fieldName));
-          for (String inClauseValue : inClauseValues) {
-            inClause.value(inClauseValue);
-          }
-          return inClause;
-        };
   }
 }
