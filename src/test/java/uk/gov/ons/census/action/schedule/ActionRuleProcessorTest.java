@@ -54,9 +54,6 @@ public class ActionRuleProcessorTest {
 
     List<Case> cases = getRandomCases(50);
 
-    // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
-    // of Example<Case> any().
-    // The Fake tests the spec is as expected
     when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
             actionRule.getActionPlan().getId().toString()))
         .thenReturn(cases.stream());
@@ -185,7 +182,7 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    // when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+    // when
     when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
             actionRule.getActionPlan().getId().toString()))
         .thenReturn(cases.stream());
@@ -224,7 +221,7 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    // when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+    // when
     when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
             actionRule.getActionPlan().getId().toString()))
         .thenReturn(cases.stream());

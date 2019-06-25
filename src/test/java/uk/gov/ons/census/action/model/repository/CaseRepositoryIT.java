@@ -3,7 +3,11 @@ package uk.gov.ons.census.action.model.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.data.jpa.domain.Specification.where;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.persistence.criteria.CriteriaBuilder;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
@@ -46,87 +50,72 @@ public class CaseRepositoryIT {
             "HH_LF3R1E"));
   }
 
-  private void setupTenUnReceiptedCases() {
-    List<Case> unReceiptedCases = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
-      Case unReceiptedCase = easyRandom.nextObject(Case.class);
-      unReceiptedCase.setActionPlanId(TEST_ACTION_PLAN_ID);
-      unReceiptedCase.setReceiptReceived(false);
-      unReceiptedCases.add(unReceiptedCase);
-      unReceiptedCase.setTreatmentCode("HH_LF3R1E");
-    }
-    caseRepository.saveAll(unReceiptedCases);
-  }
-
-  private void setupThreeOfTenReceiptedCases() {
-    List<Case> unReceiptedCases = new ArrayList<>();
-    for (int i = 0; i < 7; i++) {
-      Case unReceiptedCase = easyRandom.nextObject(Case.class);
-      unReceiptedCase.setActionPlanId(TEST_ACTION_PLAN_ID);
-      unReceiptedCase.setReceiptReceived(false);
-      unReceiptedCases.add(unReceiptedCase);
-      unReceiptedCase.setTreatmentCode("HH_LF3R1E");
-    }
-    for (int i = 0; i < 3; i++) {
-      Case receiptedCase = easyRandom.nextObject(Case.class);
-      receiptedCase.setActionPlanId(TEST_ACTION_PLAN_ID);
-      receiptedCase.setReceiptReceived(true);
-      unReceiptedCases.add(receiptedCase);
-      receiptedCase.setTreatmentCode("HH_LF3R1E");
-    }
-    caseRepository.saveAll(unReceiptedCases);
-  }
-
   @Transactional
   @Test
   public void shouldRetrieveTenCasesWhenNoneReceiptedAndWithoutClassifiers() {
-    setupTenUnReceiptedCases();
-    int expectedCaseCount = 10;
+    int expectedUnreceiptedCaseSize = 10;
+    setupTestCases(expectedUnreceiptedCaseSize, false);
 
     Specification<Case> expectedSpecification = getSpecificationWithoutClassifiers();
 
     List<Case> cases = caseRepository.findAll(expectedSpecification);
 
-    assertThat(cases.size()).isEqualTo(expectedCaseCount);
+    assertThat(cases.size()).isEqualTo(expectedUnreceiptedCaseSize);
   }
 
   @Transactional
   @Test
   public void shouldRetrieveSevenCasesWhenThreeReceiptedAndWithoutClassifiers() {
-    setupThreeOfTenReceiptedCases();
-    int expectedCaseSize = 7;
+    int expectedUnreceiptedCaseSize = 7;
+    setupTestCases(expectedUnreceiptedCaseSize, false);
+    setupTestCases(3, true);
 
     Specification<Case> expectedSpecification = getSpecificationWithoutClassifiers();
 
     List<Case> cases = caseRepository.findAll(expectedSpecification);
 
-    assertThat(cases.size()).isEqualTo(expectedCaseSize);
+    assertThat(cases.size()).isEqualTo(expectedUnreceiptedCaseSize);
   }
 
   @Transactional
   @Test
   public void shouldRetrieveTenCasesWhenZeroReceiptedAndWithClassifiers() {
-    setupTenUnReceiptedCases();
-    int expectedCaseSize = 10;
+    int expectedUnreceiptedCaseSize = 10;
+    setupTestCases(expectedUnreceiptedCaseSize, false);
 
     Specification<Case> expectedSpecification = getSpecificationWithClassifiers();
 
     List<Case> cases = caseRepository.findAll(expectedSpecification);
 
-    assertThat(cases.size()).isEqualTo(expectedCaseSize);
+    assertThat(cases.size()).isEqualTo(expectedUnreceiptedCaseSize);
   }
 
   @Transactional
   @Test
   public void shouldRetrieveSevenCasesWhenThreeReceiptedAndWithClassifiers() {
-    setupThreeOfTenReceiptedCases();
-    int expectedCaseSize = 7;
+    int expectedUnreceiptedCaseSize = 7;
+    setupTestCases(expectedUnreceiptedCaseSize, false);
+    setupTestCases(3, true);
 
     Specification<Case> expectedSpecification = getSpecificationWithClassifiers();
 
     List<Case> cases = caseRepository.findAll(expectedSpecification);
 
-    assertThat(cases.size()).isEqualTo(expectedCaseSize);
+    assertThat(cases.size()).isEqualTo(expectedUnreceiptedCaseSize);
+  }
+
+  private void setupTestCases(int caseCount, boolean receipted) {
+    List<Case> unReceiptedCases = new ArrayList<>();
+
+    for (int i = 0; i < caseCount; i++) {
+      Case caze = easyRandom.nextObject(Case.class);
+      caze.setActionPlanId(TEST_ACTION_PLAN_ID);
+      caze.setReceiptReceived(receipted);
+      unReceiptedCases.add(caze);
+      caze.setTreatmentCode("HH_LF3R1E");
+    }
+
+    caseRepository.saveAll(unReceiptedCases);
   }
 
   private Specification<Case> getSpecificationWithoutClassifiers() {
