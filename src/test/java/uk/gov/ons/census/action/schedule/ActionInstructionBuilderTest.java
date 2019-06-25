@@ -354,12 +354,14 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-    uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction actualResult = underTest
-        .buildFieldActionInstruction(caze, actionRule);
+    uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction actualResult =
+        underTest.buildFieldActionInstruction(caze, actionRule);
 
     // Then
-    assertThat(caze.getLatitude()).isEqualTo(actualResult.getActionRequest().getAddress().getLatitude().toString());
-    assertThat(caze.getLongitude()).isEqualTo(actualResult.getActionRequest().getAddress().getLongitude().toString());
+    assertThat(caze.getLatitude())
+        .isEqualTo(actualResult.getActionRequest().getAddress().getLatitude().toString());
+    assertThat(caze.getLongitude())
+        .isEqualTo(actualResult.getActionRequest().getAddress().getLongitude().toString());
   }
 
   private ActionInstruction getExpectedActionInstructionWithActualActionIdUUID(
