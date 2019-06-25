@@ -334,6 +334,34 @@ public class ActionInstructionBuilderTest {
     // Expect exception to be thrown
   }
 
+  @Test
+  public void testLatAndLongCopiedToAddress() {
+    // Given
+    EasyRandom easyRandom = new EasyRandom();
+    Case caze = easyRandom.nextObject(Case.class);
+    caze.setLatitude("1.123456789999");
+    caze.setLongitude("-9.987654321111");
+    caze.setCeExpectedCapacity("500");
+
+    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
+    ActionRule actionRule = new ActionRule();
+    actionRule.setActionPlan(actionPlan);
+    actionRule.setActionType(ActionType.ICL1E);
+    UacQidLink uacQidLink = new UacQidLink();
+    uacQidLink.setUac(caze.getCaseId().toString() + "uac");
+    when(uacQidLinkRepository.findByCaseId(eq(caze.getCaseId().toString())))
+        .thenReturn(Collections.singletonList(uacQidLink));
+
+    // When
+    ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
+    uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction actualResult = underTest
+        .buildFieldActionInstruction(caze, actionRule);
+
+    // Then
+    assertThat(caze.getLatitude()).isEqualTo(actualResult.getActionRequest().getAddress().getLatitude().toString());
+    assertThat(caze.getLongitude()).isEqualTo(actualResult.getActionRequest().getAddress().getLongitude().toString());
+  }
+
   private ActionInstruction getExpectedActionInstructionWithActualActionIdUUID(
       Case caze, ActionRule actionRule, ActionInstruction actionInstruction) {
     String caseId = actionInstruction.getActionRequest().getCaseId();

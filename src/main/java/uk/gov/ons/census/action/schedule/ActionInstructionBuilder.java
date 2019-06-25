@@ -1,5 +1,6 @@
 package uk.gov.ons.census.action.schedule;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -110,6 +111,12 @@ public class ActionInstructionBuilder {
     actionAddress.setArid(caze.getArid());
     actionAddress.setUprn(caze.getUprn());
     actionAddress.setOa(caze.getOa());
+    if (caze.getLatitude() != null && !caze.getLatitude().isBlank()) {
+      actionAddress.setLatitude(new BigDecimal(caze.getLatitude()));
+    }
+    if (caze.getLongitude() != null && !caze.getLongitude().isBlank()) {
+      actionAddress.setLongitude(new BigDecimal(caze.getLongitude()));
+    }
 
     uk.gov.ons.census.action.model.dto.instruction.field.ActionRequest actionRequest =
         new uk.gov.ons.census.action.model.dto.instruction.field.ActionRequest();
