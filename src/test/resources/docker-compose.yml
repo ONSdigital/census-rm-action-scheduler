@@ -23,28 +23,9 @@ services:
       - "46671:15671"
       - "46672:15672"
 
-  action-scheduler:
-    container_name: action-scheduler-it
-    image: eu.gcr.io/census-rm-ci/rm/census-rm-action-scheduler
-    external_links:
-      - postgres-action-it
-      - rabbitmq-action-it
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-action-it:5432/postgres?sslmode=disable
-      - SPRING_RABBITMQ_HOST=rabbitmq-action-it
-      - SPRING_RABBITMQ_PORT=5672
-      - JAVA_OPTS=-Xmx128m -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5121
-    healthcheck:
-      test: ["CMD", "cat", "/tmp/action-scheduler-healthy"]
-      interval: 30s
-      timeout: 10s
-      retries: 10
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  start_dependencies:
-    image: dadarek/wait-for-dependencies
-    depends_on:
-      action-scheduler:
-        condition: service_healthy
+#
+#  start_dependencies:
+#    image: dadarek/wait-for-dependencies
+#    depends_on:
+#      action-scheduler:
+#        condition: service_healthy

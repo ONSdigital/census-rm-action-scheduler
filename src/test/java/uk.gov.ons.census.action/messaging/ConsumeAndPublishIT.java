@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.StringReader;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -238,7 +239,7 @@ public class ConsumeAndPublishIT {
 
   private ActionInstruction checkExpectedMessageReceived(BlockingQueue<String> queue)
       throws InterruptedException, JAXBException {
-    String actualMessage = queue.poll(10, TimeUnit.SECONDS);
+    String actualMessage = queue.poll(20, TimeUnit.SECONDS);
     assertNotNull("Did not receive message before timeout", actualMessage);
 
     JAXBContext jaxbContext = JAXBContext.newInstance(ActionInstruction.class);
@@ -251,7 +252,7 @@ public class ConsumeAndPublishIT {
   private uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction
       checkExpectedFieldMessageReceived(BlockingQueue<String> queue)
           throws InterruptedException, JAXBException {
-    String actualMessage = queue.poll(10, TimeUnit.SECONDS);
+    String actualMessage = queue.poll(20, TimeUnit.SECONDS);
     assertNotNull("Did not receive message before timeout", actualMessage);
 
     JAXBContext jaxbContext =
@@ -275,6 +276,10 @@ public class ConsumeAndPublishIT {
     responseManagementEvent.getPayload().getCollectionCase().setId(UUID.randomUUID().toString());
     responseManagementEvent.getPayload().getCollectionCase().setState("ACTIONABLE");
     responseManagementEvent.getPayload().getCollectionCase().setActionPlanId(actionPlanId);
+
+    Random random = new Random();
+    responseManagementEvent.getPayload().getCollectionCase().getAddress().setLatitude(Double.toString(random.nextDouble()));
+    responseManagementEvent.getPayload().getCollectionCase().getAddress().setLongitude(Double.toString(random.nextDouble()));
 
     return responseManagementEvent;
   }
