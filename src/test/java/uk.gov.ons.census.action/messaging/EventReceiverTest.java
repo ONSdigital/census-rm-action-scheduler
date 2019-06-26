@@ -22,8 +22,8 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 public class EventReceiverTest {
-  private CaseRepository caseRepository = mock(CaseRepository.class);
-  private UacQidLinkRepository uacQidLinkRepository = mock(UacQidLinkRepository.class);
+  private final CaseRepository caseRepository = mock(CaseRepository.class);
+  private final UacQidLinkRepository uacQidLinkRepository = mock(UacQidLinkRepository.class);
 
   @Test
   public void testCaseCreated() {

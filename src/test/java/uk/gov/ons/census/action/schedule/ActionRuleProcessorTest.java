@@ -10,7 +10,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.data.jpa.domain.Specification.where;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.persistence.criteria.CriteriaBuilder;
 import org.assertj.core.api.Assertions;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
@@ -36,7 +34,7 @@ import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 
 public class ActionRuleProcessorTest {
-  public static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
+  private static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
   private final CaseRepository caseRepository = mock(CaseRepository.class);
@@ -51,7 +49,9 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
+
+    when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
+            actionRule.getActionPlan().getId().toString()))
         .thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
@@ -87,7 +87,9 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRuleField();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
+
+    when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
+            actionRule.getActionPlan().getId().toString()))
         .thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
@@ -128,14 +130,7 @@ public class ActionRuleProcessorTest {
     classifiers.put("A_Column", columnValues);
     actionRule.setClassifiers(classifiers);
 
-    Specification<Case> expectedSpecification = getExpectedSpecification(actionRule);
-
     List<Case> cases = getRandomCases(47);
-
-    // Handrolled Fake as could not get Mockito to work with either explicit expectedSpecification
-    // of Example<Case> any().
-    // The Fake tests the spec is as expected
-    CaseRepository fakeCaseRepository = new FakeCaseRepository(cases, expectedSpecification);
 
     // For some reason this works and the 'normal' when.thenReturn way doesn't, might be the JPA
     // OneToMany
@@ -146,14 +141,12 @@ public class ActionRuleProcessorTest {
     when(actionInstructionBuilder.buildPrinterActionInstruction(any(Case.class), eq(actionRule)))
         .thenReturn(new ActionInstruction());
 
+    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
+
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo,
-            fakeCaseRepository,
-            actionInstructionBuilder,
-            rabbitPrinterTemplate,
-            null);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -174,7 +167,9 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
+    // when
+    when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
+            actionRule.getActionPlan().getId().toString()))
         .thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
@@ -211,7 +206,9 @@ public class ActionRuleProcessorTest {
     ActionRule actionRule = setUpActionRule();
 
     List<Case> cases = getRandomCases(50);
-    when(caseRepository.findByActionPlanId(actionRule.getActionPlan().getId().toString()))
+    // when
+    when(caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(
+            actionRule.getActionPlan().getId().toString()))
         .thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
@@ -281,34 +278,5 @@ public class ActionRuleProcessorTest {
     }
 
     return cases;
-  }
-
-  private Specification<Case> getExpectedSpecification(ActionRule actionRule) {
-    Specification<Case> specification =
-        where(isActionPlanIdEqualTo(actionRule.getActionPlan().getId().toString()));
-
-    for (Map.Entry<String, List<String>> classifier : actionRule.getClassifiers().entrySet()) {
-      specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
-    }
-
-    return specification;
-  }
-
-  // refactor these for test?
-  private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
-    return (Specification<Case>)
-        (root, query, builder) -> builder.equal(root.get("actionPlanId"), actionPlanId);
-  }
-
-  private Specification<Case> isClassifierIn(
-      final String fieldName, final List<String> inClauseValues) {
-    return (Specification<Case>)
-        (root, query, builder) -> {
-          CriteriaBuilder.In<String> inClause = builder.in(root.get(fieldName));
-          for (String inClauseValue : inClauseValues) {
-            inClause.value(inClauseValue);
-          }
-          return inClause;
-        };
   }
 }

@@ -73,7 +73,7 @@ public class ConsumeAndPublishIT {
   }
 
   @Test
-  public void checkRecievedEventsAreEmitted() throws InterruptedException, JAXBException {
+  public void checkReceivedEventsAreEmitted() throws InterruptedException, JAXBException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -233,7 +233,7 @@ public class ConsumeAndPublishIT {
   private void checkExpectedMessageNotReceived(BlockingQueue<String> queue)
       throws InterruptedException {
     String actualMessage = queue.poll(10, TimeUnit.SECONDS);
-    assertNull("Recieved Message, expected none", actualMessage);
+    assertNull("Received Message, expected none", actualMessage);
   }
 
   private ActionInstruction checkExpectedMessageReceived(BlockingQueue<String> queue)
