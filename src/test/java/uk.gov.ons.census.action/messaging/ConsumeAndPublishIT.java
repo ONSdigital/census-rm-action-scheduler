@@ -278,8 +278,16 @@ public class ConsumeAndPublishIT {
     responseManagementEvent.getPayload().getCollectionCase().setActionPlanId(actionPlanId);
 
     Random random = new Random();
-    responseManagementEvent.getPayload().getCollectionCase().getAddress().setLatitude(Double.toString(random.nextDouble()));
-    responseManagementEvent.getPayload().getCollectionCase().getAddress().setLongitude(Double.toString(random.nextDouble()));
+    responseManagementEvent
+        .getPayload()
+        .getCollectionCase()
+        .getAddress()
+        .setLatitude(Double.toString(random.nextDouble()));
+    responseManagementEvent
+        .getPayload()
+        .getCollectionCase()
+        .getAddress()
+        .setLongitude(Double.toString(random.nextDouble()));
 
     return responseManagementEvent;
   }
