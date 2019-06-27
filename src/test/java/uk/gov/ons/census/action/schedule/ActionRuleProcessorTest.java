@@ -58,12 +58,18 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when( printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
-            .thenReturn(new PrintFileDto());
+    when(printFileDtoBuilder.buildPrintFileDto(
+            any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
+        .thenReturn(new PrintFileDto());
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, rabbitTemplate, null);
+            actionRuleRepo,
+            caseRepository,
+            actionInstructionBuilder,
+            printFileDtoBuilder,
+            rabbitTemplate,
+            null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -102,7 +108,12 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, null, rabbitFieldTemplate);
+            actionRuleRepo,
+            caseRepository,
+            actionInstructionBuilder,
+            printFileDtoBuilder,
+            null,
+            rabbitFieldTemplate);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -138,16 +149,21 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-
-    when( printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
-            .thenReturn(new PrintFileDto());
+    when(printFileDtoBuilder.buildPrintFileDto(
+            any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
+        .thenReturn(new PrintFileDto());
 
     when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
 
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, rabbitTemplate, null);
+            actionRuleRepo,
+            caseRepository,
+            actionInstructionBuilder,
+            printFileDtoBuilder,
+            rabbitTemplate,
+            null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -177,15 +193,19 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-
     doThrow(RuntimeException.class)
         .when(printFileDtoBuilder)
-        .buildPrintFileDto(any(Case.class), eq(actionRule),any(long.class), any(UUID.class));
+        .buildPrintFileDto(any(Case.class), eq(actionRule), any(long.class), any(UUID.class));
 
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, rabbitTemplate, null);
+            actionRuleRepo,
+            caseRepository,
+            actionInstructionBuilder,
+            printFileDtoBuilder,
+            rabbitTemplate,
+            null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     RuntimeException actualException = null;
     try {
@@ -217,8 +237,9 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when( printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
-            .thenReturn(new PrintFileDto());
+    when(printFileDtoBuilder.buildPrintFileDto(
+            any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
+        .thenReturn(new PrintFileDto());
 
     doThrow(new RuntimeException())
         .when(rabbitTemplate)
@@ -228,7 +249,12 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, rabbitTemplate, null);
+            actionRuleRepo,
+            caseRepository,
+            actionInstructionBuilder,
+            printFileDtoBuilder,
+            rabbitTemplate,
+            null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 

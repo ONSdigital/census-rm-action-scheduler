@@ -4,6 +4,7 @@ import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertNotNull;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.StringReader;
 import java.time.OffsetDateTime;
@@ -15,8 +16,6 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,7 +79,8 @@ public class ConsumeAndPublishIT {
   }
 
   @Test
-  public void checkReceivedEventsAreEmitted() throws InterruptedException, JAXBException, IOException {
+  public void checkReceivedEventsAreEmitted()
+      throws InterruptedException, JAXBException, IOException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -106,15 +106,10 @@ public class ConsumeAndPublishIT {
     // THEN
     PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
 
-    assertThat( printFileDto.getCaseRef()).isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
-
-
-//    assertThat(printFileDto.getAddressLine1())
-//        .isEqualTo();
-//    assertThat(actionInstruction.getActionRequest().getCaseId())
-//        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
-//    assertThat(actionInstruction.getActionRequest().getCaseRef())
-//        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
+    assertThat(printFileDto.getAddressLine1())
+        .isEqualTo(
+            caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
+    assertThat(printFileDto.getActionType()).isEqualTo(actionRule.getActionType().toString());
   }
 
   @Test
@@ -156,7 +151,7 @@ public class ConsumeAndPublishIT {
 
   @Test
   public void checkCaseWithNoLinkedUACQuidDoesntSendThenWorksWhenUACAdded()
-      throws InterruptedException, JAXBException {
+      throws InterruptedException, JAXBException, IOException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -184,14 +179,12 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    ActionInstruction actionInstruction = checkExpectedMessageReceived(outputQueue);
+    PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
 
-    assertThat(actionInstruction.getActionRequest().getActionPlan())
-        .isEqualTo(actionPlan.getId().toString());
-    assertThat(actionInstruction.getActionRequest().getCaseId())
-        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
-    assertThat(actionInstruction.getActionRequest().getCaseRef())
-        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
+    assertThat(printFileDto.getAddressLine1())
+        .isEqualTo(
+            caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
+    assertThat(printFileDto.getActionType()).isEqualTo(actionRule.getActionType().toString());
   }
 
   @Test
@@ -259,7 +252,7 @@ public class ConsumeAndPublishIT {
   }
 
   private PrintFileDto checkExpectedPrintFileDtoMessageReceived(BlockingQueue<String> queue)
-          throws InterruptedException, IOException {
+      throws InterruptedException, IOException {
     ObjectMapper objectMapper = new ObjectMapper();
     String actualMessage = queue.poll(20, TimeUnit.SECONDS);
     assertNotNull("Did not receive message before timeout", actualMessage);

@@ -23,7 +23,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
-import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
@@ -118,8 +117,8 @@ public class ActionRuleProcessor {
   private void executePrinterCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     UUID batchId = UUID.randomUUID();
 
-//  TODO: Count terminates the Stream...  how to do this nicely?
-    //    long batchQty = cases.count();.  you could copy the Steam, or query the database for a count
+    //  TODO: Change this to use just a list
+
     long batchQty = 10L;
 
     List<Callable<PrintFileDto>> callables = new LinkedList<>();
@@ -127,12 +126,8 @@ public class ActionRuleProcessor {
         caze -> {
           callables.add(
               () ->
-                  printFileDtoBuilder.buildPrintFileDto(caze, triggeredActionRule, batchQty, batchId)
-          );
-
-//
-//                  actionInstructionBuilder.buildPrinterActionInstruction(
-//                      caze, triggeredActionRule));
+                  printFileDtoBuilder.buildPrintFileDto(
+                      caze, triggeredActionRule, batchQty, batchId));
         });
 
     try {
