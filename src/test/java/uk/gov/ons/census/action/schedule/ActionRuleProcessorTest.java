@@ -1,8 +1,7 @@
 package uk.gov.ons.census.action.schedule;
 
 import static junit.framework.TestCase.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -25,7 +24,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
+import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -40,8 +39,9 @@ public class ActionRuleProcessorTest {
   private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final ActionInstructionBuilder actionInstructionBuilder =
       mock(ActionInstructionBuilder.class);
-  private final RabbitTemplate rabbitPrinterTemplate = mock(RabbitTemplate.class);
+  private final RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
   private final RabbitTemplate rabbitFieldTemplate = mock(RabbitTemplate.class);
+  private final PrintFileDtoBuilder printFileDtoBuilder = mock(PrintFileDtoBuilder.class);
 
   @Test
   public void testExecuteAllCases() {
@@ -58,27 +58,27 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(actionInstructionBuilder.buildPrinterActionInstruction(any(Case.class), eq(actionRule)))
-        .thenReturn(new ActionInstruction());
-
+    when( printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
+            .thenReturn(new PrintFileDto());
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, rabbitTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
     // then
-    verify(actionInstructionBuilder, times(50))
-        .buildPrinterActionInstruction(any(Case.class), eq(actionRule));
+    verify(printFileDtoBuilder, times(50))
+        .buildPrintFileDto(any(Case.class), eq(actionRule), any(long.class), any(UUID.class));
     ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
     verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
-    verify(rabbitPrinterTemplate, times(50))
+
+    verify(rabbitTemplate, times(50))
         .convertAndSend(
-            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
+            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
   }
 
   @Test
@@ -102,7 +102,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, null, rabbitFieldTemplate);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, null, rabbitFieldTemplate);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -138,15 +138,16 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(actionInstructionBuilder.buildPrinterActionInstruction(any(Case.class), eq(actionRule)))
-        .thenReturn(new ActionInstruction());
+
+    when( printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
+            .thenReturn(new PrintFileDto());
 
     when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
 
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, rabbitTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
@@ -156,9 +157,9 @@ public class ActionRuleProcessorTest {
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
-    verify(rabbitPrinterTemplate, times(47))
+    verify(rabbitTemplate, times(47))
         .convertAndSend(
-            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
+            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
   }
 
   @Test
@@ -176,14 +177,15 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
+
     doThrow(RuntimeException.class)
-        .when(actionInstructionBuilder)
-        .buildPrinterActionInstruction(any(Case.class), eq(actionRule));
+        .when(printFileDtoBuilder)
+        .buildPrintFileDto(any(Case.class), eq(actionRule),any(long.class), any(UUID.class));
 
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, rabbitTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     RuntimeException actualException = null;
     try {
@@ -195,9 +197,9 @@ public class ActionRuleProcessorTest {
     // then
     assertNotNull(actualException);
     verify(actionRuleRepo, never()).save(any(ActionRule.class));
-    verify(rabbitPrinterTemplate, never())
+    verify(rabbitTemplate, never())
         .convertAndSend(
-            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
+            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
   }
 
   @Test(expected = RuntimeException.class)
@@ -215,18 +217,18 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(actionInstructionBuilder.buildPrinterActionInstruction(any(Case.class), eq(actionRule)))
-        .thenReturn(new ActionInstruction());
+    when( printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
+            .thenReturn(new PrintFileDto());
 
     doThrow(new RuntimeException())
-        .when(rabbitPrinterTemplate)
+        .when(rabbitTemplate)
         .convertAndSend(
-            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(ActionInstruction.class));
+            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
 
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
-            actionRuleRepo, caseRepository, actionInstructionBuilder, rabbitPrinterTemplate, null);
+            actionRuleRepo, caseRepository, actionInstructionBuilder, printFileDtoBuilder, rabbitTemplate, null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.processActionRules();
 

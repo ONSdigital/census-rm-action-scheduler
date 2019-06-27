@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
@@ -38,7 +40,8 @@ public class ActionRuleProcessor {
   private final ActionRuleRepository actionRuleRepo;
   private final CaseRepository caseRepository;
   private final ActionInstructionBuilder actionInstructionBuilder;
-  private final RabbitTemplate rabbitPrinterTemplate;
+  private final PrintFileDtoBuilder printFileDtoBuilder;
+  private final RabbitTemplate rabbitTemplate;
   private final RabbitTemplate rabbitFieldTemplate;
 
   @Value("${queueconfig.outbound-exchange}")
@@ -48,12 +51,14 @@ public class ActionRuleProcessor {
       ActionRuleRepository actionRuleRepo,
       CaseRepository caseRepository,
       ActionInstructionBuilder actionInstructionBuilder,
-      @Qualifier("actionInstructionPrinterRabbitTemplate") RabbitTemplate rabbitPrinterTemplate,
+      PrintFileDtoBuilder printFileDtoBuilder,
+      RabbitTemplate rabbitTemplate,
       @Qualifier("actionInstructionFieldRabbitTemplate") RabbitTemplate rabbitFieldTemplate) {
     this.actionRuleRepo = actionRuleRepo;
     this.caseRepository = caseRepository;
     this.actionInstructionBuilder = actionInstructionBuilder;
-    this.rabbitPrinterTemplate = rabbitPrinterTemplate;
+    this.printFileDtoBuilder = printFileDtoBuilder;
+    this.rabbitTemplate = rabbitTemplate;
     this.rabbitFieldTemplate = rabbitFieldTemplate;
   }
 
@@ -111,13 +116,23 @@ public class ActionRuleProcessor {
   }
 
   private void executePrinterCases(Stream<Case> cases, ActionRule triggeredActionRule) {
-    List<Callable<ActionInstruction>> callables = new LinkedList<>();
+    UUID batchId = UUID.randomUUID();
+
+//  TODO: Count terminates the Stream...  how to do this nicely?
+    //    long batchQty = cases.count();.  you could copy the Steam, or query the database for a count
+    long batchQty = 10L;
+
+    List<Callable<PrintFileDto>> callables = new LinkedList<>();
     cases.forEach(
         caze -> {
           callables.add(
               () ->
-                  actionInstructionBuilder.buildPrinterActionInstruction(
-                      caze, triggeredActionRule));
+                  printFileDtoBuilder.buildPrintFileDto(caze, triggeredActionRule, batchQty, batchId)
+          );
+
+//
+//                  actionInstructionBuilder.buildPrinterActionInstruction(
+//                      caze, triggeredActionRule));
         });
 
     try {
@@ -128,16 +143,16 @@ public class ActionRuleProcessor {
               triggeredActionRule.getActionType().getHandler().getRoutingKey(),
               ROUTING_KEY_SUFFIX);
 
-      List<Future<ActionInstruction>> results = EXECUTOR_SERVICE.invokeAll(callables);
+      List<Future<PrintFileDto>> results = EXECUTOR_SERVICE.invokeAll(callables);
 
       log.info("About to send {} ActionInstruction messages", results.size());
       int messagesSent = 0;
-      for (Future<ActionInstruction> result : results) {
+      for (Future<PrintFileDto> result : results) {
         if (messagesSent++ % 1000 == 0) {
           log.info("Sent {} ActionInstruction messages", messagesSent - 1);
         }
 
-        rabbitPrinterTemplate.convertAndSend(outboundExchange, routingKey, result.get());
+        rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
       }
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(); // Roll the whole transaction back

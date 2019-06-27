@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.census.action.model.UacQidTuple;
 import uk.gov.ons.census.action.model.dto.instruction.printer.ActionAddress;
 import uk.gov.ons.census.action.model.dto.instruction.printer.ActionEvent;
 import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
@@ -151,7 +151,7 @@ public class ActionInstructionBuilder {
         && treatmentCode.endsWith(WALES_TREATMENT_CODE_SUFFIX));
   }
 
-  private UacQidTuple getUacQidLinks(Case caze) {
+  public UacQidTuple getUacQidLinks(Case caze) {
     List<UacQidLink> uacQidLinks = uacQidLinkRepository.findByCaseId(caze.getCaseId().toString());
     UacQidTuple uacQidTuple = new UacQidTuple();
 
@@ -202,9 +202,4 @@ public class ActionInstructionBuilder {
     throw new RuntimeException(); // We can't find the one we wanted
   }
 
-  @Data
-  private class UacQidTuple {
-    private UacQidLink uacQidLink;
-    private Optional<UacQidLink> uacQidLinkWales = Optional.ofNullable(null);
-  }
 }

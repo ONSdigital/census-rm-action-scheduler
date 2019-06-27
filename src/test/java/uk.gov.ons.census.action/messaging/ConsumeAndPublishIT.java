@@ -4,6 +4,7 @@ import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
@@ -14,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +30,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.EventType;
+import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
 import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
@@ -70,11 +74,13 @@ public class ConsumeAndPublishIT {
     uacQidLinkRepository.deleteAllInBatch();
     caseRepository.deleteAllInBatch();
     actionRuleRepository.deleteAllInBatch();
+    actionPlanRepository.deleteAll();
+    actionRuleRepository.deleteAll();
     actionPlanRepository.deleteAllInBatch();
   }
 
   @Test
-  public void checkReceivedEventsAreEmitted() throws InterruptedException, JAXBException {
+  public void checkReceivedEventsAreEmitted() throws InterruptedException, JAXBException, IOException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -98,14 +104,17 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    ActionInstruction actionInstruction = checkExpectedMessageReceived(outputQueue);
+    PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
 
-    assertThat(actionInstruction.getActionRequest().getActionPlan())
-        .isEqualTo(actionPlan.getId().toString());
-    assertThat(actionInstruction.getActionRequest().getCaseId())
-        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
-    assertThat(actionInstruction.getActionRequest().getCaseRef())
-        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
+    assertThat( printFileDto.getCaseRef()).isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
+
+
+//    assertThat(printFileDto.getAddressLine1())
+//        .isEqualTo();
+//    assertThat(actionInstruction.getActionRequest().getCaseId())
+//        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
+//    assertThat(actionInstruction.getActionRequest().getCaseRef())
+//        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
   }
 
   @Test
@@ -247,6 +256,15 @@ public class ConsumeAndPublishIT {
 
     StringReader reader = new StringReader(actualMessage);
     return (ActionInstruction) unmarshaller.unmarshal(reader);
+  }
+
+  private PrintFileDto checkExpectedPrintFileDtoMessageReceived(BlockingQueue<String> queue)
+          throws InterruptedException, IOException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    String actualMessage = queue.poll(20, TimeUnit.SECONDS);
+    assertNotNull("Did not receive message before timeout", actualMessage);
+
+    return objectMapper.readValue(actualMessage, PrintFileDto.class);
   }
 
   private uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction

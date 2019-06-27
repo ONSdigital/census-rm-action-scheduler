@@ -97,6 +97,8 @@ public class AppConfig {
     return rabbitTemplate;
   }
 
+
+
   @Bean
   public Jaxb2Marshaller actionInstructionPrinterMarshaller() {
     Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
