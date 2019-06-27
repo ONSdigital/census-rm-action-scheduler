@@ -1,8 +1,6 @@
-package uk.gov.ons.census.action.schedule;
+package uk.gov.ons.census.action.builders;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,30 +12,21 @@ import uk.gov.ons.census.action.model.dto.instruction.printer.ActionRequest;
 import uk.gov.ons.census.action.model.dto.instruction.printer.Priority;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
-import uk.gov.ons.census.action.model.entity.UacQidLink;
-import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @Component
 public class ActionInstructionBuilder {
-  private static final String HOUSEHLD_INITIAL_CONTACT_QUESTIONNIARE_TREATMENT_CODE_PREFIX = "HH_Q";
-  private static final String WALES_TREATMENT_CODE_SUFFIX = "W";
-  private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE = 2;
-  private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE = 1;
-  private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
-  private static final String WALES_IN_WELSH_QUESTIONNAIRE_TYPE = "03";
-
-  private final UacQidLinkRepository uacQidLinkRepository;
+  private final QidUacBuilder qidUacBuilder;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
-  public ActionInstructionBuilder(UacQidLinkRepository uacQidLinkRepository) {
-    this.uacQidLinkRepository = uacQidLinkRepository;
+  public ActionInstructionBuilder(QidUacBuilder qidUacBuilder) {
+    this.qidUacBuilder = qidUacBuilder;
   }
 
   public ActionInstruction buildPrinterActionInstruction(Case caze, ActionRule actionRule) {
 
-    UacQidTuple uacQidTuple = getUacQidLinks(caze);
+    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(caze);
 
     ActionEvent actionEvent = new ActionEvent();
     // Legacy hard-coded value to satisfy Action Exporter which should be refactored
@@ -98,7 +87,7 @@ public class ActionInstructionBuilder {
   public uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction
       buildFieldActionInstruction(Case caze, ActionRule actionRule) {
 
-    UacQidTuple uacQidTuple = getUacQidLinks(caze);
+    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(caze);
 
     uk.gov.ons.census.action.model.dto.instruction.field.ActionAddress actionAddress =
         new uk.gov.ons.census.action.model.dto.instruction.field.ActionAddress();
@@ -144,61 +133,5 @@ public class ActionInstructionBuilder {
     actionInstruction.setActionRequest(actionRequest);
 
     return actionInstruction;
-  }
-
-  private boolean isQuestionnaireWelsh(String treatmentCode) {
-    return (treatmentCode.startsWith(HOUSEHLD_INITIAL_CONTACT_QUESTIONNIARE_TREATMENT_CODE_PREFIX)
-        && treatmentCode.endsWith(WALES_TREATMENT_CODE_SUFFIX));
-  }
-
-  public UacQidTuple getUacQidLinks(Case caze) {
-    List<UacQidLink> uacQidLinks = uacQidLinkRepository.findByCaseId(caze.getCaseId().toString());
-    UacQidTuple uacQidTuple = new UacQidTuple();
-
-    if (uacQidLinks == null || uacQidLinks.isEmpty()) {
-      throw new RuntimeException(); // TODO: How can we process this case without a UAC?
-    } else if (uacQidLinks.size() > NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE) {
-      if (isQuestionnaireWelsh(caze.getTreatmentCode())
-          && uacQidLinks.size()
-              == NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE) {
-        uacQidTuple.setUacQidLink(
-            getSpecificUacQidLinkByQuestionnaireType(
-                uacQidLinks,
-                WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE,
-                WALES_IN_WELSH_QUESTIONNAIRE_TYPE));
-        uacQidTuple.setUacQidLinkWales(
-            Optional.ofNullable(
-                getSpecificUacQidLinkByQuestionnaireType(
-                    uacQidLinks,
-                    WALES_IN_WELSH_QUESTIONNAIRE_TYPE,
-                    WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE)));
-      } else {
-        throw new RuntimeException(); // TODO: How do we know which one to use?
-      }
-    } else if (!isQuestionnaireWelsh(caze.getTreatmentCode())) {
-      // Implicitly from the logic above, there can only be one UAC/QID pair - the right one
-      uacQidTuple.setUacQidLink(uacQidLinks.get(0));
-    } else {
-      // Not enough UAC/QID links for a Welsh questionnaire
-      throw new RuntimeException();
-    }
-
-    return uacQidTuple;
-  }
-
-  private UacQidLink getSpecificUacQidLinkByQuestionnaireType(
-      List<UacQidLink> uacQidLinks,
-      String wantedQuestionnaireType,
-      String otherAllowableQuestionnaireType) {
-    for (UacQidLink uacQidLink : uacQidLinks) {
-      if (uacQidLink.getQid().startsWith(wantedQuestionnaireType)) {
-        return uacQidLink;
-      } else if (!uacQidLink.getQid().startsWith(otherAllowableQuestionnaireType)) {
-        // This shouldn't happen - why have we got non-allowable type on this case?
-        throw new RuntimeException();
-      }
-    }
-
-    throw new RuntimeException(); // We can't find the one we wanted
   }
 }

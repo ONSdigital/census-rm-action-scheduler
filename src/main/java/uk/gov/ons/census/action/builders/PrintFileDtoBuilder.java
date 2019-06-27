@@ -1,4 +1,4 @@
-package uk.gov.ons.census.action.schedule;
+package uk.gov.ons.census.action.builders;
 
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -9,17 +9,16 @@ import uk.gov.ons.census.action.model.entity.Case;
 
 @Component
 public class PrintFileDtoBuilder {
+  private final QidUacBuilder qidUacBuilder;
 
-  private final ActionInstructionBuilder actionInstructionBuilder;
-
-  public PrintFileDtoBuilder(ActionInstructionBuilder actionInstructionBuilder) {
-    this.actionInstructionBuilder = actionInstructionBuilder;
+  public PrintFileDtoBuilder(QidUacBuilder qidUacBuilder) {
+    this.qidUacBuilder = qidUacBuilder;
   }
 
   public PrintFileDto buildPrintFileDto(
       Case caze, ActionRule actionRule, long batchQty, UUID batchUUID) {
     //        TODO: This function could be bust out into it's own component
-    UacQidTuple uacQidTuple = actionInstructionBuilder.getUacQidLinks(caze);
+    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(caze);
     PrintFileDto printFileDto = new PrintFileDto();
     printFileDto.setIac(uacQidTuple.getUacQidLink().getUac());
     printFileDto.setQid(uacQidTuple.getUacQidLink().getQid());
