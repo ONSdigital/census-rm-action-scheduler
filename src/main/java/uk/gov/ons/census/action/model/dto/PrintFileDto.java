@@ -18,6 +18,6 @@ public class PrintFileDto {
     private String townName;
     private String postcode;
     private String batchId;
-    private long batchQty;
+    private String batchQty;
     private String actionType;
 }

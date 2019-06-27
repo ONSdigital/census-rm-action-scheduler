@@ -43,7 +43,7 @@ public class PrintFileDtoBuilder {
         printFileDto.setTownName(caze.getTownName());
         printFileDto.setPostcode(caze.getPostcode());
         printFileDto.setBatchId(batchUUID.toString());
-        printFileDto.setBatchQty(batchQty);
+        printFileDto.setBatchQty( Long.toString(batchQty));
         printFileDto.setActionType(actionRule.getActionType().toString());
 
         return printFileDto;
