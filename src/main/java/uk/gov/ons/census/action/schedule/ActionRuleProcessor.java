@@ -5,6 +5,7 @@ import static org.springframework.data.jpa.domain.Specification.where;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.time.OffsetDateTime;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.criteria.CriteriaBuilder.In;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -30,6 +32,7 @@ import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
+import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
 
 @Component
 public class ActionRuleProcessor {
@@ -43,6 +46,7 @@ public class ActionRuleProcessor {
   private final ActionInstructionBuilder actionInstructionBuilder;
   private final PrintFileDtoBuilder printFileDtoBuilder;
   private final RabbitTemplate rabbitTemplate;
+  private final CustomCaseRepository customCaseRepository;
   private final RabbitTemplate rabbitFieldTemplate;
 
   @Value("${queueconfig.outbound-exchange}")
@@ -54,12 +58,14 @@ public class ActionRuleProcessor {
       ActionInstructionBuilder actionInstructionBuilder,
       PrintFileDtoBuilder printFileDtoBuilder,
       RabbitTemplate rabbitTemplate,
+      CustomCaseRepository customCaseRepository,
       @Qualifier("actionInstructionFieldRabbitTemplate") RabbitTemplate rabbitFieldTemplate) {
     this.actionRuleRepo = actionRuleRepo;
     this.caseRepository = caseRepository;
     this.actionInstructionBuilder = actionInstructionBuilder;
     this.printFileDtoBuilder = printFileDtoBuilder;
     this.rabbitTemplate = rabbitTemplate;
+    this.customCaseRepository = customCaseRepository;
     this.rabbitFieldTemplate = rabbitFieldTemplate;
   }
 
@@ -76,26 +82,11 @@ public class ActionRuleProcessor {
   }
 
   private void createScheduledActions(ActionRule triggeredActionRule) {
-    if (triggeredActionRule.getClassifiers() == null
-        || triggeredActionRule.getClassifiers().isEmpty()) {
-      executeAllCases(triggeredActionRule);
-    } else {
-      executeClassifiedCases(triggeredActionRule);
-    }
-  }
-
-  private void executeAllCases(ActionRule triggeredActionRule) {
-    String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
-
-    try (Stream<Case> stream =
-        caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionPlanId)) {
-      executeCases(stream, triggeredActionRule);
-    }
+    executeClassifiedCases(triggeredActionRule);
   }
 
   private void executeClassifiedCases(ActionRule triggeredActionRule) {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
-
     Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
 
     for (Map.Entry<String, List<String>> classifier :
@@ -103,34 +94,38 @@ public class ActionRuleProcessor {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
     }
 
-    try (Stream<Case> cases = caseRepository.findAll(specification).stream()) {
+    if (triggeredActionRule.getActionType().getHandler() == ActionHandler.PRINTER) {
+      Stream<Case> cases = customCaseRepository.streamAll(specification);
       executeCases(cases, triggeredActionRule);
+    } else {
+      try (Stream<Case> cases = caseRepository.findAll(specification).stream()) {
+        executeCases(cases, triggeredActionRule);
+      }
     }
   }
 
   private void executeCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     if (triggeredActionRule.getActionType().getHandler() == ActionHandler.PRINTER) {
-      executePrinterCases(cases, triggeredActionRule);
+      executePrinterCases(cases.collect(Collectors.toList()), triggeredActionRule);
     } else if (triggeredActionRule.getActionType().getHandler() == ActionHandler.FIELD) {
       executeFieldCases(cases, triggeredActionRule);
     }
   }
 
-  private void executePrinterCases(Stream<Case> cases, ActionRule triggeredActionRule) {
+  private void executePrinterCases(List<Case> cases, ActionRule triggeredActionRule) {
     UUID batchId = UUID.randomUUID();
-
-    //  TODO: Change this to use just a list
-
-    long batchQty = 10L;
-
     List<Callable<PrintFileDto>> callables = new LinkedList<>();
-    cases.forEach(
-        caze -> {
-          callables.add(
-              () ->
-                  printFileDtoBuilder.buildPrintFileDto(
-                      caze, triggeredActionRule, batchQty, batchId));
-        });
+    int batchQty = cases.size();
+
+    // By using an iterator we can delete the cases as we go, keep the memory footprint down
+    for (Iterator<Case> iterator = cases.iterator(); iterator.hasNext(); ) {
+      Case caze = iterator.next();
+      callables.add(
+          () ->
+              printFileDtoBuilder.buildPrintFileDto(caze, triggeredActionRule, batchQty, batchId));
+
+      iterator.remove();
+    }
 
     try {
       final String routingKey =

@@ -14,8 +14,8 @@ public class QidUacBuilder {
   private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE = 1;
   private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
   private static final String WALES_IN_WELSH_QUESTIONNAIRE_TYPE = "03";
-  private static final String HOUSEHLD_INITIAL_CONTACT_QUESTIONNIARE_TREATMENT_CODE_PREFIX = "HH_Q";
-  private static final String WALES_TREATMENT_CODE_SUFFIX = "W";
+  public static final String HOUSEHLD_INITIAL_CONTACT_QUESTIONNIARE_TREATMENT_CODE_PREFIX = "HH_Q";
+  public static final String WALES_TREATMENT_CODE_SUFFIX = "W";
 
   private final UacQidLinkRepository uacQidLinkRepository;
 
