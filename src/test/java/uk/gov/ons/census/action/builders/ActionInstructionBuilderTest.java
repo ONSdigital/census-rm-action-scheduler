@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import org.assertj.core.api.Assertions;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
 import uk.gov.ons.census.action.model.UacQidTuple;
@@ -127,95 +128,38 @@ public class ActionInstructionBuilderTest {
     // Expect exception to be thrown
   }
 
-  //  @Test(expected = RuntimeException.class)
-  //  public void testQidLinksEmpty() {
-  //    // Given
-  //    EasyRandom easyRandom = new EasyRandom();
-  //    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
-  //    ActionRule actionRule = new ActionRule();
-  //    actionRule.setActionPlan(actionPlan);
-  //    actionRule.setActionType(ActionType.ICL1E);
-  //    Case testCase = easyRandom.nextObject(Case.class);
-  //    testCase.setTreatmentCode("HH_QF2R1W");
-  //
-  //    when(uacQidLinkRepository.findByCaseId(eq(testCase.getCaseId().toString())))
-  //        .thenReturn(Collections.EMPTY_LIST);
-  //
-  //    // When
-  //    ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-  //    underTest.buildPrinterActionInstruction(testCase, actionRule);
-  //
-  //    // Then
-  //    // Expect exception to be thrown
-  //  }
+  @Test
+  public void testLatAndLongCopiedToAddress() {
+    // Given
+    EasyRandom easyRandom = new EasyRandom();
+    Case caze = easyRandom.nextObject(Case.class);
+    caze.setLatitude("1.123456789999");
+    caze.setLongitude("-9.987654321111");
+    caze.setCeExpectedCapacity("500");
 
-  //  @Test(expected = RuntimeException.class)
-  //  public void testMulitpleQidLinksAmbiguous() {
-  //    // Given
-  //    EasyRandom easyRandom = new EasyRandom();
-  //    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
-  //    ActionRule actionRule = new ActionRule();
-  //    actionRule.setActionPlan(actionPlan);
-  //    actionRule.setActionType(ActionType.ICL1E);
-  //    Case testCase = easyRandom.nextObject(Case.class);
-  //    testCase.setTreatmentCode("HH_LF2R1E");
-  //    String uacEng = easyRandom.nextObject(String.class);
-  //    String uacWal = easyRandom.nextObject(String.class);
-  //    String qidEng = "0220000010732199";
-  //    String qidWal = "0320000002861455";
-  //
-  //    List<UacQidLink> uacQidLinks = new LinkedList<>();
-  //
-  //    UacQidLink uacQidLink = new UacQidLink();
-  //    uacQidLink.setUac(uacEng);
-  //    uacQidLink.setQid(qidEng);
-  //    uacQidLinks.add(uacQidLink);
-  //
-  //    uacQidLink = new UacQidLink();
-  //    uacQidLink.setUac(uacWal);
-  //    uacQidLink.setQid(qidWal);
-  //    uacQidLinks.add(uacQidLink);
-  //
-  //    when(uacQidLinkRepository.findByCaseId(eq(testCase.getCaseId().toString())))
-  //        .thenReturn(uacQidLinks);
-  //
-  //    // When
-  //    ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-  //    underTest.buildPrinterActionInstruction(testCase, actionRule);
-  //
-  //    // Then
-  //    // Expect exception to be thrown
-  //  }
-  //
-  //  @Test
-  //  public void testLatAndLongCopiedToAddress() {
-  //    // Given
-  //    EasyRandom easyRandom = new EasyRandom();
-  //    Case caze = easyRandom.nextObject(Case.class);
-  //    caze.setLatitude("1.123456789999");
-  //    caze.setLongitude("-9.987654321111");
-  //    caze.setCeExpectedCapacity("500");
-  //
-  //    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
-  //    ActionRule actionRule = new ActionRule();
-  //    actionRule.setActionPlan(actionPlan);
-  //    actionRule.setActionType(ActionType.ICL1E);
-  //    UacQidLink uacQidLink = new UacQidLink();
-  //    uacQidLink.setUac(caze.getCaseId().toString() + "uac");
-  //    when(uacQidLinkRepository.findByCaseId(eq(caze.getCaseId().toString())))
-  //        .thenReturn(Collections.singletonList(uacQidLink));
-  //
-  //    // When
-  //    ActionInstructionBuilder underTest = new ActionInstructionBuilder(uacQidLinkRepository);
-  //    uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction actualResult =
-  //        underTest.buildFieldActionInstruction(caze, actionRule);
-  //
-  //    // Then
-  //    assertThat(caze.getLatitude())
-  //        .isEqualTo(actualResult.getActionRequest().getAddress().getLatitude().toString());
-  //    assertThat(caze.getLongitude())
-  //        .isEqualTo(actualResult.getActionRequest().getAddress().getLongitude().toString());
-  //  }
+    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
+    ActionRule actionRule = new ActionRule();
+    actionRule.setActionPlan(actionPlan);
+    actionRule.setActionType(ActionType.ICL1E);
+    UacQidLink uacQidLink = new UacQidLink();
+    uacQidLink.setUac(caze.getCaseId().toString() + "uac");
+
+    UacQidTuple uacQidTuple = new UacQidTuple();
+    uacQidTuple.setUacQidLink(uacQidLink);
+
+    when(qidUacBuilder.getUacQidLinks(caze)).thenReturn(uacQidTuple);
+
+    // When
+    ActionInstructionBuilder underTest = new ActionInstructionBuilder(qidUacBuilder);
+    uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction actualResult =
+        underTest.buildFieldActionInstruction(caze, actionRule);
+
+    // Then
+    Assertions.assertThat(caze.getLatitude())
+        .isEqualTo(actualResult.getActionRequest().getAddress().getLatitude().toString());
+    Assertions.assertThat(caze.getLongitude())
+        .isEqualTo(actualResult.getActionRequest().getAddress().getLongitude().toString());
+  }
 
   private ActionInstruction getExpectedActionInstructionWithActualActionIdUUID(
       Case caze, ActionRule actionRule, ActionInstruction actionInstruction) {
