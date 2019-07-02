@@ -128,6 +128,8 @@ public class ActionRuleProcessor {
 
     final String batchQty = Integer.toString(caseList.size());
 
+    log.info("About to send {} PrintFileDto messages", caseList.size());
+
     caseList.forEach(
         printFileDto -> {
           printFileDto.setBatchQty(batchQty);
