@@ -1,14 +1,9 @@
 package uk.gov.ons.census.action.schedule;
 
 import static junit.framework.TestCase.assertNotNull;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -64,18 +59,15 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(printFileDtoBuilder.buildPrintFileDto(
-            any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
+    when(printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(String.class), any(UUID.class)))
         .thenReturn(new PrintFileDto());
 
-    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            caseRepository,
             actionInstructionBuilder,
             printFileDtoBuilder,
             rabbitTemplate,
@@ -102,7 +94,6 @@ public class ActionRuleProcessorTest {
 
     List<Case> cases = getRandomCases(50);
     // when
-    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
@@ -111,13 +102,12 @@ public class ActionRuleProcessorTest {
 
     doThrow(RuntimeException.class)
         .when(printFileDtoBuilder)
-        .buildPrintFileDto(any(Case.class), eq(actionRule), any(long.class), any(UUID.class));
+        .buildPrintFileDto(any(Case.class), any(String.class), any(UUID.class));
 
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            caseRepository,
             actionInstructionBuilder,
             printFileDtoBuilder,
             rabbitTemplate,
@@ -132,6 +122,11 @@ public class ActionRuleProcessorTest {
     }
 
     // then
+
+    verify(rabbitTemplate, never())
+        .convertAndSend(
+            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
+
     assertNotNull(actualException);
     verify(actionRuleRepo, never()).save(any(ActionRule.class));
     verify(rabbitTemplate, never())
@@ -146,15 +141,13 @@ public class ActionRuleProcessorTest {
 
     List<Case> cases = getRandomCases(50);
     // when
-    when(caseRepository.findAll(any(Specification.class))).thenReturn(cases);
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(printFileDtoBuilder.buildPrintFileDto(
-            any(Case.class), any(ActionRule.class), any(long.class), any(UUID.class)))
+    when(printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(String.class), any(UUID.class)))
         .thenReturn(new PrintFileDto());
 
     doThrow(new RuntimeException())
@@ -166,7 +159,6 @@ public class ActionRuleProcessorTest {
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            caseRepository,
             actionInstructionBuilder,
             printFileDtoBuilder,
             rabbitTemplate,
@@ -180,8 +172,6 @@ public class ActionRuleProcessorTest {
   }
 
   private ActionRule setUpActionRule() {
-    EasyRandom easyRandom = new EasyRandom();
-
     ActionRule actionRule = new ActionRule();
     UUID actionRuleId = UUID.randomUUID();
     actionRule.setId(actionRuleId);
@@ -193,23 +183,6 @@ public class ActionRuleProcessorTest {
 
     actionRule.setClassifiers(classifiers);
     actionRule.setActionType(ActionType.ICL1E);
-
-    ActionPlan actionPlan = new ActionPlan();
-    actionPlan.setId(UUID.randomUUID());
-
-    actionRule.setActionPlan(actionPlan);
-
-    return actionRule;
-  }
-
-  private ActionRule setUpActionRuleField() {
-    ActionRule actionRule = new ActionRule();
-    UUID actionRuleId = UUID.randomUUID();
-    actionRule.setId(actionRuleId);
-    actionRule.setTriggerDateTime(OffsetDateTime.now());
-    actionRule.setHasTriggered(false);
-    actionRule.setClassifiers(new HashMap<>());
-    actionRule.setActionType(ActionType.FF2QE);
 
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());

@@ -19,5 +19,5 @@ public class PrintFileDto {
   private String postcode;
   private String batchId;
   private String batchQty;
-  private String actionType;
+  private String packCode;
 }

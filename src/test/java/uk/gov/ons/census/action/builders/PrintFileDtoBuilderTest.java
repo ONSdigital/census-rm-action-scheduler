@@ -5,13 +5,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
 import uk.gov.ons.census.action.model.UacQidTuple;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
-import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
@@ -21,10 +21,21 @@ public class PrintFileDtoBuilderTest {
   private static final String ENGLISH_QID = "ENGLISH_QID";
   private static final String WELSH_UAC = "WELSH_UAC";
   private static final String WELSH_QID = "WELSH_QID";
-  private static final long BATCH_QTY = 1099L;
+  private static final String BATCH_QTY = "1099";
   private static final UUID BATCH_UUID = UUID.randomUUID();
   private static final ActionType expectedActionType = ActionType.ICL1E;
-  // TODO: can we get Title and names?
+
+  private final HashMap<String, String> actionTypeToPackCodeMap =
+      new HashMap<>() {
+        {
+          put("ICHHQE", "P_IC_H1");
+          put("ICHHQW", "P_IC_H2");
+          put("ICHHQN", "P_IC_H4");
+          put("ICL1E", "P_IC_ICL1");
+          put("ICL2W", "P_IC_ICL2");
+          put("ICL4N", "P_IC_ICL4");
+        }
+      };
 
   @Test
   public void testGoodBuild() {
@@ -33,15 +44,13 @@ public class PrintFileDtoBuilderTest {
     Case testCaze = easyRandom.nextObject(Case.class);
     QidUacBuilder uacQidBuilder = getUpQidUacBuilder();
 
-    ActionRule actionRule = new ActionRule();
-    actionRule.setActionType(ActionType.ICL1E);
     PrintFileDto expectedPrintFileDto = getExpectedPrintFileDto(testCaze);
-
     PrintFileDtoBuilder printFileDtoBuilder = new PrintFileDtoBuilder(uacQidBuilder);
 
     // When
     PrintFileDto actualPrintFileDto =
-        printFileDtoBuilder.buildPrintFileDto(testCaze, actionRule, BATCH_QTY, BATCH_UUID);
+        printFileDtoBuilder.buildPrintFileDto(
+            testCaze, actionTypeToPackCodeMap.get(expectedActionType), BATCH_UUID);
 
     // Then
     assertThat(actualPrintFileDto).isEqualToComparingFieldByField(expectedPrintFileDto);
@@ -85,8 +94,7 @@ public class PrintFileDtoBuilderTest {
     printFileDto.setTownName(caze.getTownName());
     printFileDto.setPostcode(caze.getPostcode());
     printFileDto.setBatchId(BATCH_UUID.toString());
-    printFileDto.setBatchQty(Long.toString(BATCH_QTY));
-    printFileDto.setActionType(expectedActionType.toString());
+    printFileDto.setPackCode(actionTypeToPackCodeMap.get(expectedActionType));
 
     return printFileDto;
   }

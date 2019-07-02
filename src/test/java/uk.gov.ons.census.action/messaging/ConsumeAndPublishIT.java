@@ -65,6 +65,18 @@ public class ConsumeAndPublishIT {
   @Autowired private ActionPlanRepository actionPlanRepository;
   private EasyRandom easyRandom = new EasyRandom();
 
+  private final HashMap<String, String> actionTypeToPackCodeMap =
+      new HashMap<>() {
+        {
+          put("ICHHQE", "P_IC_H1");
+          put("ICHHQW", "P_IC_H2");
+          put("ICHHQN", "P_IC_H4");
+          put("ICL1E", "P_IC_ICL1");
+          put("ICL2W", "P_IC_ICL2");
+          put("ICL4N", "P_IC_ICL4");
+        }
+      };
+
   @Before
   @Transactional
   public void setUp() {
@@ -79,8 +91,7 @@ public class ConsumeAndPublishIT {
   }
 
   @Test
-  public void checkReceivedEventsAreEmitted()
-      throws InterruptedException, JAXBException, IOException {
+  public void checkReceivedEventsAreEmitted() throws InterruptedException, IOException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -109,7 +120,8 @@ public class ConsumeAndPublishIT {
     assertThat(printFileDto.getAddressLine1())
         .isEqualTo(
             caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
-    assertThat(printFileDto.getActionType()).isEqualTo(actionRule.getActionType().toString());
+    assertThat(printFileDto.getPackCode())
+        .isEqualTo(actionTypeToPackCodeMap.get(actionRule.getActionType().toString()));
   }
 
   @Test
@@ -151,7 +163,7 @@ public class ConsumeAndPublishIT {
 
   @Test
   public void checkCaseWithNoLinkedUACQuidDoesntSendThenWorksWhenUACAdded()
-      throws InterruptedException, JAXBException, IOException {
+      throws InterruptedException, IOException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -170,6 +182,9 @@ public class ConsumeAndPublishIT {
     // THEN
     checkExpectedMessageNotReceived(outputQueue);
 
+    actionRule = actionRuleRepository.findById(actionRule.getId()).get();
+    assertThat(actionRule.getHasTriggered()).isEqualTo(false);
+
     // Now add the UAC and check that it then runs successfully
     Uac uac = getUac(caseCreatedEvent);
     ResponseManagementEvent uacUpdatedEvent =
@@ -181,10 +196,15 @@ public class ConsumeAndPublishIT {
     // THEN
     PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
 
+    actionRule = actionRuleRepository.findById(actionRule.getId()).get();
+
     assertThat(printFileDto.getAddressLine1())
         .isEqualTo(
             caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
-    assertThat(printFileDto.getActionType()).isEqualTo(actionRule.getActionType().toString());
+    assertThat(printFileDto.getPackCode())
+        .isEqualTo(actionTypeToPackCodeMap.get(actionRule.getActionType().toString()));
+
+    assertThat(actionRule.getHasTriggered()).isEqualTo(true);
   }
 
   @Test
@@ -211,9 +231,9 @@ public class ConsumeAndPublishIT {
     badCaseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
 
     // WHEN
-    rabbitQueueHelper.sendMessage(inboundQueue, badCaseCreatedEvent);
     rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
+    rabbitQueueHelper.sendMessage(inboundQueue, badCaseCreatedEvent);
 
     // THEN
     checkExpectedMessageNotReceived(outputQueue);

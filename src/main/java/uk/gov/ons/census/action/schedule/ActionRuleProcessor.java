@@ -5,7 +5,7 @@ import static org.springframework.data.jpa.domain.Specification.where;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.time.OffsetDateTime;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +31,6 @@ import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
-import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
 
 @Component
@@ -42,7 +41,6 @@ public class ActionRuleProcessor {
   private static final String ROUTING_KEY_SUFFIX = ".binding";
 
   private final ActionRuleRepository actionRuleRepo;
-  private final CaseRepository caseRepository;
   private final ActionInstructionBuilder actionInstructionBuilder;
   private final PrintFileDtoBuilder printFileDtoBuilder;
   private final RabbitTemplate rabbitTemplate;
@@ -54,14 +52,12 @@ public class ActionRuleProcessor {
 
   public ActionRuleProcessor(
       ActionRuleRepository actionRuleRepo,
-      CaseRepository caseRepository,
       ActionInstructionBuilder actionInstructionBuilder,
       PrintFileDtoBuilder printFileDtoBuilder,
       RabbitTemplate rabbitTemplate,
       CustomCaseRepository customCaseRepository,
       @Qualifier("actionInstructionFieldRabbitTemplate") RabbitTemplate rabbitFieldTemplate) {
     this.actionRuleRepo = actionRuleRepo;
-    this.caseRepository = caseRepository;
     this.actionInstructionBuilder = actionInstructionBuilder;
     this.printFileDtoBuilder = printFileDtoBuilder;
     this.rabbitTemplate = rabbitTemplate;
@@ -94,61 +90,49 @@ public class ActionRuleProcessor {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
     }
 
-    if (triggeredActionRule.getActionType().getHandler() == ActionHandler.PRINTER) {
-      Stream<Case> cases = customCaseRepository.streamAll(specification);
+    try (Stream<Case> cases = customCaseRepository.streamAll(specification); ) {
       executeCases(cases, triggeredActionRule);
-    } else {
-      try (Stream<Case> cases = caseRepository.findAll(specification).stream()) {
-        executeCases(cases, triggeredActionRule);
-      }
     }
   }
 
   private void executeCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     if (triggeredActionRule.getActionType().getHandler() == ActionHandler.PRINTER) {
-      executePrinterCases(cases.collect(Collectors.toList()), triggeredActionRule);
+      executePrinterCases(cases, triggeredActionRule);
     } else if (triggeredActionRule.getActionType().getHandler() == ActionHandler.FIELD) {
       executeFieldCases(cases, triggeredActionRule);
     }
   }
 
-  private void executePrinterCases(List<Case> cases, ActionRule triggeredActionRule) {
+  private String getRoutingKey(ActionRule triggeredActionRule) {
+    return String.format(
+        "%s%s%s",
+        ROUTING_KEY_PREFIX,
+        triggeredActionRule.getActionType().getHandler().getRoutingKey(),
+        ROUTING_KEY_SUFFIX);
+  }
+
+  private void executePrinterCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     UUID batchId = UUID.randomUUID();
-    List<Callable<PrintFileDto>> callables = new LinkedList<>();
-    int batchQty = cases.size();
+    String routingKey = getRoutingKey(triggeredActionRule);
 
-    // By using an iterator we can delete the cases as we go, keep the memory footprint down
-    for (Iterator<Case> iterator = cases.iterator(); iterator.hasNext(); ) {
-      Case caze = iterator.next();
-      callables.add(
-          () ->
-              printFileDtoBuilder.buildPrintFileDto(caze, triggeredActionRule, batchQty, batchId));
+    final String packCode =
+        actionTypeToPackCodeMap.get(triggeredActionRule.getActionType().toString());
 
-      iterator.remove();
-    }
+    // Run Mapping in Parallel then collect to list and send them sequentially to Rabbit as it
+    // doesn't play nicely with Spring's @Transaction :(
+    List<PrintFileDto> caseList =
+        cases
+            .parallel()
+            .map(caze -> printFileDtoBuilder.buildPrintFileDto(caze, packCode, batchId))
+            .collect(Collectors.toList());
 
-    try {
-      final String routingKey =
-          String.format(
-              "%s%s%s",
-              ROUTING_KEY_PREFIX,
-              triggeredActionRule.getActionType().getHandler().getRoutingKey(),
-              ROUTING_KEY_SUFFIX);
+    final String batchQty = Integer.toString(caseList.size());
 
-      List<Future<PrintFileDto>> results = EXECUTOR_SERVICE.invokeAll(callables);
-
-      log.info("About to send {} ActionInstruction messages", results.size());
-      int messagesSent = 0;
-      for (Future<PrintFileDto> result : results) {
-        if (messagesSent++ % 1000 == 0) {
-          log.info("Sent {} ActionInstruction messages", messagesSent - 1);
-        }
-
-        rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
-      }
-    } catch (InterruptedException | ExecutionException e) {
-      throw new RuntimeException(); // Roll the whole transaction back
-    }
+    caseList.forEach(
+        printFileDto -> {
+          printFileDto.setBatchQty(batchQty);
+          rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
+        });
   }
 
   private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
@@ -162,12 +146,7 @@ public class ActionRuleProcessor {
         });
 
     try {
-      final String routingKey =
-          String.format(
-              "%s%s%s",
-              ROUTING_KEY_PREFIX,
-              triggeredActionRule.getActionType().getHandler().getRoutingKey(),
-              ROUTING_KEY_SUFFIX);
+      final String routingKey = getRoutingKey(triggeredActionRule);
 
       List<Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>> results =
           EXECUTOR_SERVICE.invokeAll(callables);
@@ -212,4 +191,16 @@ public class ActionRuleProcessor {
           return inClause;
         };
   }
+
+  private final HashMap<String, String> actionTypeToPackCodeMap =
+      new HashMap<>() {
+        {
+          put("ICHHQE", "P_IC_H1");
+          put("ICHHQW", "P_IC_H2");
+          put("ICHHQN", "P_IC_H4");
+          put("ICL1E", "P_IC_ICL1");
+          put("ICL2W", "P_IC_ICL2");
+          put("ICL4N", "P_IC_ICL4");
+        }
+      };
 }
