@@ -134,7 +134,7 @@ public class ActionRuleProcessor {
             .map(caze -> printFileDtoBuilder.buildPrintFileDto(caze, packCode, batchId))
             .collect(Collectors.toList());
 
-    final String batchQty = Integer.toString(caseList.size());
+    final int batchQty = caseList.size();
 
     log.info("About to send {} PrintFileDto messages", caseList.size());
 
