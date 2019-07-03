@@ -9,5 +9,4 @@ public class Event {
   private String channel;
   private String dateTime;
   private String transactionId;
-  private boolean receiptReceived;
 }

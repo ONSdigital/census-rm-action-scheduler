@@ -29,6 +29,12 @@ public class QueueSetterUpper {
   @Value("${queueconfig.outbound-field-routing-key}")
   private String outboundFieldRoutingKey;
 
+  @Value("${queueconfig.action-case-exchange")
+  private String actionCaseExchange;
+
+  @Value("${queueconfig.action-case-queue")
+  private String actionCaseQueue;
+
   @Bean
   public Queue inboundQueue() {
     return new Queue(inboundQueue, true);
@@ -45,8 +51,24 @@ public class QueueSetterUpper {
   }
 
   @Bean
+  public Queue actionCaseQueue() {
+    return new Queue(actionCaseQueue, true);
+  }
+
+  @Bean
   public DirectExchange outboundExchange() {
     return new DirectExchange(outboundExchange, true, false);
+  }
+
+  @Bean
+  public DirectExchange actionCaseExchange() {
+    return new DirectExchange(actionCaseExchange, true, false);
+  }
+
+  @Bean
+  public Binding actionCaseBinding() {
+    return new Binding(
+        actionCaseQueue, QUEUE, actionCaseExchange, "", null);
   }
 
   @Bean

@@ -71,7 +71,6 @@ public class EventReceiver {
     Case updatedCase = cazeOpt.get();
     updatedCase.setCaseId(UUID.fromString(caseId));
     setCaseDetails(collectionCase, updatedCase);
-    updatedCase.setReceiptReceived(event.isReceiptReceived());
     caseRepository.save(updatedCase);
   }
 
@@ -108,6 +107,10 @@ public class EventReceiver {
     caseDetails.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
     caseDetails.setFieldOfficerId(collectionCase.getFieldOfficerId());
     caseDetails.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
+
+    if (collectionCase.getReceiptReceived() != null) {
+      caseDetails.setReceiptReceived(collectionCase.getReceiptReceived());
+    }
   }
 
   private void processUacUpdated(Uac uac) {

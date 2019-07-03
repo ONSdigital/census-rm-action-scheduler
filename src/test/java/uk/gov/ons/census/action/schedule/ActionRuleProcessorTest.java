@@ -20,6 +20,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
+import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
@@ -38,6 +39,8 @@ public class ActionRuleProcessorTest {
   private final CustomCaseRepository customCaseRepository = mock(CustomCaseRepository.class);
   private final ActionInstructionBuilder actionInstructionBuilder =
       mock(ActionInstructionBuilder.class);
+  private final PrintCaseSelectedBuilder printCaseSelectedBuilder =
+      mock(PrintCaseSelectedBuilder.class);
   private final RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
   private final RabbitTemplate rabbitFieldTemplate = mock(RabbitTemplate.class);
   private final PrintFileDtoBuilder printFileDtoBuilder = mock(PrintFileDtoBuilder.class);
@@ -70,6 +73,7 @@ public class ActionRuleProcessorTest {
             actionRuleRepo,
             actionInstructionBuilder,
             printFileDtoBuilder,
+            printCaseSelectedBuilder,
             rabbitTemplate,
             customCaseRepository,
             null);
@@ -110,6 +114,7 @@ public class ActionRuleProcessorTest {
             actionRuleRepo,
             actionInstructionBuilder,
             printFileDtoBuilder,
+            printCaseSelectedBuilder,
             rabbitTemplate,
             customCaseRepository,
             null);
@@ -161,6 +166,7 @@ public class ActionRuleProcessorTest {
             actionRuleRepo,
             actionInstructionBuilder,
             printFileDtoBuilder,
+            printCaseSelectedBuilder,
             rabbitTemplate,
             customCaseRepository,
             null);
