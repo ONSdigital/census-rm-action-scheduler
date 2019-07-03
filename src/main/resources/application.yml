@@ -41,6 +41,8 @@ queueconfig:
   outbound-exchange: action-outbound-exchange
   outbound-printer-routing-key: Action.Printer.binding
   outbound-field-routing-key: Action.Field.binding
+  action-case-exchange: action-case-exchange
+  action-case-queue: action.events
   consumers: 50
 
 healthcheck:

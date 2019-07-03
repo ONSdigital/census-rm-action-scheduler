@@ -53,7 +53,7 @@ public class ActionRuleProcessor {
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
-  @Value("${queueconfig.action-case-exchange")
+  @Value("${queueconfig.action-case-exchange}")
   private String actionCaseExchange;
 
   public ActionRuleProcessor(
@@ -143,10 +143,10 @@ public class ActionRuleProcessor {
           printFileDto.setBatchQty(batchQty);
           rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
 
-          ResponseManagementEvent actionRuleCaseSelected = printCaseSelectedBuilder
+          ResponseManagementEvent printCaseSelected = printCaseSelectedBuilder
               .buildMessage(printFileDto, triggeredActionRule.getId());
 
-          rabbitTemplate.convertAndSend(actionCaseExchange, "", actionRuleCaseSelected);
+          rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
         });
   }
 

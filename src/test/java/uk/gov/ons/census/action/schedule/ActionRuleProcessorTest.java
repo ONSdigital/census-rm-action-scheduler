@@ -22,7 +22,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
+import uk.gov.ons.census.action.model.dto.PrintCaseSelected;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
+import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -33,6 +35,7 @@ import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
 
 public class ActionRuleProcessorTest {
   private static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
+  private static final String ACTION_CASE_EXCHANGE = "ACTION_CASE_EXCHANGE";
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
   private final CaseRepository caseRepository = mock(CaseRepository.class);
@@ -65,6 +68,9 @@ public class ActionRuleProcessorTest {
     when(printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(String.class), any(UUID.class)))
         .thenReturn(new PrintFileDto());
 
+    when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
+        .thenReturn(new ResponseManagementEvent());
+
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
     // when
@@ -78,6 +84,7 @@ public class ActionRuleProcessorTest {
             customCaseRepository,
             null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
+    ReflectionTestUtils.setField(actionRuleProcessor, "actionCaseExchange", ACTION_CASE_EXCHANGE);
     actionRuleProcessor.processActionRules();
 
     // then
@@ -89,6 +96,9 @@ public class ActionRuleProcessorTest {
     verify(rabbitTemplate, times(47))
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
+    verify(rabbitTemplate, times(47))
+        .convertAndSend(
+            eq(ACTION_CASE_EXCHANGE), eq(""), any(ResponseManagementEvent.class));
   }
 
   @Test
@@ -119,6 +129,7 @@ public class ActionRuleProcessorTest {
             customCaseRepository,
             null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
+    ReflectionTestUtils.setField(actionRuleProcessor, "actionCaseExchange", ACTION_CASE_EXCHANGE);
     RuntimeException actualException = null;
     try {
       actionRuleProcessor.processActionRules();
@@ -127,16 +138,14 @@ public class ActionRuleProcessorTest {
     }
 
     // then
-
-    verify(rabbitTemplate, never())
-        .convertAndSend(
-            eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
-
     assertNotNull(actualException);
     verify(actionRuleRepo, never()).save(any(ActionRule.class));
     verify(rabbitTemplate, never())
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
+    verify(rabbitTemplate, never())
+        .convertAndSend(
+            eq(ACTION_CASE_EXCHANGE), eq(""), any(ResponseManagementEvent.class));
   }
 
   @Test(expected = RuntimeException.class)

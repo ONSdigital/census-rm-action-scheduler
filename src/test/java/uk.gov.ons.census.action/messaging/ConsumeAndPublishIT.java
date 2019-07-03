@@ -58,6 +58,9 @@ public class ConsumeAndPublishIT {
   @Value("${queueconfig.outbound-field-queue}")
   private String outboundFieldQueue;
 
+  @Value("${queueconfig.action-case-queue}")
+  private String actionCaseQueue;
+
   @Autowired private RabbitQueueHelper rabbitQueueHelper;
   @Autowired private CaseRepository caseRepository;
   @Autowired private UacQidLinkRepository uacQidLinkRepository;
@@ -94,6 +97,7 @@ public class ConsumeAndPublishIT {
   public void checkReceivedEventsAreEmitted() throws InterruptedException, IOException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    BlockingQueue<String> actionToCaseQueue = rabbitQueueHelper.listen(actionCaseQueue);
 
     ActionPlan actionPlan = setUpActionPlan("happy", "path");
     actionPlanRepository.saveAndFlush(actionPlan);
@@ -116,12 +120,18 @@ public class ConsumeAndPublishIT {
 
     // THEN
     PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
+    ResponseManagementEvent eventDto = checkExpectedPrintCaseSelectedMessageReceived(actionToCaseQueue);
 
     assertThat(printFileDto.getAddressLine1())
         .isEqualTo(
             caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
     assertThat(printFileDto.getPackCode())
         .isEqualTo(actionTypeToPackCodeMap.get(actionRule.getActionType().toString()));
+
+    assertThat(eventDto.getEvent().getType()).isEqualTo(EventType.PRINT_CASE_SELECTED);
+    assertThat(eventDto.getPayload().getPrintCaseSelected().getPackCode()).isEqualTo("P_IC_ICL1");
+    assertThat(Long.toString(eventDto.getPayload().getPrintCaseSelected().getCaseRef()))
+        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
   }
 
   @Test
@@ -278,6 +288,15 @@ public class ConsumeAndPublishIT {
     assertNotNull("Did not receive message before timeout", actualMessage);
 
     return objectMapper.readValue(actualMessage, PrintFileDto.class);
+  }
+
+  private ResponseManagementEvent checkExpectedPrintCaseSelectedMessageReceived(
+      BlockingQueue<String> queue) throws InterruptedException, IOException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    String actualMessage = queue.poll(20, TimeUnit.SECONDS);
+    assertNotNull("Did not receive message before timeout", actualMessage);
+
+    return objectMapper.readValue(actualMessage, ResponseManagementEvent.class);
   }
 
   private uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction

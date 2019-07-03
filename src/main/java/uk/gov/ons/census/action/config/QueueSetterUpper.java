@@ -29,10 +29,10 @@ public class QueueSetterUpper {
   @Value("${queueconfig.outbound-field-routing-key}")
   private String outboundFieldRoutingKey;
 
-  @Value("${queueconfig.action-case-exchange")
+  @Value("${queueconfig.action-case-exchange}")
   private String actionCaseExchange;
 
-  @Value("${queueconfig.action-case-queue")
+  @Value("${queueconfig.action-case-queue}")
   private String actionCaseQueue;
 
   @Bean
