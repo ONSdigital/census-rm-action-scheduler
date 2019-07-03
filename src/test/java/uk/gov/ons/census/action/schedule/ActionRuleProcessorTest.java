@@ -34,7 +34,7 @@ public class ActionRuleProcessorTest {
   private static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
-  private final CaseRepository caseRepository = mock(CaseRepository.class);
+//  private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final CustomCaseRepository customCaseRepository = mock(CustomCaseRepository.class);
   private final ActionInstructionBuilder actionInstructionBuilder =
       mock(ActionInstructionBuilder.class);
@@ -85,6 +85,51 @@ public class ActionRuleProcessorTest {
     verify(rabbitTemplate, times(47))
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
+  }
+
+  @Test
+  public void testExecuteCasesField() {
+    // Given
+    ActionRule actionRule = setUpActionRuleField();
+    final int expectedCaseCount = 50;
+
+    List<Case> cases = getRandomCases(expectedCaseCount);
+
+    when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
+
+    doReturn(Arrays.asList(actionRule))
+            .when(actionRuleRepo)
+            .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+
+    when(actionInstructionBuilder.buildFieldActionInstruction(any(Case.class), eq(actionRule)))
+            .thenReturn(new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction());
+
+    ActionRuleProcessor actionRuleProcessor =
+            new ActionRuleProcessor(
+                    actionRuleRepo,
+                    actionInstructionBuilder,
+                    printFileDtoBuilder,
+                    null,
+                    customCaseRepository,
+                    rabbitFieldTemplate);
+
+    // when
+    ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
+    actionRuleProcessor.processActionRules();
+
+    // then
+    verify(actionInstructionBuilder, times(expectedCaseCount))
+            .buildFieldActionInstruction(any(Case.class), eq(actionRule));
+    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
+    verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
+    ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
+    actionRule.setHasTriggered(true);
+    Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
+    verify(rabbitFieldTemplate, times(expectedCaseCount))
+            .convertAndSend(
+                    eq(OUTBOUND_EXCHANGE),
+                    eq("Action.Field.binding"),
+                    any(uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction.class));
   }
 
   @Test
@@ -191,6 +236,29 @@ public class ActionRuleProcessorTest {
 
     return actionRule;
   }
+
+  private ActionRule setUpActionRuleField() {
+    ActionRule actionRule = new ActionRule();
+    UUID actionRuleId = UUID.randomUUID();
+    actionRule.setId(actionRuleId);
+    actionRule.setTriggerDateTime(OffsetDateTime.now());
+    actionRule.setHasTriggered(false);
+    actionRule.setClassifiers(new HashMap<>());
+    actionRule.setActionType(ActionType.FF2QE);
+
+    ActionPlan actionPlan = new ActionPlan();
+
+    Map<String, List<String>> classifiers = new HashMap<>();
+    classifiers.put("A Key", new ArrayList<>());
+
+    actionRule.setClassifiers(classifiers);
+    actionPlan.setId(UUID.randomUUID());
+
+    actionRule.setActionPlan(actionPlan);
+
+    return actionRule;
+  }
+
 
   private List<Case> getRandomCases(int count) {
     List<Case> cases = new ArrayList<>();

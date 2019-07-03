@@ -98,22 +98,6 @@ public class AppConfig {
   }
 
   @Bean
-  public Jaxb2Marshaller actionInstructionPrinterMarshaller() {
-    Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
-    jaxb2Marshaller.setContextPath("uk.gov.ons.census.action.model.dto.instruction.printer");
-    return jaxb2Marshaller;
-  }
-
-  @Bean
-  public MarshallingMessageConverter actionInstructionPrinterMarshallingMessageConverter(
-      Jaxb2Marshaller actionInstructionPrinterMarshaller) {
-    MarshallingMessageConverter marshallingMessageConverter =
-        new MarshallingMessageConverter(actionInstructionPrinterMarshaller);
-    marshallingMessageConverter.setContentType("text/xml");
-    return marshallingMessageConverter;
-  }
-
-  @Bean
   public RabbitTemplate actionInstructionPrinterRabbitTemplate(
       ConnectionFactory connectionFactory,
       MarshallingMessageConverter actionInstructionPrinterMarshallingMessageConverter) {
