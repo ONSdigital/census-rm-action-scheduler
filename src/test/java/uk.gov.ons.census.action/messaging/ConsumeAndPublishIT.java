@@ -32,7 +32,6 @@ import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
-import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -257,18 +256,6 @@ public class ConsumeAndPublishIT {
       throws InterruptedException {
     String actualMessage = queue.poll(10, TimeUnit.SECONDS);
     assertNull("Received Message, expected none", actualMessage);
-  }
-
-  private ActionInstruction checkExpectedMessageReceived(BlockingQueue<String> queue)
-      throws InterruptedException, JAXBException {
-    String actualMessage = queue.poll(20, TimeUnit.SECONDS);
-    assertNotNull("Did not receive message before timeout", actualMessage);
-
-    JAXBContext jaxbContext = JAXBContext.newInstance(ActionInstruction.class);
-    Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-    StringReader reader = new StringReader(actualMessage);
-    return (ActionInstruction) unmarshaller.unmarshal(reader);
   }
 
   private PrintFileDto checkExpectedPrintFileDtoMessageReceived(BlockingQueue<String> queue)

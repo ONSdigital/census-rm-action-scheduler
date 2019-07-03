@@ -21,7 +21,6 @@ public class PrintFileDtoBuilderTest {
   private static final String ENGLISH_QID = "ENGLISH_QID";
   private static final String WELSH_UAC = "WELSH_UAC";
   private static final String WELSH_QID = "WELSH_QID";
-  private static final String BATCH_QTY = "1099";
   private static final UUID BATCH_UUID = UUID.randomUUID();
   private static final ActionType expectedActionType = ActionType.ICL1E;
 

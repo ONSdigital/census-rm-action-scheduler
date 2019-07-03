@@ -27,14 +27,13 @@ import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
-import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
 
 public class ActionRuleProcessorTest {
   private static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
-//  private final CaseRepository caseRepository = mock(CaseRepository.class);
+  //  private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final CustomCaseRepository customCaseRepository = mock(CustomCaseRepository.class);
   private final ActionInstructionBuilder actionInstructionBuilder =
       mock(ActionInstructionBuilder.class);
@@ -51,7 +50,9 @@ public class ActionRuleProcessorTest {
     classifiers.put("A_Column", columnValues);
     actionRule.setClassifiers(classifiers);
 
-    List<Case> cases = getRandomCases(47);
+    final int expectedCaseCount = 47;
+
+    List<Case> cases = getRandomCases(expectedCaseCount);
 
     // For some reason this works and the 'normal' when.thenReturn way doesn't, might be the JPA
     // OneToMany
@@ -82,7 +83,7 @@ public class ActionRuleProcessorTest {
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
-    verify(rabbitTemplate, times(47))
+    verify(rabbitTemplate, times(expectedCaseCount))
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
   }
@@ -98,20 +99,20 @@ public class ActionRuleProcessorTest {
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
     doReturn(Arrays.asList(actionRule))
-            .when(actionRuleRepo)
-            .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
+        .when(actionRuleRepo)
+        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
     when(actionInstructionBuilder.buildFieldActionInstruction(any(Case.class), eq(actionRule)))
-            .thenReturn(new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction());
+        .thenReturn(new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction());
 
     ActionRuleProcessor actionRuleProcessor =
-            new ActionRuleProcessor(
-                    actionRuleRepo,
-                    actionInstructionBuilder,
-                    printFileDtoBuilder,
-                    null,
-                    customCaseRepository,
-                    rabbitFieldTemplate);
+        new ActionRuleProcessor(
+            actionRuleRepo,
+            actionInstructionBuilder,
+            printFileDtoBuilder,
+            null,
+            customCaseRepository,
+            rabbitFieldTemplate);
 
     // when
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
@@ -119,17 +120,17 @@ public class ActionRuleProcessorTest {
 
     // then
     verify(actionInstructionBuilder, times(expectedCaseCount))
-            .buildFieldActionInstruction(any(Case.class), eq(actionRule));
+        .buildFieldActionInstruction(any(Case.class), eq(actionRule));
     ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
     verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
     verify(rabbitFieldTemplate, times(expectedCaseCount))
-            .convertAndSend(
-                    eq(OUTBOUND_EXCHANGE),
-                    eq("Action.Field.binding"),
-                    any(uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction.class));
+        .convertAndSend(
+            eq(OUTBOUND_EXCHANGE),
+            eq("Action.Field.binding"),
+            any(uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction.class));
   }
 
   @Test
@@ -258,7 +259,6 @@ public class ActionRuleProcessorTest {
 
     return actionRule;
   }
-
 
   private List<Case> getRandomCases(int count) {
     List<Case> cases = new ArrayList<>();
