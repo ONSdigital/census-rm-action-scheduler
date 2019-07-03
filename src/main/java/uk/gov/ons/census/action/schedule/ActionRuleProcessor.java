@@ -143,8 +143,8 @@ public class ActionRuleProcessor {
           printFileDto.setBatchQty(batchQty);
           rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
 
-          ResponseManagementEvent printCaseSelected = printCaseSelectedBuilder
-              .buildMessage(printFileDto, triggeredActionRule.getId());
+          ResponseManagementEvent printCaseSelected =
+              printCaseSelectedBuilder.buildMessage(printFileDto, triggeredActionRule.getId());
 
           rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
         });

@@ -22,7 +22,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
-import uk.gov.ons.census.action.model.dto.PrintCaseSelected;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
@@ -97,8 +96,7 @@ public class ActionRuleProcessorTest {
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
     verify(rabbitTemplate, times(47))
-        .convertAndSend(
-            eq(ACTION_CASE_EXCHANGE), eq(""), any(ResponseManagementEvent.class));
+        .convertAndSend(eq(ACTION_CASE_EXCHANGE), eq(""), any(ResponseManagementEvent.class));
   }
 
   @Test
@@ -144,8 +142,7 @@ public class ActionRuleProcessorTest {
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
     verify(rabbitTemplate, never())
-        .convertAndSend(
-            eq(ACTION_CASE_EXCHANGE), eq(""), any(ResponseManagementEvent.class));
+        .convertAndSend(eq(ACTION_CASE_EXCHANGE), eq(""), any(ResponseManagementEvent.class));
   }
 
   @Test(expected = RuntimeException.class)

@@ -120,7 +120,8 @@ public class ConsumeAndPublishIT {
 
     // THEN
     PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
-    ResponseManagementEvent eventDto = checkExpectedPrintCaseSelectedMessageReceived(actionToCaseQueue);
+    ResponseManagementEvent eventDto =
+        checkExpectedPrintCaseSelectedMessageReceived(actionToCaseQueue);
 
     assertThat(printFileDto.getAddressLine1())
         .isEqualTo(

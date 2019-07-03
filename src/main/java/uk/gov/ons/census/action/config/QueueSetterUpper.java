@@ -67,8 +67,7 @@ public class QueueSetterUpper {
 
   @Bean
   public Binding actionCaseBinding() {
-    return new Binding(
-        actionCaseQueue, QUEUE, actionCaseExchange, "", null);
+    return new Binding(actionCaseQueue, QUEUE, actionCaseExchange, "", null);
   }
 
   @Bean

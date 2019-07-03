@@ -5,10 +5,10 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
-import uk.gov.ons.census.action.model.dto.PrintCaseSelected;
 import uk.gov.ons.census.action.model.dto.Event;
 import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.Payload;
+import uk.gov.ons.census.action.model.dto.PrintCaseSelected;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 
@@ -36,5 +36,4 @@ public class PrintCaseSelectedBuilder {
 
     return responseManagementEvent;
   }
-
 }
