@@ -49,7 +49,7 @@ public class PrintFileDtoBuilderTest {
     // When
     PrintFileDto actualPrintFileDto =
         printFileDtoBuilder.buildPrintFileDto(
-            testCaze, actionTypeToPackCodeMap.get(expectedActionType), BATCH_UUID);
+            testCaze, actionTypeToPackCodeMap.get(expectedActionType), BATCH_UUID, "test_actiontype");
 
     // Then
     assertThat(actualPrintFileDto).isEqualToComparingFieldByField(expectedPrintFileDto);
@@ -75,9 +75,9 @@ public class PrintFileDtoBuilderTest {
 
   private PrintFileDto getExpectedPrintFileDto(Case caze) {
     PrintFileDto printFileDto = new PrintFileDto();
-    printFileDto.setIac(ENGLISH_UAC);
+    printFileDto.setUac(ENGLISH_UAC);
     printFileDto.setQid(ENGLISH_QID);
-    printFileDto.setIacWales(WELSH_UAC);
+    printFileDto.setUacWales(WELSH_UAC);
     printFileDto.setQidWales(WELSH_QID);
 
     printFileDto.setCaseRef(caze.getCaseRef());
@@ -94,6 +94,7 @@ public class PrintFileDtoBuilderTest {
     printFileDto.setPostcode(caze.getPostcode());
     printFileDto.setBatchId(BATCH_UUID.toString());
     printFileDto.setPackCode(actionTypeToPackCodeMap.get(expectedActionType));
+    printFileDto.setActionType("test_actiontype");
 
     return printFileDto;
   }
