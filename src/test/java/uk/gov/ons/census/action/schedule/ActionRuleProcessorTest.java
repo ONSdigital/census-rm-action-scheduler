@@ -60,7 +60,8 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(String.class), any(UUID.class), anyString()))
+    when(printFileDtoBuilder.buildPrintFileDto(
+            any(Case.class), any(String.class), any(UUID.class), anyString()))
         .thenReturn(new PrintFileDto());
 
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
@@ -193,7 +194,8 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
-    when(printFileDtoBuilder.buildPrintFileDto(any(Case.class), any(String.class), any(UUID.class), anyString()))
+    when(printFileDtoBuilder.buildPrintFileDto(
+            any(Case.class), any(String.class), any(UUID.class), anyString()))
         .thenReturn(new PrintFileDto());
 
     doThrow(new RuntimeException())

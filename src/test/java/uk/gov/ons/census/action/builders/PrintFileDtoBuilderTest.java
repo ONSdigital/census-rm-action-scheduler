@@ -49,7 +49,10 @@ public class PrintFileDtoBuilderTest {
     // When
     PrintFileDto actualPrintFileDto =
         printFileDtoBuilder.buildPrintFileDto(
-            testCaze, actionTypeToPackCodeMap.get(expectedActionType), BATCH_UUID, "test_actiontype");
+            testCaze,
+            actionTypeToPackCodeMap.get(expectedActionType),
+            BATCH_UUID,
+            "test_actiontype");
 
     // Then
     assertThat(actualPrintFileDto).isEqualToComparingFieldByField(expectedPrintFileDto);

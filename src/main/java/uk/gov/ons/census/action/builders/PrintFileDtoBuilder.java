@@ -14,7 +14,8 @@ public class PrintFileDtoBuilder {
     this.qidUacBuilder = qidUacBuilder;
   }
 
-  public PrintFileDto buildPrintFileDto(Case caze, String packCode, UUID batchUUID, String actionType) {
+  public PrintFileDto buildPrintFileDto(
+      Case caze, String packCode, UUID batchUUID, String actionType) {
     UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(caze);
 
     PrintFileDto printFileDto = new PrintFileDto();
