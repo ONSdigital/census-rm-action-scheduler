@@ -51,7 +51,7 @@ public class EventReceiver {
 
   private void processCaseCreatedEvent(CollectionCase collectionCase) {
     Case newCase = new Case();
-    newCase.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
+    newCase.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     setCaseDetails(collectionCase, newCase);
     newCase.setReceiptReceived(false);

@@ -81,7 +81,7 @@ public class EventReceiverTest {
 
   private Case getExpectedCase(CollectionCase collectionCase) {
     Case newCase = new Case();
-    newCase.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
+    newCase.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     newCase.setActionPlanId(collectionCase.getActionPlanId());
     newCase.setCollectionExerciseId(collectionCase.getCollectionExerciseId());

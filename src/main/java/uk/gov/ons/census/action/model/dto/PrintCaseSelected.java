@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class PrintCaseSelected {
-  private long caseRef;
+  private int caseRef;
   private String packCode;
   private String actionRuleId;
   private String batchId;

@@ -29,6 +29,7 @@ import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
+import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
 
 public class ActionRuleProcessorTest {
@@ -36,7 +37,7 @@ public class ActionRuleProcessorTest {
   private static final String ACTION_CASE_EXCHANGE = "ACTION_CASE_EXCHANGE";
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
-  //  private final CaseRepository caseRepository = mock(CaseRepository.class);
+  private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final CustomCaseRepository customCaseRepository = mock(CustomCaseRepository.class);
   private final ActionInstructionBuilder actionInstructionBuilder =
       mock(ActionInstructionBuilder.class);
@@ -55,9 +56,7 @@ public class ActionRuleProcessorTest {
     classifiers.put("A_Column", columnValues);
     actionRule.setClassifiers(classifiers);
 
-    final int expectedCaseCount = 47;
-
-    List<Case> cases = getRandomCases(expectedCaseCount);
+    List<Case> cases = getRandomCases(47);
 
     // For some reason this works and the 'normal' when.thenReturn way doesn't, might be the JPA
     // OneToMany
@@ -93,56 +92,11 @@ public class ActionRuleProcessorTest {
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
-    verify(rabbitTemplate, times(expectedCaseCount))
+    verify(rabbitTemplate, times(47))
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE), eq("Action.Printer.binding"), any(PrintFileDto.class));
     verify(rabbitTemplate, times(47))
         .convertAndSend(eq(ACTION_CASE_EXCHANGE), eq(""), any(ResponseManagementEvent.class));
-  }
-
-  @Test
-  public void testExecuteCasesField() {
-    // Given
-    ActionRule actionRule = setUpActionRuleField();
-    final int expectedCaseCount = 50;
-
-    List<Case> cases = getRandomCases(expectedCaseCount);
-
-    when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
-
-    doReturn(Arrays.asList(actionRule))
-        .when(actionRuleRepo)
-        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
-
-    when(actionInstructionBuilder.buildFieldActionInstruction(any(Case.class), eq(actionRule)))
-        .thenReturn(new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction());
-
-    ActionRuleProcessor actionRuleProcessor =
-        new ActionRuleProcessor(
-            actionRuleRepo,
-            actionInstructionBuilder,
-            printFileDtoBuilder,
-            null,
-            customCaseRepository,
-            rabbitFieldTemplate);
-
-    // when
-    ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
-    actionRuleProcessor.processActionRules();
-
-    // then
-    verify(actionInstructionBuilder, times(expectedCaseCount))
-        .buildFieldActionInstruction(any(Case.class), eq(actionRule));
-    ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
-    verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
-    ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
-    actionRule.setHasTriggered(true);
-    Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
-    verify(rabbitFieldTemplate, times(expectedCaseCount))
-        .convertAndSend(
-            eq(OUTBOUND_EXCHANGE),
-            eq("Action.Field.binding"),
-            any(uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction.class));
   }
 
   @Test
@@ -243,28 +197,6 @@ public class ActionRuleProcessorTest {
     actionRule.setActionType(ActionType.ICL1E);
 
     ActionPlan actionPlan = new ActionPlan();
-    actionPlan.setId(UUID.randomUUID());
-
-    actionRule.setActionPlan(actionPlan);
-
-    return actionRule;
-  }
-
-  private ActionRule setUpActionRuleField() {
-    ActionRule actionRule = new ActionRule();
-    UUID actionRuleId = UUID.randomUUID();
-    actionRule.setId(actionRuleId);
-    actionRule.setTriggerDateTime(OffsetDateTime.now());
-    actionRule.setHasTriggered(false);
-    actionRule.setClassifiers(new HashMap<>());
-    actionRule.setActionType(ActionType.FF2QE);
-
-    ActionPlan actionPlan = new ActionPlan();
-
-    Map<String, List<String>> classifiers = new HashMap<>();
-    classifiers.put("A Key", new ArrayList<>());
-
-    actionRule.setClassifiers(classifiers);
     actionPlan.setId(UUID.randomUUID());
 
     actionRule.setActionPlan(actionPlan);
