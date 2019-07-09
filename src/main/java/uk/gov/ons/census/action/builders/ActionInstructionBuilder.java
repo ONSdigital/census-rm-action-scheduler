@@ -51,7 +51,7 @@ public class ActionInstructionBuilder {
     actionRequest.setAddress(actionAddress);
     actionRequest.setCaseId(caze.getCaseId().toString());
     actionRequest.setPriority(uk.gov.ons.census.action.model.dto.instruction.field.Priority.MEDIUM);
-    actionRequest.setCaseRef(Long.toString(caze.getCaseRef()));
+    actionRequest.setCaseRef(Integer.toString(caze.getCaseRef()));
     actionRequest.setIac(uacQidTuple.getUacQidLink().getUac());
     actionRequest.setAddressType(caze.getAddressType());
     actionRequest.setAddressLevel(caze.getAddressLevel());

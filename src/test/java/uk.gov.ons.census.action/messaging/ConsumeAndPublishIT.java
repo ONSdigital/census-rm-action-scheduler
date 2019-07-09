@@ -130,7 +130,7 @@ public class ConsumeAndPublishIT {
 
     assertThat(eventDto.getEvent().getType()).isEqualTo(EventType.PRINT_CASE_SELECTED);
     assertThat(eventDto.getPayload().getPrintCaseSelected().getPackCode()).isEqualTo("P_IC_ICL1");
-    assertThat(Long.toString(eventDto.getPayload().getPrintCaseSelected().getCaseRef()))
+    assertThat(Integer.toString(eventDto.getPayload().getPrintCaseSelected().getCaseRef()))
         .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
   }
 
