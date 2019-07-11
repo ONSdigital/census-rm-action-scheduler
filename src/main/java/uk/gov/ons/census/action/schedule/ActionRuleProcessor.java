@@ -25,8 +25,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
+import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
+import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
@@ -43,6 +45,7 @@ public class ActionRuleProcessor {
   private final ActionRuleRepository actionRuleRepo;
   private final ActionInstructionBuilder actionInstructionBuilder;
   private final PrintFileDtoBuilder printFileDtoBuilder;
+  private final PrintCaseSelectedBuilder printCaseSelectedBuilder;
   private final RabbitTemplate rabbitTemplate;
   private final CustomCaseRepository customCaseRepository;
   private final RabbitTemplate rabbitFieldTemplate;
@@ -50,16 +53,21 @@ public class ActionRuleProcessor {
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
+  @Value("${queueconfig.action-case-exchange}")
+  private String actionCaseExchange;
+
   public ActionRuleProcessor(
       ActionRuleRepository actionRuleRepo,
       ActionInstructionBuilder actionInstructionBuilder,
       PrintFileDtoBuilder printFileDtoBuilder,
+      PrintCaseSelectedBuilder printCaseSelectedBuilder,
       RabbitTemplate rabbitTemplate,
       CustomCaseRepository customCaseRepository,
       @Qualifier("actionInstructionFieldRabbitTemplate") RabbitTemplate rabbitFieldTemplate) {
     this.actionRuleRepo = actionRuleRepo;
     this.actionInstructionBuilder = actionInstructionBuilder;
     this.printFileDtoBuilder = printFileDtoBuilder;
+    this.printCaseSelectedBuilder = printCaseSelectedBuilder;
     this.rabbitTemplate = rabbitTemplate;
     this.customCaseRepository = customCaseRepository;
     this.rabbitFieldTemplate = rabbitFieldTemplate;
@@ -137,6 +145,11 @@ public class ActionRuleProcessor {
         printFileDto -> {
           printFileDto.setBatchQuantity(batchQty);
           rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
+
+          ResponseManagementEvent printCaseSelected =
+              printCaseSelectedBuilder.buildMessage(printFileDto, triggeredActionRule.getId());
+
+          rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
         });
   }
 

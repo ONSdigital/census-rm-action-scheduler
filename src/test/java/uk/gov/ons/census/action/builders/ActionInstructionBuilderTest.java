@@ -119,7 +119,7 @@ public class ActionInstructionBuilderTest {
     actionRequest.setCaseGroupStatus("NOTSTARTED");
     actionRequest.setCaseId(caze.getCaseId().toString());
     actionRequest.setPriority(Priority.MEDIUM);
-    actionRequest.setCaseRef(Long.toString(caze.getCaseRef()));
+    actionRequest.setCaseRef(Integer.toString(caze.getCaseRef()));
     actionRequest.setIac(uac);
     actionRequest.setEvents(actionEvent);
     actionRequest.setExerciseRef("201904");
