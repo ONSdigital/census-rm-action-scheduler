@@ -143,7 +143,7 @@ public class ActionRuleProcessor {
 
     caseList.forEach(
         printFileDto -> {
-          printFileDto.setBatchQty(batchQty);
+          printFileDto.setBatchQuantity(batchQty);
           rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
 
           ResponseManagementEvent printCaseSelected =

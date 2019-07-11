@@ -20,8 +20,10 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
+import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
+import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -37,6 +39,9 @@ public class ActionRuleProcessorTest {
   private final CustomCaseRepository customCaseRepository = mock(CustomCaseRepository.class);
   private final ActionInstructionBuilder actionInstructionBuilder =
       mock(ActionInstructionBuilder.class);
+  private final PrintCaseSelectedBuilder printCaseSelectedBuilder =
+      mock(PrintCaseSelectedBuilder.class);
+
   private final RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
   private final RabbitTemplate rabbitFieldTemplate = mock(RabbitTemplate.class);
   private final PrintFileDtoBuilder printFileDtoBuilder = mock(PrintFileDtoBuilder.class);
@@ -64,6 +69,9 @@ public class ActionRuleProcessorTest {
             any(Case.class), any(String.class), any(UUID.class), anyString()))
         .thenReturn(new PrintFileDto());
 
+    when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
+        .thenReturn(new ResponseManagementEvent());
+
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
     // when
@@ -72,6 +80,7 @@ public class ActionRuleProcessorTest {
             actionRuleRepo,
             actionInstructionBuilder,
             printFileDtoBuilder,
+            printCaseSelectedBuilder,
             rabbitTemplate,
             customCaseRepository,
             null);
@@ -106,11 +115,15 @@ public class ActionRuleProcessorTest {
     when(actionInstructionBuilder.buildFieldActionInstruction(any(Case.class), eq(actionRule)))
         .thenReturn(new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction());
 
+    when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
+        .thenReturn(new ResponseManagementEvent());
+
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
             actionInstructionBuilder,
             printFileDtoBuilder,
+            printCaseSelectedBuilder,
             null,
             customCaseRepository,
             rabbitFieldTemplate);
@@ -147,6 +160,9 @@ public class ActionRuleProcessorTest {
         .when(actionRuleRepo)
         .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
 
+    when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
+        .thenReturn(new ResponseManagementEvent());
+
     doThrow(RuntimeException.class)
         .when(printFileDtoBuilder)
         .buildPrintFileDto(any(Case.class), any(String.class), any(UUID.class), anyString());
@@ -157,6 +173,7 @@ public class ActionRuleProcessorTest {
             actionRuleRepo,
             actionInstructionBuilder,
             printFileDtoBuilder,
+            printCaseSelectedBuilder,
             rabbitTemplate,
             customCaseRepository,
             null);
@@ -198,6 +215,9 @@ public class ActionRuleProcessorTest {
             any(Case.class), any(String.class), any(UUID.class), anyString()))
         .thenReturn(new PrintFileDto());
 
+    when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
+        .thenReturn(new ResponseManagementEvent());
+
     doThrow(new RuntimeException())
         .when(rabbitTemplate)
         .convertAndSend(
@@ -209,6 +229,7 @@ public class ActionRuleProcessorTest {
             actionRuleRepo,
             actionInstructionBuilder,
             printFileDtoBuilder,
+            printCaseSelectedBuilder,
             rabbitTemplate,
             customCaseRepository,
             null);

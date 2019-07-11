@@ -8,7 +8,7 @@ public class PrintFileDto {
   private String qid;
   private String uacWales;
   private String qidWales;
-  private long caseRef;
+  private int caseRef;
   private String title;
   private String forename;
   private String surname;
