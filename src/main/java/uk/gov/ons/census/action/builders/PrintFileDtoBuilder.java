@@ -14,15 +14,16 @@ public class PrintFileDtoBuilder {
     this.qidUacBuilder = qidUacBuilder;
   }
 
-  public PrintFileDto buildPrintFileDto(Case caze, String packCode, UUID batchUUID) {
+  public PrintFileDto buildPrintFileDto(
+      Case caze, String packCode, UUID batchUUID, String actionType) {
     UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(caze);
 
     PrintFileDto printFileDto = new PrintFileDto();
-    printFileDto.setIac(uacQidTuple.getUacQidLink().getUac());
+    printFileDto.setUac(uacQidTuple.getUacQidLink().getUac());
     printFileDto.setQid(uacQidTuple.getUacQidLink().getQid());
 
     if (uacQidTuple.getUacQidLinkWales().isPresent()) {
-      printFileDto.setIacWales(uacQidTuple.getUacQidLinkWales().get().getUac());
+      printFileDto.setUacWales(uacQidTuple.getUacQidLinkWales().get().getUac());
       printFileDto.setQidWales(uacQidTuple.getUacQidLinkWales().get().getQid());
     }
 
@@ -40,6 +41,7 @@ public class PrintFileDtoBuilder {
     printFileDto.setPostcode(caze.getPostcode());
     printFileDto.setBatchId(batchUUID.toString());
     printFileDto.setPackCode(packCode);
+    printFileDto.setActionType(actionType);
 
     return printFileDto;
   }

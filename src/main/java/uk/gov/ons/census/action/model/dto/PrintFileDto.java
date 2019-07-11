@@ -4,11 +4,11 @@ import lombok.Data;
 
 @Data
 public class PrintFileDto {
-  private String iac;
+  private String uac;
   private String qid;
-  private String iacWales;
+  private String uacWales;
   private String qidWales;
-  private int caseRef;
+  private long caseRef;
   private String title;
   private String forename;
   private String surname;
@@ -18,6 +18,7 @@ public class PrintFileDto {
   private String townName;
   private String postcode;
   private String batchId;
-  private int batchQty;
+  private int batchQuantity;
   private String packCode;
+  private String actionType;
 }

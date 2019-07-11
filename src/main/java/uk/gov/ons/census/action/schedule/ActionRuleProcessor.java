@@ -131,7 +131,10 @@ public class ActionRuleProcessor {
     List<PrintFileDto> caseList =
         cases
             .parallel()
-            .map(caze -> printFileDtoBuilder.buildPrintFileDto(caze, packCode, batchId))
+            .map(
+                caze ->
+                    printFileDtoBuilder.buildPrintFileDto(
+                        caze, packCode, batchId, triggeredActionRule.getActionType().toString()))
             .collect(Collectors.toList());
 
     final int batchQty = caseList.size();
