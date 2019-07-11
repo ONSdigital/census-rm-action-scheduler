@@ -4,6 +4,8 @@ import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertNotNull;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.io.StringReader;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
@@ -27,9 +29,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.EventType;
+import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
-import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -62,6 +64,18 @@ public class ConsumeAndPublishIT {
   @Autowired private ActionPlanRepository actionPlanRepository;
   private EasyRandom easyRandom = new EasyRandom();
 
+  private final HashMap<String, String> actionTypeToPackCodeMap =
+      new HashMap<>() {
+        {
+          put("ICHHQE", "P_IC_H1");
+          put("ICHHQW", "P_IC_H2");
+          put("ICHHQN", "P_IC_H4");
+          put("ICL1E", "P_IC_ICL1");
+          put("ICL2W", "P_IC_ICL2");
+          put("ICL4N", "P_IC_ICL4");
+        }
+      };
+
   @Before
   @Transactional
   public void setUp() {
@@ -70,11 +84,13 @@ public class ConsumeAndPublishIT {
     uacQidLinkRepository.deleteAllInBatch();
     caseRepository.deleteAllInBatch();
     actionRuleRepository.deleteAllInBatch();
+    actionPlanRepository.deleteAll();
+    actionRuleRepository.deleteAll();
     actionPlanRepository.deleteAllInBatch();
   }
 
   @Test
-  public void checkReceivedEventsAreEmitted() throws InterruptedException, JAXBException {
+  public void checkReceivedEventsAreEmitted() throws InterruptedException, IOException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -98,14 +114,13 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    ActionInstruction actionInstruction = checkExpectedMessageReceived(outputQueue);
+    PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
 
-    assertThat(actionInstruction.getActionRequest().getActionPlan())
-        .isEqualTo(actionPlan.getId().toString());
-    assertThat(actionInstruction.getActionRequest().getCaseId())
-        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
-    assertThat(actionInstruction.getActionRequest().getCaseRef())
-        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
+    assertThat(printFileDto.getAddressLine1())
+        .isEqualTo(
+            caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
+    assertThat(printFileDto.getPackCode())
+        .isEqualTo(actionTypeToPackCodeMap.get(actionRule.getActionType().toString()));
   }
 
   @Test
@@ -147,7 +162,7 @@ public class ConsumeAndPublishIT {
 
   @Test
   public void checkCaseWithNoLinkedUACQuidDoesntSendThenWorksWhenUACAdded()
-      throws InterruptedException, JAXBException {
+      throws InterruptedException, IOException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
@@ -166,6 +181,9 @@ public class ConsumeAndPublishIT {
     // THEN
     checkExpectedMessageNotReceived(outputQueue);
 
+    actionRule = actionRuleRepository.findById(actionRule.getId()).get();
+    assertThat(actionRule.getHasTriggered()).isEqualTo(false);
+
     // Now add the UAC and check that it then runs successfully
     Uac uac = getUac(caseCreatedEvent);
     ResponseManagementEvent uacUpdatedEvent =
@@ -175,14 +193,17 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    ActionInstruction actionInstruction = checkExpectedMessageReceived(outputQueue);
+    PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
 
-    assertThat(actionInstruction.getActionRequest().getActionPlan())
-        .isEqualTo(actionPlan.getId().toString());
-    assertThat(actionInstruction.getActionRequest().getCaseId())
-        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
-    assertThat(actionInstruction.getActionRequest().getCaseRef())
-        .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
+    actionRule = actionRuleRepository.findById(actionRule.getId()).get();
+
+    assertThat(printFileDto.getAddressLine1())
+        .isEqualTo(
+            caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
+    assertThat(printFileDto.getPackCode())
+        .isEqualTo(actionTypeToPackCodeMap.get(actionRule.getActionType().toString()));
+
+    assertThat(actionRule.getHasTriggered()).isEqualTo(true);
   }
 
   @Test
@@ -209,9 +230,9 @@ public class ConsumeAndPublishIT {
     badCaseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
 
     // WHEN
-    rabbitQueueHelper.sendMessage(inboundQueue, badCaseCreatedEvent);
     rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
+    rabbitQueueHelper.sendMessage(inboundQueue, badCaseCreatedEvent);
 
     // THEN
     checkExpectedMessageNotReceived(outputQueue);
@@ -237,16 +258,13 @@ public class ConsumeAndPublishIT {
     assertNull("Received Message, expected none", actualMessage);
   }
 
-  private ActionInstruction checkExpectedMessageReceived(BlockingQueue<String> queue)
-      throws InterruptedException, JAXBException {
+  private PrintFileDto checkExpectedPrintFileDtoMessageReceived(BlockingQueue<String> queue)
+      throws InterruptedException, IOException {
+    ObjectMapper objectMapper = new ObjectMapper();
     String actualMessage = queue.poll(20, TimeUnit.SECONDS);
     assertNotNull("Did not receive message before timeout", actualMessage);
 
-    JAXBContext jaxbContext = JAXBContext.newInstance(ActionInstruction.class);
-    Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-    StringReader reader = new StringReader(actualMessage);
-    return (ActionInstruction) unmarshaller.unmarshal(reader);
+    return objectMapper.readValue(actualMessage, PrintFileDto.class);
   }
 
   private uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction

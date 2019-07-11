@@ -34,6 +34,6 @@ public class ActionRule {
   @Column private Boolean hasTriggered;
 
   @Type(type = "jsonb")
-  @Column(columnDefinition = "jsonb")
+  @Column(columnDefinition = "jsonb", nullable = false)
   private Map<String, List<String>> classifiers;
 }

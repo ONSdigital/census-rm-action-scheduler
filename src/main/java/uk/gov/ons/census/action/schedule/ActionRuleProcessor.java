@@ -5,14 +5,17 @@ import static org.springframework.data.jpa.domain.Specification.where;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.criteria.CriteriaBuilder.In;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -21,12 +24,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.model.dto.instruction.printer.ActionInstruction;
+import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
+import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
+import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
-import uk.gov.ons.census.action.model.repository.CaseRepository;
+import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
 
 @Component
 public class ActionRuleProcessor {
@@ -36,9 +41,10 @@ public class ActionRuleProcessor {
   private static final String ROUTING_KEY_SUFFIX = ".binding";
 
   private final ActionRuleRepository actionRuleRepo;
-  private final CaseRepository caseRepository;
   private final ActionInstructionBuilder actionInstructionBuilder;
-  private final RabbitTemplate rabbitPrinterTemplate;
+  private final PrintFileDtoBuilder printFileDtoBuilder;
+  private final RabbitTemplate rabbitTemplate;
+  private final CustomCaseRepository customCaseRepository;
   private final RabbitTemplate rabbitFieldTemplate;
 
   @Value("${queueconfig.outbound-exchange}")
@@ -46,14 +52,16 @@ public class ActionRuleProcessor {
 
   public ActionRuleProcessor(
       ActionRuleRepository actionRuleRepo,
-      CaseRepository caseRepository,
       ActionInstructionBuilder actionInstructionBuilder,
-      @Qualifier("actionInstructionPrinterRabbitTemplate") RabbitTemplate rabbitPrinterTemplate,
+      PrintFileDtoBuilder printFileDtoBuilder,
+      RabbitTemplate rabbitTemplate,
+      CustomCaseRepository customCaseRepository,
       @Qualifier("actionInstructionFieldRabbitTemplate") RabbitTemplate rabbitFieldTemplate) {
     this.actionRuleRepo = actionRuleRepo;
-    this.caseRepository = caseRepository;
     this.actionInstructionBuilder = actionInstructionBuilder;
-    this.rabbitPrinterTemplate = rabbitPrinterTemplate;
+    this.printFileDtoBuilder = printFileDtoBuilder;
+    this.rabbitTemplate = rabbitTemplate;
+    this.customCaseRepository = customCaseRepository;
     this.rabbitFieldTemplate = rabbitFieldTemplate;
   }
 
@@ -70,26 +78,11 @@ public class ActionRuleProcessor {
   }
 
   private void createScheduledActions(ActionRule triggeredActionRule) {
-    if (triggeredActionRule.getClassifiers() == null
-        || triggeredActionRule.getClassifiers().isEmpty()) {
-      executeAllCases(triggeredActionRule);
-    } else {
-      executeClassifiedCases(triggeredActionRule);
-    }
-  }
-
-  private void executeAllCases(ActionRule triggeredActionRule) {
-    String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
-
-    try (Stream<Case> stream =
-        caseRepository.findByActionPlanIdAndReceiptReceivedIsFalse(actionPlanId)) {
-      executeCases(stream, triggeredActionRule);
-    }
+    executeClassifiedCases(triggeredActionRule);
   }
 
   private void executeClassifiedCases(ActionRule triggeredActionRule) {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
-
     Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
 
     for (Map.Entry<String, List<String>> classifier :
@@ -97,7 +90,7 @@ public class ActionRuleProcessor {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
     }
 
-    try (Stream<Case> cases = caseRepository.findAll(specification).stream()) {
+    try (Stream<Case> cases = customCaseRepository.streamAll(specification); ) {
       executeCases(cases, triggeredActionRule);
     }
   }
@@ -110,38 +103,41 @@ public class ActionRuleProcessor {
     }
   }
 
+  private String getRoutingKey(ActionRule triggeredActionRule) {
+    return String.format(
+        "%s%s%s",
+        ROUTING_KEY_PREFIX,
+        triggeredActionRule.getActionType().getHandler().getRoutingKey(),
+        ROUTING_KEY_SUFFIX);
+  }
+
   private void executePrinterCases(Stream<Case> cases, ActionRule triggeredActionRule) {
-    List<Callable<ActionInstruction>> callables = new LinkedList<>();
-    cases.forEach(
-        caze -> {
-          callables.add(
-              () ->
-                  actionInstructionBuilder.buildPrinterActionInstruction(
-                      caze, triggeredActionRule));
+    UUID batchId = UUID.randomUUID();
+    String routingKey = getRoutingKey(triggeredActionRule);
+
+    final String packCode =
+        actionTypeToPackCodeMap.get(triggeredActionRule.getActionType().toString());
+
+    // Run Mapping in Parallel then collect to list and send them sequentially to Rabbit as it
+    // doesn't play nicely with Spring's @Transaction :(
+    List<PrintFileDto> caseList =
+        cases
+            .parallel()
+            .map(
+                caze ->
+                    printFileDtoBuilder.buildPrintFileDto(
+                        caze, packCode, batchId, triggeredActionRule.getActionType().toString()))
+            .collect(Collectors.toList());
+
+    final int batchQty = caseList.size();
+
+    log.info("About to send {} PrintFileDto messages", caseList.size());
+
+    caseList.forEach(
+        printFileDto -> {
+          printFileDto.setBatchQuantity(batchQty);
+          rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
         });
-
-    try {
-      final String routingKey =
-          String.format(
-              "%s%s%s",
-              ROUTING_KEY_PREFIX,
-              triggeredActionRule.getActionType().getHandler().getRoutingKey(),
-              ROUTING_KEY_SUFFIX);
-
-      List<Future<ActionInstruction>> results = EXECUTOR_SERVICE.invokeAll(callables);
-
-      log.info("About to send {} ActionInstruction messages", results.size());
-      int messagesSent = 0;
-      for (Future<ActionInstruction> result : results) {
-        if (messagesSent++ % 1000 == 0) {
-          log.info("Sent {} ActionInstruction messages", messagesSent - 1);
-        }
-
-        rabbitPrinterTemplate.convertAndSend(outboundExchange, routingKey, result.get());
-      }
-    } catch (InterruptedException | ExecutionException e) {
-      throw new RuntimeException(); // Roll the whole transaction back
-    }
   }
 
   private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
@@ -155,12 +151,7 @@ public class ActionRuleProcessor {
         });
 
     try {
-      final String routingKey =
-          String.format(
-              "%s%s%s",
-              ROUTING_KEY_PREFIX,
-              triggeredActionRule.getActionType().getHandler().getRoutingKey(),
-              ROUTING_KEY_SUFFIX);
+      final String routingKey = getRoutingKey(triggeredActionRule);
 
       List<Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>> results =
           EXECUTOR_SERVICE.invokeAll(callables);
@@ -205,4 +196,16 @@ public class ActionRuleProcessor {
           return inClause;
         };
   }
+
+  private final HashMap<String, String> actionTypeToPackCodeMap =
+      new HashMap<>() {
+        {
+          put("ICHHQE", "P_IC_H1");
+          put("ICHHQW", "P_IC_H2");
+          put("ICHHQN", "P_IC_H4");
+          put("ICL1E", "P_IC_ICL1");
+          put("ICL2W", "P_IC_ICL2");
+          put("ICL4N", "P_IC_ICL4");
+        }
+      };
 }
