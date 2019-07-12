@@ -5,6 +5,9 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.UacQidTuple;
+import uk.gov.ons.census.action.model.dto.instruction.field.ActionAddress;
+import uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction;
+import uk.gov.ons.census.action.model.dto.instruction.field.ActionRequest;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 
@@ -19,12 +22,12 @@ public class ActionInstructionBuilder {
     this.qidUacBuilder = qidUacBuilder;
   }
 
-  public uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction
+  public ActionInstruction
       buildFieldActionInstruction(Case caze, ActionRule actionRule) {
 
     UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(caze);
 
-    uk.gov.ons.census.action.model.dto.instruction.field.ActionAddress actionAddress =
+    ActionAddress actionAddress =
         new uk.gov.ons.census.action.model.dto.instruction.field.ActionAddress();
     actionAddress.setLine1(caze.getAddressLine1());
     actionAddress.setLine2(caze.getAddressLine2());
@@ -42,7 +45,7 @@ public class ActionInstructionBuilder {
       actionAddress.setLongitude(new BigDecimal(caze.getLongitude()));
     }
 
-    uk.gov.ons.census.action.model.dto.instruction.field.ActionRequest actionRequest =
+    ActionRequest actionRequest =
         new uk.gov.ons.census.action.model.dto.instruction.field.ActionRequest();
     actionRequest.setActionId(UUID.randomUUID().toString());
     actionRequest.setResponseRequired(false);
@@ -63,7 +66,7 @@ public class ActionInstructionBuilder {
     }
     // TODO undeliveredAsAddress, blankQreReturned, ccsQuestionnaireUrl, ceDeliveryReqd,
     // ceCE1Complete, ceActualResponses
-    uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction actionInstruction =
+    ActionInstruction actionInstruction =
         new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction();
     actionInstruction.setActionRequest(actionRequest);
 
