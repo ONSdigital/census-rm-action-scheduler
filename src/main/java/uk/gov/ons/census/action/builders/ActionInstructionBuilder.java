@@ -22,8 +22,7 @@ public class ActionInstructionBuilder {
     this.qidUacBuilder = qidUacBuilder;
   }
 
-  public ActionInstruction
-      buildFieldActionInstruction(Case caze, ActionRule actionRule) {
+  public ActionInstruction buildFieldActionInstruction(Case caze, ActionRule actionRule) {
 
     UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(caze);
 

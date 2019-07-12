@@ -24,7 +24,8 @@ public class ActionRuleTriggererTest {
     // Given
     ActionRule actionRule = new ActionRule();
     when(actionRuleRepo.findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(
-        any(OffsetDateTime.class))).thenReturn(Collections.singletonList(actionRule));
+            any(OffsetDateTime.class)))
+        .thenReturn(Collections.singletonList(actionRule));
 
     // When
     ActionRuleTriggerer underTest = new ActionRuleTriggerer(actionRuleRepo, actionRuleProcessor);
@@ -38,19 +39,19 @@ public class ActionRuleTriggererTest {
   public void testTriggerMultipleActionRules() {
     // Given
     List<ActionRule> actionRules = new ArrayList<>(50);
-    for (int i=0; i < 50; i++) {
+    for (int i = 0; i < 50; i++) {
       actionRules.add(new ActionRule());
     }
 
     when(actionRuleRepo.findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(
-        any(OffsetDateTime.class))).thenReturn(actionRules);
+            any(OffsetDateTime.class)))
+        .thenReturn(actionRules);
 
     // When
     ActionRuleTriggerer underTest = new ActionRuleTriggerer(actionRuleRepo, actionRuleProcessor);
     underTest.triggerActionRules();
 
     // Then
-    verify(actionRuleProcessor, times(50)).createScheduledActions(
-        any(ActionRule.class));
+    verify(actionRuleProcessor, times(50)).createScheduledActions(any(ActionRule.class));
   }
 }

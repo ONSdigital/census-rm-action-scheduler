@@ -12,8 +12,8 @@ public class ActionRuleTriggerer {
   private final ActionRuleRepository actionRuleRepo;
   private final ActionRuleProcessor actionRuleProcessor;
 
-  public ActionRuleTriggerer(ActionRuleRepository actionRuleRepo,
-      ActionRuleProcessor actionRuleProcessor) {
+  public ActionRuleTriggerer(
+      ActionRuleRepository actionRuleRepo, ActionRuleProcessor actionRuleProcessor) {
     this.actionRuleRepo = actionRuleRepo;
     this.actionRuleProcessor = actionRuleProcessor;
   }
@@ -27,5 +27,4 @@ public class ActionRuleTriggerer {
       actionRuleProcessor.createScheduledActions(triggeredActionRule);
     }
   }
-
 }

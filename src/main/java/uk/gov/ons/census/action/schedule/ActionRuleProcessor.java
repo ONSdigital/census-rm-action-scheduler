@@ -4,7 +4,6 @@ import static org.springframework.data.jpa.domain.Specification.where;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.criteria.CriteriaBuilder.In;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -30,6 +28,7 @@ import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
+import uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
@@ -118,36 +117,45 @@ public class ActionRuleProcessor {
     final String packCode =
         actionTypeToPackCodeMap.get(triggeredActionRule.getActionType().toString());
 
-    // Run Mapping in Parallel then collect to list and send them sequentially to Rabbit as it
-    // doesn't play nicely with Spring's @Transaction :(
-    List<PrintFileDto> caseList =
-        cases
-            .parallel()
-            .map(
-                caze ->
-                    printFileDtoBuilder.buildPrintFileDto(
-                        caze, packCode, batchId, triggeredActionRule.getActionType().toString()))
-            .collect(Collectors.toList());
+    List<Callable<PrintFileDto>> callables = new LinkedList<>();
 
-    final int batchQty = caseList.size();
-
-    log.info("About to send {} PrintFileDto messages", caseList.size());
-
-    caseList.forEach(
-        printFileDto -> {
-          printFileDto.setBatchQuantity(batchQty);
-          rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
-
-          ResponseManagementEvent printCaseSelected =
-              printCaseSelectedBuilder.buildMessage(printFileDto, triggeredActionRule.getId());
-
-          rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
+    cases.forEach(
+        caze -> {
+          callables.add(
+              () ->
+                  printFileDtoBuilder.buildPrintFileDto(
+                      caze, packCode, batchId, triggeredActionRule.getActionType().toString()));
         });
+
+    try {
+      final int batchQty = callables.size();
+      List<Future<PrintFileDto>> results = EXECUTOR_SERVICE.invokeAll(callables);
+
+      log.info("About to send {} PrintFileDto messages", results.size());
+
+      int messagesSent = 0;
+
+      for (Future<PrintFileDto> result : results) {
+        PrintFileDto printFileDto = result.get();
+        printFileDto.setBatchQuantity(batchQty);
+        rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
+
+        ResponseManagementEvent printCaseSelected =
+            printCaseSelectedBuilder.buildMessage(printFileDto, triggeredActionRule.getId());
+
+        rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
+
+        if (messagesSent++ % 1000 == 0) {
+          log.info("Sent {} PrintFileDto messages", messagesSent - 1);
+        }
+      }
+    } catch (InterruptedException | ExecutionException e) {
+      throw new RuntimeException(e); // Roll the whole transaction back
+    }
   }
 
   private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
-    List<Callable<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>>
-        callables = new LinkedList<>();
+    List<Callable<ActionInstruction>> callables = new LinkedList<>();
     cases.forEach(
         caze -> {
           callables.add(
@@ -158,13 +166,11 @@ public class ActionRuleProcessor {
     try {
       final String routingKey = getRoutingKey(triggeredActionRule);
 
-      List<Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction>> results =
-          EXECUTOR_SERVICE.invokeAll(callables);
+      List<Future<ActionInstruction>> results = EXECUTOR_SERVICE.invokeAll(callables);
 
       log.info("About to send {} ActionInstruction messages", results.size());
       int messagesSent = 0;
-      for (Future<uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction> result :
-          results) {
+      for (Future<ActionInstruction> result : results) {
         if (messagesSent++ % 1000 == 0) {
           log.info("Sent {} ActionInstruction messages", messagesSent - 1);
         }
