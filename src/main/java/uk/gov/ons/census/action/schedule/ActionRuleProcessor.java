@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
@@ -73,20 +74,11 @@ public class ActionRuleProcessor {
     this.rabbitFieldTemplate = rabbitFieldTemplate;
   }
 
-  @Transactional
-  public void processActionRules() {
-    List<ActionRule> triggeredActionRules =
-        actionRuleRepo.findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(OffsetDateTime.now());
-
-    for (ActionRule triggeredActionRule : triggeredActionRules) {
-      createScheduledActions(triggeredActionRule);
-      triggeredActionRule.setHasTriggered(true);
-      actionRuleRepo.save(triggeredActionRule);
-    }
-  }
-
-  private void createScheduledActions(ActionRule triggeredActionRule) {
+  @Transactional(propagation = Propagation.REQUIRES_NEW) // Start a new transaction for every rule
+  public void createScheduledActions(ActionRule triggeredActionRule) {
     executeClassifiedCases(triggeredActionRule);
+    triggeredActionRule.setHasTriggered(true);
+    actionRuleRepo.save(triggeredActionRule);
   }
 
   private void executeClassifiedCases(ActionRule triggeredActionRule) {
