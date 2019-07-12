@@ -215,7 +215,7 @@ public class ActionRuleProcessor {
           put("ICHHQW", "P_IC_H2");
           put("ICHHQN", "P_IC_H4");
           put("ICL1E", "P_IC_ICL1");
-          put("ICL2W", "P_IC_ICL2");
+          put("ICL2W", "P_IC_ICL2B");
           put("ICL4N", "P_IC_ICL4");
         }
       };
