@@ -59,12 +59,6 @@ public class ActionRuleProcessorTest {
 
     List<Case> cases = getRandomCases(expectedCaseCount);
 
-    // For some reason this works and the 'normal' when.thenReturn way doesn't, might be the JPA
-    // OneToMany
-    doReturn(Arrays.asList(actionRule))
-        .when(actionRuleRepo)
-        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
-
     when(printFileDtoBuilder.buildPrintFileDto(
             any(Case.class), any(String.class), any(UUID.class), anyString()))
         .thenReturn(new PrintFileDto());
@@ -85,7 +79,7 @@ public class ActionRuleProcessorTest {
             customCaseRepository,
             null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
-    actionRuleProcessor.processActionRules();
+    actionRuleProcessor.createScheduledActions(actionRule);
 
     // then
     ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
@@ -108,10 +102,6 @@ public class ActionRuleProcessorTest {
 
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
-    doReturn(Arrays.asList(actionRule))
-        .when(actionRuleRepo)
-        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
-
     when(actionInstructionBuilder.buildFieldActionInstruction(any(Case.class), eq(actionRule)))
         .thenReturn(new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction());
 
@@ -130,7 +120,7 @@ public class ActionRuleProcessorTest {
 
     // when
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
-    actionRuleProcessor.processActionRules();
+    actionRuleProcessor.createScheduledActions(actionRule);
 
     // then
     verify(actionInstructionBuilder, times(expectedCaseCount))
@@ -156,10 +146,6 @@ public class ActionRuleProcessorTest {
     // when
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
-    doReturn(Arrays.asList(actionRule))
-        .when(actionRuleRepo)
-        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
-
     when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
         .thenReturn(new ResponseManagementEvent());
 
@@ -180,7 +166,7 @@ public class ActionRuleProcessorTest {
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     RuntimeException actualException = null;
     try {
-      actionRuleProcessor.processActionRules();
+      actionRuleProcessor.createScheduledActions(actionRule);
     } catch (RuntimeException runtimeException) {
       actualException = runtimeException;
     }
@@ -207,10 +193,6 @@ public class ActionRuleProcessorTest {
     // when
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
-    doReturn(Arrays.asList(actionRule))
-        .when(actionRuleRepo)
-        .findByTriggerDateTimeBeforeAndHasTriggeredIsFalse(any());
-
     when(printFileDtoBuilder.buildPrintFileDto(
             any(Case.class), any(String.class), any(UUID.class), anyString()))
         .thenReturn(new PrintFileDto());
@@ -234,7 +216,7 @@ public class ActionRuleProcessorTest {
             customCaseRepository,
             null);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
-    actionRuleProcessor.processActionRules();
+    actionRuleProcessor.createScheduledActions(actionRule);
 
     // then
     // exception thrown

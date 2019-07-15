@@ -8,16 +8,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class ActionRuleScheduler {
   private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
-  private final ActionRuleProcessor actionRuleProcessor;
+  private final ActionRuleTriggerer actionRuleTriggerer;
 
-  public ActionRuleScheduler(ActionRuleProcessor actionRuleProcessor) {
-    this.actionRuleProcessor = actionRuleProcessor;
+  public ActionRuleScheduler(ActionRuleTriggerer actionRuleTriggerer) {
+    this.actionRuleTriggerer = actionRuleTriggerer;
   }
 
   @Scheduled(fixedDelayString = "${scheduler.frequency}")
-  public void processActionRules() {
+  public void triggerActionRules() {
     try {
-      actionRuleProcessor.processActionRules();
+      actionRuleTriggerer.triggerActionRules();
     } catch (Exception e) {
       log.error("Unexpected exception while processing Action Rules", e);
     }
