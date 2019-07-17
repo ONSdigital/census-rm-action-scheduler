@@ -13,9 +13,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +29,7 @@ import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
+import uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -124,7 +122,7 @@ public class ConsumeAndPublishIT {
   }
 
   @Test
-  public void checkFieldEventsAreEmitted() throws InterruptedException, JAXBException {
+  public void checkFieldEventsAreEmitted() throws InterruptedException, IOException {
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundFieldQueue);
 
@@ -149,8 +147,7 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction actionInstruction =
-        checkExpectedFieldMessageReceived(outputQueue);
+    ActionInstruction actionInstruction = checkExpectedFieldMessageReceived(outputQueue);
 
     assertThat(actionInstruction.getActionRequest().getActionPlan())
         .isEqualTo(actionPlan.getId().toString());
@@ -267,20 +264,15 @@ public class ConsumeAndPublishIT {
     return objectMapper.readValue(actualMessage, PrintFileDto.class);
   }
 
-  private uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction
-      checkExpectedFieldMessageReceived(BlockingQueue<String> queue)
-          throws InterruptedException, JAXBException {
+  private ActionInstruction checkExpectedFieldMessageReceived(BlockingQueue<String> queue)
+      throws InterruptedException, IOException {
     String actualMessage = queue.poll(20, TimeUnit.SECONDS);
     assertNotNull("Did not receive message before timeout", actualMessage);
 
-    JAXBContext jaxbContext =
-        JAXBContext.newInstance(
-            uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction.class);
-    Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+    ObjectMapper objectMapper = new ObjectMapper();
 
     StringReader reader = new StringReader(actualMessage);
-    return (uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction)
-        unmarshaller.unmarshal(reader);
+    return objectMapper.readValue(reader, ActionInstruction.class);
   }
 
   private ResponseManagementEvent getResponseManagementEvent(String actionPlanId) {

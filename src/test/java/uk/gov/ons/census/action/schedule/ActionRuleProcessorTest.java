@@ -35,7 +35,6 @@ public class ActionRuleProcessorTest {
   private static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
-  //  private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final CustomCaseRepository customCaseRepository = mock(CustomCaseRepository.class);
   private final ActionInstructionBuilder actionInstructionBuilder =
       mock(ActionInstructionBuilder.class);
@@ -43,7 +42,6 @@ public class ActionRuleProcessorTest {
       mock(PrintCaseSelectedBuilder.class);
 
   private final RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
-  private final RabbitTemplate rabbitFieldTemplate = mock(RabbitTemplate.class);
   private final PrintFileDtoBuilder printFileDtoBuilder = mock(PrintFileDtoBuilder.class);
 
   @Test
@@ -76,8 +74,7 @@ public class ActionRuleProcessorTest {
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
-            customCaseRepository,
-            null);
+            customCaseRepository);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.createScheduledActions(actionRule);
 
@@ -114,9 +111,8 @@ public class ActionRuleProcessorTest {
             actionInstructionBuilder,
             printFileDtoBuilder,
             printCaseSelectedBuilder,
-            null,
-            customCaseRepository,
-            rabbitFieldTemplate);
+            rabbitTemplate,
+            customCaseRepository);
 
     // when
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
@@ -130,7 +126,7 @@ public class ActionRuleProcessorTest {
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
-    verify(rabbitFieldTemplate, times(expectedCaseCount))
+    verify(rabbitTemplate, times(expectedCaseCount))
         .convertAndSend(
             eq(OUTBOUND_EXCHANGE),
             eq("Action.Field.binding"),
@@ -161,8 +157,7 @@ public class ActionRuleProcessorTest {
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
-            customCaseRepository,
-            null);
+            customCaseRepository);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     RuntimeException actualException = null;
     try {
@@ -213,8 +208,7 @@ public class ActionRuleProcessorTest {
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
-            customCaseRepository,
-            null);
+            customCaseRepository);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.createScheduledActions(actionRule);
 
