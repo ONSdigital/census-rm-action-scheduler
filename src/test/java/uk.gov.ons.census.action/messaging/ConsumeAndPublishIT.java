@@ -26,10 +26,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.EventType;
+import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
-import uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -147,13 +147,12 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    ActionInstruction actionInstruction = checkExpectedFieldMessageReceived(outputQueue);
+    FieldworkFollowup followup = checkExpectedFieldMessageReceived(outputQueue);
 
-    assertThat(actionInstruction.getActionRequest().getActionPlan())
-        .isEqualTo(actionPlan.getId().toString());
-    assertThat(actionInstruction.getActionRequest().getCaseId())
+    assertThat(followup.getActionPlan()).isEqualTo(actionPlan.getId().toString());
+    assertThat(followup.getCaseId())
         .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getId());
-    assertThat(actionInstruction.getActionRequest().getCaseRef())
+    assertThat(followup.getCaseRef())
         .isEqualTo(caseCreatedEvent.getPayload().getCollectionCase().getCaseRef());
   }
 
@@ -264,7 +263,7 @@ public class ConsumeAndPublishIT {
     return objectMapper.readValue(actualMessage, PrintFileDto.class);
   }
 
-  private ActionInstruction checkExpectedFieldMessageReceived(BlockingQueue<String> queue)
+  private FieldworkFollowup checkExpectedFieldMessageReceived(BlockingQueue<String> queue)
       throws InterruptedException, IOException {
     String actualMessage = queue.poll(20, TimeUnit.SECONDS);
     assertNotNull("Did not receive message before timeout", actualMessage);
@@ -272,7 +271,7 @@ public class ConsumeAndPublishIT {
     ObjectMapper objectMapper = new ObjectMapper();
 
     StringReader reader = new StringReader(actualMessage);
-    return objectMapper.readValue(reader, ActionInstruction.class);
+    return objectMapper.readValue(reader, FieldworkFollowup.class);
   }
 
   private ResponseManagementEvent getResponseManagementEvent(String actionPlanId) {

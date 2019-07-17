@@ -22,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
+import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
@@ -99,8 +100,8 @@ public class ActionRuleProcessorTest {
 
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
-    when(actionInstructionBuilder.buildFieldActionInstruction(any(Case.class), eq(actionRule)))
-        .thenReturn(new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction());
+    when(actionInstructionBuilder.buildFieldworkFollowup(any(Case.class), eq(actionRule)))
+        .thenReturn(new FieldworkFollowup());
 
     when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
         .thenReturn(new ResponseManagementEvent());
@@ -120,7 +121,7 @@ public class ActionRuleProcessorTest {
 
     // then
     verify(actionInstructionBuilder, times(expectedCaseCount))
-        .buildFieldActionInstruction(any(Case.class), eq(actionRule));
+        .buildFieldworkFollowup(any(Case.class), eq(actionRule));
     ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
     verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
@@ -128,9 +129,7 @@ public class ActionRuleProcessorTest {
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
     verify(rabbitTemplate, times(expectedCaseCount))
         .convertAndSend(
-            eq(OUTBOUND_EXCHANGE),
-            eq("Action.Field.binding"),
-            any(uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction.class));
+            eq(OUTBOUND_EXCHANGE), eq("Action.Field.binding"), any(FieldworkFollowup.class));
   }
 
   @Test

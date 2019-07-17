@@ -7,11 +7,7 @@ import static org.mockito.Mockito.when;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
 import uk.gov.ons.census.action.model.UacQidTuple;
-import uk.gov.ons.census.action.model.dto.instruction.field.ActionAddress;
-import uk.gov.ons.census.action.model.dto.instruction.field.ActionEvent;
-import uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction;
-import uk.gov.ons.census.action.model.dto.instruction.field.ActionRequest;
-import uk.gov.ons.census.action.model.dto.instruction.field.Priority;
+import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -36,7 +32,7 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(qidUacBuilder);
-    underTest.buildFieldActionInstruction(testCase, actionRule);
+    underTest.buildFieldworkFollowup(testCase, actionRule);
 
     // Then
     // Expect exception to be thrown
@@ -65,72 +61,10 @@ public class ActionInstructionBuilderTest {
 
     // When
     ActionInstructionBuilder underTest = new ActionInstructionBuilder(qidUacBuilder);
-    uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction actualResult =
-        underTest.buildFieldActionInstruction(caze, actionRule);
+    FieldworkFollowup actualResult = underTest.buildFieldworkFollowup(caze, actionRule);
 
     // Then
-    assertThat(caze.getLatitude())
-        .isEqualTo(actualResult.getActionRequest().getAddress().getLatitude().toString());
-    assertThat(caze.getLongitude())
-        .isEqualTo(actualResult.getActionRequest().getAddress().getLongitude().toString());
-  }
-
-  private ActionInstruction getExpectedActionInstructionWithActualActionIdUUID(
-      Case caze, ActionRule actionRule, ActionInstruction actionInstruction) {
-    String caseId = actionInstruction.getActionRequest().getCaseId();
-    String uac = caseId + "uac";
-    return getExpectedActionInstruction(
-        caze,
-        uac,
-        null,
-        null,
-        null,
-        actionRule,
-        actionInstruction.getActionRequest().getActionId());
-  }
-
-  private ActionInstruction getExpectedActionInstruction(
-      Case caze,
-      String uac,
-      String uacWales,
-      String qid,
-      String qidWales,
-      ActionRule actionRule,
-      String actionId) {
-
-    ActionEvent actionEvent = new ActionEvent();
-    actionEvent
-        .getEvents()
-        .add("CASE_CREATED : null : SYSTEM : Case created when Initial creation of case");
-    ActionAddress actionAddress = new ActionAddress();
-    actionAddress.setLine1(caze.getAddressLine1());
-    actionAddress.setLine2(caze.getAddressLine2());
-    actionAddress.setLine3(caze.getAddressLine3());
-    actionAddress.setTownName(caze.getTownName());
-    actionAddress.setPostcode(caze.getPostcode());
-    actionAddress.setOrganisationName(caze.getOrganisationName());
-    ActionRequest actionRequest = new ActionRequest();
-    actionRequest.setActionId(actionId);
-    actionRequest.setResponseRequired(false);
-    actionRequest.setActionPlan(actionRule.getActionPlan().getId().toString());
-    actionRequest.setActionType(actionRule.getActionType().toString());
-    actionRequest.setAddress(actionAddress);
-    actionRequest.setLegalBasis("Statistics of Trade Act 1947");
-    actionRequest.setCaseGroupStatus("NOTSTARTED");
-    actionRequest.setCaseId(caze.getCaseId().toString());
-    actionRequest.setPriority(Priority.MEDIUM);
-    actionRequest.setCaseRef(Integer.toString(caze.getCaseRef()));
-    actionRequest.setIac(uac);
-    actionRequest.setEvents(actionEvent);
-    actionRequest.setExerciseRef("201904");
-    actionRequest.setUserDescription("Census-FNSM580JQE3M4");
-    actionRequest.setSurveyName("Census-FNSM580JQE3M4");
-    actionRequest.setSurveyRef("Census-FNSM580JQE3M4");
-    actionRequest.setReturnByDate("27/04");
-    actionRequest.setSampleUnitRef("DDR190314000000516472");
-    ActionInstruction actionInstruction = new ActionInstruction();
-    actionInstruction.setActionRequest(actionRequest);
-
-    return actionInstruction;
+    assertThat(caze.getLatitude()).isEqualTo(actualResult.getLatitude().toString());
+    assertThat(caze.getLongitude()).isEqualTo(actualResult.getLongitude().toString());
   }
 }
