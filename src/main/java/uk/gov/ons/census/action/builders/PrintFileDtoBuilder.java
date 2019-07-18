@@ -42,6 +42,7 @@ public class PrintFileDtoBuilder {
     printFileDto.setBatchId(batchUUID.toString());
     printFileDto.setPackCode(packCode);
     printFileDto.setActionType(actionType);
+    printFileDto.setFieldCoordinatorId(caze.getFieldCoordinatorId());
 
     return printFileDto;
   }
