@@ -98,6 +98,7 @@ public class PrintFileDtoBuilderTest {
     printFileDto.setBatchId(BATCH_UUID.toString());
     printFileDto.setPackCode(actionTypeToPackCodeMap.get(expectedActionType));
     printFileDto.setActionType("test_actiontype");
+    printFileDto.setFieldCoordinatorId(caze.getFieldCoordinatorId());
 
     return printFileDto;
   }
