@@ -21,4 +21,5 @@ public class PrintFileDto {
   private int batchQuantity;
   private String packCode;
   private String actionType;
+  private String fieldCoordinatorId;
 }
