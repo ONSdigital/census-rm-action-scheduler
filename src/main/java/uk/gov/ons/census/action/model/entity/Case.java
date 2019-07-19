@@ -83,4 +83,7 @@ public class Case {
 
   @Column(name = "receipt_received")
   private boolean receiptReceived;
+
+  @Column(name = "refusal_received")
+  private boolean refusalReceived;
 }

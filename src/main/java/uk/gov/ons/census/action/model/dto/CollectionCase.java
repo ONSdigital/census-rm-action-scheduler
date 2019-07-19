@@ -24,4 +24,5 @@ public class CollectionCase {
   private String fieldOfficerId;
   private String ceExpectedCapacity;
   private Boolean receiptReceived;
+  private Boolean refusalReceived;
 }
