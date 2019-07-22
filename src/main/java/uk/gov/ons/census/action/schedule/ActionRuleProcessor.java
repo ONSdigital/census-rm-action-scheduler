@@ -17,7 +17,6 @@ import java.util.concurrent.Future;
 import java.util.stream.Stream;
 import javax.persistence.criteria.CriteriaBuilder.In;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -26,9 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
+import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
-import uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
@@ -48,7 +47,6 @@ public class ActionRuleProcessor {
   private final PrintCaseSelectedBuilder printCaseSelectedBuilder;
   private final RabbitTemplate rabbitTemplate;
   private final CustomCaseRepository customCaseRepository;
-  private final RabbitTemplate rabbitFieldTemplate;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -62,15 +60,13 @@ public class ActionRuleProcessor {
       PrintFileDtoBuilder printFileDtoBuilder,
       PrintCaseSelectedBuilder printCaseSelectedBuilder,
       RabbitTemplate rabbitTemplate,
-      CustomCaseRepository customCaseRepository,
-      @Qualifier("actionInstructionFieldRabbitTemplate") RabbitTemplate rabbitFieldTemplate) {
+      CustomCaseRepository customCaseRepository) {
     this.actionRuleRepo = actionRuleRepo;
     this.actionInstructionBuilder = actionInstructionBuilder;
     this.printFileDtoBuilder = printFileDtoBuilder;
     this.printCaseSelectedBuilder = printCaseSelectedBuilder;
     this.rabbitTemplate = rabbitTemplate;
     this.customCaseRepository = customCaseRepository;
-    this.rabbitFieldTemplate = rabbitFieldTemplate;
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW) // Start a new transaction for every rule
@@ -155,27 +151,26 @@ public class ActionRuleProcessor {
   }
 
   private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
-    List<Callable<ActionInstruction>> callables = new LinkedList<>();
+    List<Callable<FieldworkFollowup>> callables = new LinkedList<>();
     cases.forEach(
         caze -> {
           callables.add(
-              () ->
-                  actionInstructionBuilder.buildFieldActionInstruction(caze, triggeredActionRule));
+              () -> actionInstructionBuilder.buildFieldworkFollowup(caze, triggeredActionRule));
         });
 
     try {
       final String routingKey = getRoutingKey(triggeredActionRule);
 
-      List<Future<ActionInstruction>> results = EXECUTOR_SERVICE.invokeAll(callables);
+      List<Future<FieldworkFollowup>> results = EXECUTOR_SERVICE.invokeAll(callables);
 
       log.info("About to send {} ActionInstruction messages", results.size());
       int messagesSent = 0;
-      for (Future<ActionInstruction> result : results) {
+      for (Future<FieldworkFollowup> result : results) {
         if (messagesSent++ % 1000 == 0) {
           log.info("Sent {} ActionInstruction messages", messagesSent - 1);
         }
 
-        rabbitFieldTemplate.convertAndSend(outboundExchange, routingKey, result.get());
+        rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
       }
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(e); // Roll the whole transaction back
