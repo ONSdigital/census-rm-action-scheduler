@@ -22,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
+import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
@@ -35,7 +36,6 @@ public class ActionRuleProcessorTest {
   private static final String OUTBOUND_EXCHANGE = "OUTBOUND_EXCHANGE";
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
-  //  private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final CustomCaseRepository customCaseRepository = mock(CustomCaseRepository.class);
   private final ActionInstructionBuilder actionInstructionBuilder =
       mock(ActionInstructionBuilder.class);
@@ -43,7 +43,6 @@ public class ActionRuleProcessorTest {
       mock(PrintCaseSelectedBuilder.class);
 
   private final RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
-  private final RabbitTemplate rabbitFieldTemplate = mock(RabbitTemplate.class);
   private final PrintFileDtoBuilder printFileDtoBuilder = mock(PrintFileDtoBuilder.class);
 
   @Test
@@ -76,8 +75,7 @@ public class ActionRuleProcessorTest {
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
-            customCaseRepository,
-            null);
+            customCaseRepository);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.createScheduledActions(actionRule);
 
@@ -102,8 +100,8 @@ public class ActionRuleProcessorTest {
 
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
-    when(actionInstructionBuilder.buildFieldActionInstruction(any(Case.class), eq(actionRule)))
-        .thenReturn(new uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction());
+    when(actionInstructionBuilder.buildFieldworkFollowup(any(Case.class), eq(actionRule)))
+        .thenReturn(new FieldworkFollowup());
 
     when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
         .thenReturn(new ResponseManagementEvent());
@@ -114,9 +112,8 @@ public class ActionRuleProcessorTest {
             actionInstructionBuilder,
             printFileDtoBuilder,
             printCaseSelectedBuilder,
-            null,
-            customCaseRepository,
-            rabbitFieldTemplate);
+            rabbitTemplate,
+            customCaseRepository);
 
     // when
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
@@ -124,17 +121,15 @@ public class ActionRuleProcessorTest {
 
     // then
     verify(actionInstructionBuilder, times(expectedCaseCount))
-        .buildFieldActionInstruction(any(Case.class), eq(actionRule));
+        .buildFieldworkFollowup(any(Case.class), eq(actionRule));
     ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
     verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
     ActionRule actualActionRule = actionRuleCaptor.getAllValues().get(0);
     actionRule.setHasTriggered(true);
     Assertions.assertThat(actualActionRule).isEqualTo(actionRule);
-    verify(rabbitFieldTemplate, times(expectedCaseCount))
+    verify(rabbitTemplate, times(expectedCaseCount))
         .convertAndSend(
-            eq(OUTBOUND_EXCHANGE),
-            eq("Action.Field.binding"),
-            any(uk.gov.ons.census.action.model.dto.instruction.field.ActionInstruction.class));
+            eq(OUTBOUND_EXCHANGE), eq("Action.Field.binding"), any(FieldworkFollowup.class));
   }
 
   @Test
@@ -161,8 +156,7 @@ public class ActionRuleProcessorTest {
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
-            customCaseRepository,
-            null);
+            customCaseRepository);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     RuntimeException actualException = null;
     try {
@@ -213,8 +207,7 @@ public class ActionRuleProcessorTest {
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
-            customCaseRepository,
-            null);
+            customCaseRepository);
     ReflectionTestUtils.setField(actionRuleProcessor, "outboundExchange", OUTBOUND_EXCHANGE);
     actionRuleProcessor.createScheduledActions(actionRule);
 

@@ -6,7 +6,6 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.amqp.support.converter.MarshallingMessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.amqp.inbound.AmqpInboundChannelAdapter;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -69,41 +67,5 @@ public class AppConfig {
   public AmqpAdmin amqpAdmin(ConnectionFactory connectionFactory) {
     RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory);
     return rabbitAdmin;
-  }
-
-  @Bean
-  public Jaxb2Marshaller actionInstructionFieldMarshaller() {
-    Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
-    jaxb2Marshaller.setContextPath("uk.gov.ons.census.action.model.dto.instruction.field");
-    return jaxb2Marshaller;
-  }
-
-  @Bean
-  public MarshallingMessageConverter actionInstructionFieldMarshallingMessageConverter(
-      Jaxb2Marshaller actionInstructionFieldMarshaller) {
-    MarshallingMessageConverter marshallingMessageConverter =
-        new MarshallingMessageConverter(actionInstructionFieldMarshaller);
-    marshallingMessageConverter.setContentType("text/xml");
-    return marshallingMessageConverter;
-  }
-
-  @Bean
-  public RabbitTemplate actionInstructionFieldRabbitTemplate(
-      ConnectionFactory connectionFactory,
-      MarshallingMessageConverter actionInstructionFieldMarshallingMessageConverter) {
-    RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-    rabbitTemplate.setMessageConverter(actionInstructionFieldMarshallingMessageConverter);
-    rabbitTemplate.setChannelTransacted(true);
-    return rabbitTemplate;
-  }
-
-  @Bean
-  public RabbitTemplate actionInstructionPrinterRabbitTemplate(
-      ConnectionFactory connectionFactory,
-      MarshallingMessageConverter actionInstructionPrinterMarshallingMessageConverter) {
-    RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-    rabbitTemplate.setMessageConverter(actionInstructionPrinterMarshallingMessageConverter);
-    rabbitTemplate.setChannelTransacted(true);
-    return rabbitTemplate;
   }
 }
