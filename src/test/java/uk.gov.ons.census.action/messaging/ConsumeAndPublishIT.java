@@ -298,6 +298,8 @@ public class ConsumeAndPublishIT {
         .getAddress()
         .setLongitude(Double.toString(random.nextDouble()));
 
+    responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
+
     return responseManagementEvent;
   }
 

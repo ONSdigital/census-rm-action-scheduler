@@ -54,7 +54,7 @@ public class CaseRepositoryIT {
   @Test
   public void shouldRetrieveTenCasesWhenNoneReceiptedAndWithoutClassifiers() {
     int expectedUnreceiptedCaseSize = 10;
-    setupTestCases(expectedUnreceiptedCaseSize, false);
+    setupTestCases(expectedUnreceiptedCaseSize, false, false);
 
     Specification<Case> expectedSpecification = getSpecificationWithoutClassifiers();
 
@@ -67,8 +67,8 @@ public class CaseRepositoryIT {
   @Test
   public void shouldRetrieveSevenCasesWhenThreeReceiptedAndWithoutClassifiers() {
     int expectedUnreceiptedCaseSize = 7;
-    setupTestCases(expectedUnreceiptedCaseSize, false);
-    setupTestCases(3, true);
+    setupTestCases(expectedUnreceiptedCaseSize, false, false);
+    setupTestCases(3, true, false);
 
     Specification<Case> expectedSpecification = getSpecificationWithoutClassifiers();
 
@@ -81,7 +81,7 @@ public class CaseRepositoryIT {
   @Test
   public void shouldRetrieveTenCasesWhenZeroReceiptedAndWithClassifiers() {
     int expectedUnreceiptedCaseSize = 10;
-    setupTestCases(expectedUnreceiptedCaseSize, false);
+    setupTestCases(expectedUnreceiptedCaseSize, false, false);
 
     Specification<Case> expectedSpecification = getSpecificationWithClassifiers();
 
@@ -94,8 +94,36 @@ public class CaseRepositoryIT {
   @Test
   public void shouldRetrieveSevenCasesWhenThreeReceiptedAndWithClassifiers() {
     int expectedUnreceiptedCaseSize = 7;
-    setupTestCases(expectedUnreceiptedCaseSize, false);
-    setupTestCases(3, true);
+    setupTestCases(expectedUnreceiptedCaseSize, false, false);
+    setupTestCases(3, true, false);
+
+    Specification<Case> expectedSpecification = getSpecificationWithClassifiers();
+
+    List<Case> cases = caseRepository.findAll(expectedSpecification);
+
+    assertThat(cases.size()).isEqualTo(expectedUnreceiptedCaseSize);
+  }
+
+  @Transactional
+  @Test
+  public void shouldRetrieveSevenCasesWhenThreeRefusedAndWithoutClassifiers() {
+    int expectedNotRefusedCaseSize = 7;
+    setupTestCases(expectedNotRefusedCaseSize, false, false);
+    setupTestCases(3, false, true);
+
+    Specification<Case> expectedSpecification = getSpecificationWithoutClassifiers();
+
+    List<Case> cases = caseRepository.findAll(expectedSpecification);
+
+    assertThat(cases.size()).isEqualTo(expectedNotRefusedCaseSize);
+  }
+
+  @Transactional
+  @Test
+  public void shouldRetrieveSevenCasesWhenThreeRefusedAndWithClassifiers() {
+    int expectedUnreceiptedCaseSize = 7;
+    setupTestCases(expectedUnreceiptedCaseSize, false, false);
+    setupTestCases(3, false, true);
 
     Specification<Case> expectedSpecification = getSpecificationWithClassifiers();
 
@@ -118,6 +146,21 @@ public class CaseRepositoryIT {
     caseRepository.saveAll(unReceiptedCases);
   }
 
+  private void setupTestCases(int caseCount, boolean receipted, boolean refused) {
+    List<Case> cases = new ArrayList<>();
+
+    for (int i = 0; i < caseCount; i++) {
+      Case caze = easyRandom.nextObject(Case.class);
+      caze.setActionPlanId(TEST_ACTION_PLAN_ID);
+      caze.setReceiptReceived(receipted);
+      caze.setRefusalReceived(refused);
+      cases.add(caze);
+      caze.setTreatmentCode("HH_LF3R1E");
+    }
+
+    caseRepository.saveAll(cases);
+  }
+
   private Specification<Case> getSpecificationWithoutClassifiers() {
     return createSpecificationForUnreceiptedCases();
   }
@@ -133,7 +176,7 @@ public class CaseRepositoryIT {
   }
 
   private Specification<Case> createSpecificationForUnreceiptedCases() {
-    return where(isActionPlanIdEqualTo()).and(excludeReceiptedCases());
+    return where(isActionPlanIdEqualTo()).and(excludeReceiptedCases().and(excludeRefusedCases()));
   }
 
   private Specification<Case> isActionPlanIdEqualTo() {
@@ -144,6 +187,11 @@ public class CaseRepositoryIT {
   private Specification<Case> excludeReceiptedCases() {
     return (Specification<Case>)
         (root, query, builder) -> builder.equal(root.get("receiptReceived"), false);
+  }
+
+  private Specification<Case> excludeRefusedCases() {
+    return (Specification<Case>)
+        (root, query, builder) -> builder.equal(root.get("refusalReceived"), false);
   }
 
   private Specification<Case> isClassifierIn(

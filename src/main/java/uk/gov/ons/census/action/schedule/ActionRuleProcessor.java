@@ -178,7 +178,8 @@ public class ActionRuleProcessor {
   }
 
   private Specification<Case> createSpecificationForUnreceiptedCases(String actionPlanId) {
-    return where(isActionPlanIdEqualTo(actionPlanId)).and(excludeReceiptedCases().and(excludeRefusedCases()));
+    return where(isActionPlanIdEqualTo(actionPlanId))
+        .and(excludeReceiptedCases().and(excludeRefusedCases()));
   }
 
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
@@ -188,7 +189,7 @@ public class ActionRuleProcessor {
 
   private Specification<Case> excludeReceiptedCases() {
     return (Specification<Case>)
-        (root, query, builder) -> builder.equal(root.get("receiptReceived"), false) ;
+        (root, query, builder) -> builder.equal(root.get("receiptReceived"), false);
   }
 
   private Specification<Case> excludeRefusedCases() {
