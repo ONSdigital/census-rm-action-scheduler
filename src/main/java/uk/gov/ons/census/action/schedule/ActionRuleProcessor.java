@@ -78,7 +78,7 @@ public class ActionRuleProcessor {
 
   private void executeClassifiedCases(ActionRule triggeredActionRule) {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
-    Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
+    Specification<Case> specification = createSpecificationForActionableCases(actionPlanId);
 
     for (Map.Entry<String, List<String>> classifier :
         triggeredActionRule.getClassifiers().entrySet()) {
@@ -177,7 +177,7 @@ public class ActionRuleProcessor {
     }
   }
 
-  private Specification<Case> createSpecificationForUnreceiptedCases(String actionPlanId) {
+  private Specification<Case> createSpecificationForActionableCases(String actionPlanId) {
     return where(isActionPlanIdEqualTo(actionPlanId))
         .and(excludeReceiptedCases().and(excludeRefusedCases()));
   }

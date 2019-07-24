@@ -132,20 +132,6 @@ public class CaseRepositoryIT {
     assertThat(cases.size()).isEqualTo(expectedUnreceiptedCaseSize);
   }
 
-  private void setupTestCases(int caseCount, boolean receipted) {
-    List<Case> unReceiptedCases = new ArrayList<>();
-
-    for (int i = 0; i < caseCount; i++) {
-      Case caze = easyRandom.nextObject(Case.class);
-      caze.setActionPlanId(TEST_ACTION_PLAN_ID);
-      caze.setReceiptReceived(receipted);
-      unReceiptedCases.add(caze);
-      caze.setTreatmentCode("HH_LF3R1E");
-    }
-
-    caseRepository.saveAll(unReceiptedCases);
-  }
-
   private void setupTestCases(int caseCount, boolean receipted, boolean refused) {
     List<Case> cases = new ArrayList<>();
 
