@@ -148,11 +148,11 @@ public class CaseRepositoryIT {
   }
 
   private Specification<Case> getSpecificationWithoutClassifiers() {
-    return createSpecificationForUnreceiptedCases();
+    return createSpecificationForActionableCases();
   }
 
   private Specification<Case> getSpecificationWithClassifiers() {
-    Specification<Case> specification = createSpecificationForUnreceiptedCases();
+    Specification<Case> specification = createSpecificationForActionableCases();
 
     for (Map.Entry<String, List<String>> classifier : TEST_CLASSIFIERS.entrySet()) {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
@@ -161,7 +161,7 @@ public class CaseRepositoryIT {
     return specification;
   }
 
-  private Specification<Case> createSpecificationForUnreceiptedCases() {
+  private Specification<Case> createSpecificationForActionableCases() {
     return where(isActionPlanIdEqualTo()).and(excludeReceiptedCases().and(excludeRefusedCases()));
   }
 
