@@ -81,9 +81,9 @@ public class Case {
   @Enumerated(EnumType.STRING)
   private CaseState state;
 
-  @Column(name = "receipt_received")
+  @Column(name = "receipt_received", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
   private boolean receiptReceived;
 
-  @Column(name = "refusal_received")
+  @Column(name = "refusal_received", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
   private boolean refusalReceived;
 }
