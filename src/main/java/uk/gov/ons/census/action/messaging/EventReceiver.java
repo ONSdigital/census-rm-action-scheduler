@@ -111,6 +111,10 @@ public class EventReceiver {
     if (collectionCase.getReceiptReceived() != null) {
       caseDetails.setReceiptReceived(collectionCase.getReceiptReceived());
     }
+
+    if (collectionCase.getRefusalReceived() != null) {
+      caseDetails.setRefusalReceived(collectionCase.getRefusalReceived());
+    }
   }
 
   private void processUacUpdated(Uac uac) {

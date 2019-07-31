@@ -78,7 +78,7 @@ public class ActionRuleProcessor {
 
   private void executeClassifiedCases(ActionRule triggeredActionRule) {
     String actionPlanId = triggeredActionRule.getActionPlan().getId().toString();
-    Specification<Case> specification = createSpecificationForUnreceiptedCases(actionPlanId);
+    Specification<Case> specification = createSpecificationForActionableCases(actionPlanId);
 
     for (Map.Entry<String, List<String>> classifier :
         triggeredActionRule.getClassifiers().entrySet()) {
@@ -177,8 +177,9 @@ public class ActionRuleProcessor {
     }
   }
 
-  private Specification<Case> createSpecificationForUnreceiptedCases(String actionPlanId) {
-    return where(isActionPlanIdEqualTo(actionPlanId)).and(excludeReceiptedCases());
+  private Specification<Case> createSpecificationForActionableCases(String actionPlanId) {
+    return where(isActionPlanIdEqualTo(actionPlanId))
+        .and(excludeReceiptedCases().and(excludeRefusedCases()));
   }
 
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
@@ -189,6 +190,11 @@ public class ActionRuleProcessor {
   private Specification<Case> excludeReceiptedCases() {
     return (Specification<Case>)
         (root, query, builder) -> builder.equal(root.get("receiptReceived"), false);
+  }
+
+  private Specification<Case> excludeRefusedCases() {
+    return (Specification<Case>)
+        (root, query, builder) -> builder.equal(root.get("refusalReceived"), false);
   }
 
   private Specification<Case> isClassifierIn(
