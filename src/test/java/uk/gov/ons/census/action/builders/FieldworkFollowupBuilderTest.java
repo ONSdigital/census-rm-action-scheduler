@@ -10,7 +10,7 @@ import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 
-public class ActionInstructionBuilderTest {
+public class FieldworkFollowupBuilderTest {
 
   @Test
   public void testLatAndLongCopiedToAddress() {

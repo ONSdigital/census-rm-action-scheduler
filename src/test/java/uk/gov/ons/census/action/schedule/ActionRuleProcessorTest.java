@@ -37,7 +37,7 @@ public class ActionRuleProcessorTest {
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
   private final CustomCaseRepository customCaseRepository = mock(CustomCaseRepository.class);
-  private final FieldworkFollowupBuilder actionInstructionBuilder =
+  private final FieldworkFollowupBuilder fieldworkFollowupBuilder =
       mock(FieldworkFollowupBuilder.class);
   private final PrintCaseSelectedBuilder printCaseSelectedBuilder =
       mock(PrintCaseSelectedBuilder.class);
@@ -71,7 +71,7 @@ public class ActionRuleProcessorTest {
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            actionInstructionBuilder,
+            fieldworkFollowupBuilder,
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
@@ -100,7 +100,7 @@ public class ActionRuleProcessorTest {
 
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
-    when(actionInstructionBuilder.buildFieldworkFollowup(any(Case.class), eq(actionRule)))
+    when(fieldworkFollowupBuilder.buildFieldworkFollowup(any(Case.class), eq(actionRule)))
         .thenReturn(new FieldworkFollowup());
 
     when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
@@ -109,7 +109,7 @@ public class ActionRuleProcessorTest {
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            actionInstructionBuilder,
+            fieldworkFollowupBuilder,
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
@@ -120,7 +120,7 @@ public class ActionRuleProcessorTest {
     actionRuleProcessor.createScheduledActions(actionRule);
 
     // then
-    verify(actionInstructionBuilder, times(expectedCaseCount))
+    verify(fieldworkFollowupBuilder, times(expectedCaseCount))
         .buildFieldworkFollowup(any(Case.class), eq(actionRule));
     ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
     verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());
@@ -152,7 +152,7 @@ public class ActionRuleProcessorTest {
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            actionInstructionBuilder,
+            fieldworkFollowupBuilder,
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
@@ -203,7 +203,7 @@ public class ActionRuleProcessorTest {
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
             actionRuleRepo,
-            actionInstructionBuilder,
+            fieldworkFollowupBuilder,
             printFileDtoBuilder,
             printCaseSelectedBuilder,
             rabbitTemplate,
