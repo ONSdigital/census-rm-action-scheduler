@@ -1,42 +1,16 @@
 package uk.gov.ons.census.action.builders;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
-import uk.gov.ons.census.action.model.UacQidTuple;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
-import uk.gov.ons.census.action.model.entity.UacQidLink;
 
 public class ActionInstructionBuilderTest {
-  private final QidUacBuilder qidUacBuilder = mock(QidUacBuilder.class);
-
-  @Test(expected = RuntimeException.class)
-  public void testQidLinksNull() {
-    // Given
-    EasyRandom easyRandom = new EasyRandom();
-    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
-    ActionRule actionRule = new ActionRule();
-    actionRule.setActionPlan(actionPlan);
-    actionRule.setActionType(ActionType.ICL1E);
-    Case testCase = easyRandom.nextObject(Case.class);
-    testCase.setTreatmentCode("HH_QF2R1W");
-
-    when(qidUacBuilder.getUacQidLinks(testCase)).thenReturn(null);
-
-    // When
-    FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder(qidUacBuilder);
-    underTest.buildFieldworkFollowup(testCase, actionRule);
-
-    // Then
-    // Expect exception to be thrown
-  }
 
   @Test
   public void testLatAndLongCopiedToAddress() {
@@ -47,25 +21,15 @@ public class ActionInstructionBuilderTest {
     caze.setLongitude("-9.987654321111");
     caze.setCeExpectedCapacity("500");
 
-    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
-    ActionRule actionRule = new ActionRule();
-    actionRule.setActionPlan(actionPlan);
-    actionRule.setActionType(ActionType.ICL1E);
-    UacQidLink uacQidLink = new UacQidLink();
-    uacQidLink.setUac(caze.getCaseId().toString() + "uac");
-
-    UacQidTuple uacQidTuple = new UacQidTuple();
-    uacQidTuple.setUacQidLink(uacQidLink);
-
-    when(qidUacBuilder.getUacQidLinks(caze)).thenReturn(uacQidTuple);
+    ActionRule actionRule = generateRandomActionRule(easyRandom);
 
     // When
-    FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder(qidUacBuilder);
+    FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder();
     FieldworkFollowup actualResult = underTest.buildFieldworkFollowup(caze, actionRule);
 
     // Then
-    assertThat(caze.getLatitude()).isEqualTo(actualResult.getLatitude().toString());
-    assertThat(caze.getLongitude()).isEqualTo(actualResult.getLongitude().toString());
+    assertThat(caze.getLatitude()).isEqualTo(actualResult.getLatitude());
+    assertThat(caze.getLongitude()).isEqualTo(actualResult.getLongitude());
   }
 
   @Test
@@ -74,25 +38,35 @@ public class ActionInstructionBuilderTest {
     EasyRandom easyRandom = new EasyRandom();
     Case caze = easyRandom.nextObject(Case.class);
 
-    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
-    ActionRule actionRule = new ActionRule();
-    actionRule.setActionPlan(actionPlan);
-    actionRule.setActionType(ActionType.FF2QE);
-    UacQidLink uacQidLink = new UacQidLink();
-    uacQidLink.setUac(caze.getCaseId().toString() + "uac");
-
-    UacQidTuple uacQidTuple = new UacQidTuple();
-    uacQidTuple.setUacQidLink(uacQidLink);
-
-    when(qidUacBuilder.getUacQidLinks(caze)).thenReturn(uacQidTuple);
+    ActionRule actionRule = generateRandomActionRule(easyRandom);
 
     // When
-    FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder(qidUacBuilder);
+    FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder();
     FieldworkFollowup actualResult = underTest.buildFieldworkFollowup(caze, actionRule);
 
     // Then
     assertThat(actualResult.getSurveyName()).isEqualTo("CENSUS");
     assertThat(actualResult.getUndeliveredAsAddress()).isFalse();
     assertThat(actualResult.getBlankQreReturned()).isFalse();
+    assertThat(actualResult.getCaseId()).isEqualTo(caze.getCaseId().toString());
+    assertThat(actualResult.getCaseRef()).isEqualTo(Integer.toString(caze.getCaseRef()));
+    assertThat(actualResult)
+        .isEqualToIgnoringGivenFields(
+            caze,
+            "actionPlan",
+            "actionType",
+            "surveyName",
+            "undeliveredAsAddress",
+            "blankQreReturned",
+            "caseId",
+            "caseRef");
+  }
+
+  private ActionRule generateRandomActionRule(EasyRandom easyRandom) {
+    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
+    ActionRule actionRule = new ActionRule();
+    actionRule.setActionPlan(actionPlan);
+    actionRule.setActionType(ActionType.FF2QE);
+    return actionRule;
   }
 }

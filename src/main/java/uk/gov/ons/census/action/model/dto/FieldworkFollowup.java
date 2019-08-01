@@ -9,6 +9,7 @@ public class FieldworkFollowup {
   private String addressLine3;
   private String townName;
   private String postcode;
+  private String estabType;
   private String organisationName;
   private String arid;
   private String uprn;
@@ -19,7 +20,6 @@ public class FieldworkFollowup {
   private String actionType;
   private String caseId;
   private String caseRef;
-  private String uac;
   private String addressType;
   private String addressLevel;
   private String treatmentCode;

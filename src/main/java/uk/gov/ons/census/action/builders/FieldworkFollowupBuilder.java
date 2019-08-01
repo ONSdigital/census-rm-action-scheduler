@@ -2,25 +2,17 @@ package uk.gov.ons.census.action.builders;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.ons.census.action.model.UacQidTuple;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 
 @Component
 public class FieldworkFollowupBuilder {
-  private final QidUacBuilder qidUacBuilder;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
-  public FieldworkFollowupBuilder(QidUacBuilder qidUacBuilder) {
-    this.qidUacBuilder = qidUacBuilder;
-  }
-
   public FieldworkFollowup buildFieldworkFollowup(Case caze, ActionRule actionRule) {
-
-    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(caze);
 
     FieldworkFollowup followup = new FieldworkFollowup();
     followup.setAddressLine1(caze.getAddressLine1());
@@ -28,6 +20,7 @@ public class FieldworkFollowupBuilder {
     followup.setAddressLine3(caze.getAddressLine3());
     followup.setTownName(caze.getTownName());
     followup.setPostcode(caze.getPostcode());
+    followup.setEstabType(caze.getEstabType());
     followup.setOrganisationName(caze.getOrganisationName());
     followup.setArid(caze.getArid());
     followup.setUprn(caze.getUprn());
@@ -39,7 +32,6 @@ public class FieldworkFollowupBuilder {
     followup.setActionType(actionRule.getActionType().toString());
     followup.setCaseId(caze.getCaseId().toString());
     followup.setCaseRef(Integer.toString(caze.getCaseRef()));
-    followup.setUac(uacQidTuple.getUacQidLink().getUac());
     followup.setAddressType(caze.getAddressType());
     followup.setAddressLevel(caze.getAddressLevel());
     followup.setTreatmentCode(caze.getTreatmentCode());
@@ -47,7 +39,7 @@ public class FieldworkFollowupBuilder {
     followup.setFieldCoordinatorId(caze.getFieldCoordinatorId());
     followup.setCeExpectedCapacity(caze.getCeExpectedCapacity());
 
-    // TODO: set surveyName, UndeliveredAsAddress and BlankQreReturned dynamically from caze
+    // TODO: set surveyName, undeliveredAsAddress and blankQreReturned from caze
     followup.setSurveyName("CENSUS");
     followup.setUndeliveredAsAddress(false);
     followup.setBlankQreReturned(false);
