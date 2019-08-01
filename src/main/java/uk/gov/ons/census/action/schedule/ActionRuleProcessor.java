@@ -22,7 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
+import uk.gov.ons.census.action.builders.FieldworkFollowupBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
@@ -42,7 +42,7 @@ public class ActionRuleProcessor {
   private static final String ROUTING_KEY_SUFFIX = ".binding";
 
   private final ActionRuleRepository actionRuleRepo;
-  private final ActionInstructionBuilder actionInstructionBuilder;
+  private final FieldworkFollowupBuilder fieldworkFollowupBuilder;
   private final PrintFileDtoBuilder printFileDtoBuilder;
   private final PrintCaseSelectedBuilder printCaseSelectedBuilder;
   private final RabbitTemplate rabbitTemplate;
@@ -56,13 +56,13 @@ public class ActionRuleProcessor {
 
   public ActionRuleProcessor(
       ActionRuleRepository actionRuleRepo,
-      ActionInstructionBuilder actionInstructionBuilder,
+      FieldworkFollowupBuilder fieldworkFollowupBuilder,
       PrintFileDtoBuilder printFileDtoBuilder,
       PrintCaseSelectedBuilder printCaseSelectedBuilder,
       RabbitTemplate rabbitTemplate,
       CustomCaseRepository customCaseRepository) {
     this.actionRuleRepo = actionRuleRepo;
-    this.actionInstructionBuilder = actionInstructionBuilder;
+    this.fieldworkFollowupBuilder = fieldworkFollowupBuilder;
     this.printFileDtoBuilder = printFileDtoBuilder;
     this.printCaseSelectedBuilder = printCaseSelectedBuilder;
     this.rabbitTemplate = rabbitTemplate;
@@ -155,7 +155,7 @@ public class ActionRuleProcessor {
     cases.forEach(
         caze -> {
           callables.add(
-              () -> actionInstructionBuilder.buildFieldworkFollowup(caze, triggeredActionRule));
+              () -> fieldworkFollowupBuilder.buildFieldworkFollowup(caze, triggeredActionRule));
         });
 
     try {
@@ -163,11 +163,11 @@ public class ActionRuleProcessor {
 
       List<Future<FieldworkFollowup>> results = EXECUTOR_SERVICE.invokeAll(callables);
 
-      log.info("About to send {} ActionInstruction messages", results.size());
+      log.info("About to send {} FieldworkFollowup messages", results.size());
       int messagesSent = 0;
       for (Future<FieldworkFollowup> result : results) {
         if (messagesSent++ % 1000 == 0) {
-          log.info("Sent {} ActionInstruction messages", messagesSent - 1);
+          log.info("Sent {} FieldworkFollowup messages", messagesSent - 1);
         }
 
         rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
