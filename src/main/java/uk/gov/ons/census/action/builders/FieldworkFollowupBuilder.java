@@ -8,13 +8,13 @@ import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 
 @Component
-public class ActionInstructionBuilder {
+public class FieldworkFollowupBuilder {
   private final QidUacBuilder qidUacBuilder;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
-  public ActionInstructionBuilder(QidUacBuilder qidUacBuilder) {
+  public FieldworkFollowupBuilder(QidUacBuilder qidUacBuilder) {
     this.qidUacBuilder = qidUacBuilder;
   }
 
@@ -47,7 +47,12 @@ public class ActionInstructionBuilder {
     followup.setFieldCoordinatorId(caze.getFieldCoordinatorId());
     followup.setCeExpectedCapacity(caze.getCeExpectedCapacity());
 
-    // TODO: undeliveredAsAddress, blankQreReturned, ccsQuestionnaireUrl, ceDeliveryReqd,
+    // TODO: set surveyName, UndeliveredAsAddress and BlankQreReturned dynamically from caze
+    followup.setSurveyName("CENSUS");
+    followup.setUndeliveredAsAddress(false);
+    followup.setBlankQreReturned(false);
+
+    // TODO: ccsQuestionnaireUrl, ceDeliveryReqd,
     // ceCE1Complete, ceActualResponses
 
     return followup;

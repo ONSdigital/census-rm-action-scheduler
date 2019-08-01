@@ -31,7 +31,7 @@ public class ActionInstructionBuilderTest {
     when(qidUacBuilder.getUacQidLinks(testCase)).thenReturn(null);
 
     // When
-    ActionInstructionBuilder underTest = new ActionInstructionBuilder(qidUacBuilder);
+    FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder(qidUacBuilder);
     underTest.buildFieldworkFollowup(testCase, actionRule);
 
     // Then
@@ -60,11 +60,39 @@ public class ActionInstructionBuilderTest {
     when(qidUacBuilder.getUacQidLinks(caze)).thenReturn(uacQidTuple);
 
     // When
-    ActionInstructionBuilder underTest = new ActionInstructionBuilder(qidUacBuilder);
+    FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder(qidUacBuilder);
     FieldworkFollowup actualResult = underTest.buildFieldworkFollowup(caze, actionRule);
 
     // Then
     assertThat(caze.getLatitude()).isEqualTo(actualResult.getLatitude().toString());
     assertThat(caze.getLongitude()).isEqualTo(actualResult.getLongitude().toString());
+  }
+
+  @Test
+  public void testFWMTRequiredFields() {
+    // Given
+    EasyRandom easyRandom = new EasyRandom();
+    Case caze = easyRandom.nextObject(Case.class);
+
+    ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
+    ActionRule actionRule = new ActionRule();
+    actionRule.setActionPlan(actionPlan);
+    actionRule.setActionType(ActionType.FF2QE);
+    UacQidLink uacQidLink = new UacQidLink();
+    uacQidLink.setUac(caze.getCaseId().toString() + "uac");
+
+    UacQidTuple uacQidTuple = new UacQidTuple();
+    uacQidTuple.setUacQidLink(uacQidLink);
+
+    when(qidUacBuilder.getUacQidLinks(caze)).thenReturn(uacQidTuple);
+
+    // When
+    FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder(qidUacBuilder);
+    FieldworkFollowup actualResult = underTest.buildFieldworkFollowup(caze, actionRule);
+
+    // Then
+    assertThat(actualResult.getSurveyName()).isEqualTo("CENSUS");
+    assertThat(actualResult.getUndeliveredAsAddress()).isFalse();
+    assertThat(actualResult.getBlankQreReturned()).isFalse();
   }
 }

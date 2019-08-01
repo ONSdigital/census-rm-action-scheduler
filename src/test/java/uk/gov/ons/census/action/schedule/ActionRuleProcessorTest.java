@@ -19,7 +19,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
+import uk.gov.ons.census.action.builders.FieldworkFollowupBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
@@ -37,8 +37,8 @@ public class ActionRuleProcessorTest {
 
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);
   private final CustomCaseRepository customCaseRepository = mock(CustomCaseRepository.class);
-  private final ActionInstructionBuilder actionInstructionBuilder =
-      mock(ActionInstructionBuilder.class);
+  private final FieldworkFollowupBuilder actionInstructionBuilder =
+      mock(FieldworkFollowupBuilder.class);
   private final PrintCaseSelectedBuilder printCaseSelectedBuilder =
       mock(PrintCaseSelectedBuilder.class);
 

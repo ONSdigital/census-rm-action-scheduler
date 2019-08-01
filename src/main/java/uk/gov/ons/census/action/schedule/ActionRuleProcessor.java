@@ -22,7 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.builders.ActionInstructionBuilder;
+import uk.gov.ons.census.action.builders.FieldworkFollowupBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
@@ -42,7 +42,7 @@ public class ActionRuleProcessor {
   private static final String ROUTING_KEY_SUFFIX = ".binding";
 
   private final ActionRuleRepository actionRuleRepo;
-  private final ActionInstructionBuilder actionInstructionBuilder;
+  private final FieldworkFollowupBuilder actionInstructionBuilder;
   private final PrintFileDtoBuilder printFileDtoBuilder;
   private final PrintCaseSelectedBuilder printCaseSelectedBuilder;
   private final RabbitTemplate rabbitTemplate;
@@ -56,7 +56,7 @@ public class ActionRuleProcessor {
 
   public ActionRuleProcessor(
       ActionRuleRepository actionRuleRepo,
-      ActionInstructionBuilder actionInstructionBuilder,
+      FieldworkFollowupBuilder actionInstructionBuilder,
       PrintFileDtoBuilder printFileDtoBuilder,
       PrintCaseSelectedBuilder printCaseSelectedBuilder,
       RabbitTemplate rabbitTemplate,
