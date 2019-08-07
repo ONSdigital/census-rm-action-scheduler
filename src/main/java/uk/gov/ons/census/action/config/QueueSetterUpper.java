@@ -2,9 +2,7 @@ package uk.gov.ons.census.action.config;
 
 import static org.springframework.amqp.core.Binding.DestinationType.QUEUE;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +33,15 @@ public class QueueSetterUpper {
   @Value("${queueconfig.action-case-queue}")
   private String actionCaseQueue;
 
+  @Value("${queueconfig.action-fulfilment-inbound-queue}")
+  private String actionFulfilmentQueue;
+
+  @Value("${queueconfig.events-exchange}")
+  private String eventsExchange;
+
+  @Value("${queueconfig.events-fulfilment-request-binding}")
+  private String eventsFulfilmentRequestBinding;
+
   @Bean
   public Queue inboundQueue() {
     return new Queue(inboundQueue, true);
@@ -56,6 +63,11 @@ public class QueueSetterUpper {
   }
 
   @Bean
+  public Queue actionFulfilmentQueue() {
+    return new Queue(actionFulfilmentQueue, true);
+  }
+
+  @Bean
   public DirectExchange outboundExchange() {
     return new DirectExchange(outboundExchange, true, false);
   }
@@ -63,6 +75,11 @@ public class QueueSetterUpper {
   @Bean
   public DirectExchange actionCaseExchange() {
     return new DirectExchange(actionCaseExchange, true, false);
+  }
+
+  @Bean
+  public Exchange eventsExchange() {
+    return new TopicExchange(eventsExchange, true, false);
   }
 
   @Bean
@@ -79,5 +96,10 @@ public class QueueSetterUpper {
   @Bean
   public Binding fieldBinding() {
     return new Binding(outboundFieldQueue, QUEUE, outboundExchange, outboundFieldRoutingKey, null);
+  }
+
+  @Bean
+  public Binding eventsBinding() {
+    return new Binding(actionFulfilmentQueue, QUEUE, eventsExchange, eventsFulfilmentRequestBinding, null);
   }
 }

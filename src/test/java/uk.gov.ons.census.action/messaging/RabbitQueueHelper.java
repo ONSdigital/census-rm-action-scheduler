@@ -22,6 +22,10 @@ public class RabbitQueueHelper {
 
   @Autowired private AmqpAdmin amqpAdmin;
 
+  public void sendMessage(String exchangeName, String routingKey, Object message) {
+    rabbitTemplate.convertAndSend(exchangeName, routingKey, message);
+  }
+
   public BlockingQueue<String> listen(String queueName) {
     BlockingQueue<String> transfer = new ArrayBlockingQueue(50);
 
