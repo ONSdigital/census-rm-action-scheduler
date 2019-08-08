@@ -54,3 +54,7 @@ healthcheck:
 
 scheduler:
   frequency: 1000 #milliseconds
+
+caseapi:
+  host: caseapi
+  port: 8161

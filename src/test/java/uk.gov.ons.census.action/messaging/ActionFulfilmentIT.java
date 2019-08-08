@@ -2,8 +2,12 @@ package uk.gov.ons.census.action.messaging;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.jeasy.random.EasyRandom;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +49,9 @@ public class ActionFulfilmentIT {
 
     @Value("${queueconfig.outbound-printer-queue}")
     private String outboundPrinterQueue;
+
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8161).httpsPort(8443));
 
     @Autowired
     private RabbitQueueHelper rabbitQueueHelper;
