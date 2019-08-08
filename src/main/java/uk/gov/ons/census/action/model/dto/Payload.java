@@ -7,4 +7,5 @@ public class Payload {
   private CollectionCase collectionCase;
   private Uac uac;
   private PrintCaseSelected printCaseSelected;
+  private FulfilmentRequestDTO fulfilmentRequest;
 }

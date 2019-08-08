@@ -19,10 +19,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.model.dto.PrintFileDto;
-import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
-import uk.gov.ons.census.action.model.dto.UacQidDTO;
+import uk.gov.ons.census.action.model.dto.*;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
+import uk.gov.ons.census.action.model.entity.Case;
+import uk.gov.ons.census.action.model.repository.CaseRepository;
 
 import java.io.IOException;
 import java.util.Random;
@@ -58,6 +58,9 @@ public class ActionFulfilmentIT {
     @Autowired
     private RabbitQueueHelper rabbitQueueHelper;
 
+    @Autowired
+    private CaseRepository caseRepository;
+
     private EasyRandom easyRandom = new EasyRandom();
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -72,14 +75,14 @@ public class ActionFulfilmentIT {
     @Test
     public void checkReceivedEventsAreEmitted() throws InterruptedException, IOException {
         BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
-
+        Case fulfillmentCase = this.setUpCase();
         // Given
-        ResponseManagementEvent actionFulfilmentEvent = getResponseManagementEvent("1234");
+        ResponseManagementEvent actionFulfilmentEvent = getResponseManagementEvent(fulfillmentCase.getCaseId().toString());
         PrintFileDto printFileRequest = setupPrintFile();
         String url = "/uacqid/create/";
         UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
         String returnJson = objectMapper.writeValueAsString(uacQidDto);
-        stubFor(
+        givenThat(
                 post(urlEqualTo(url))
                         .willReturn(
                                 aResponse()
@@ -93,8 +96,6 @@ public class ActionFulfilmentIT {
         PrintFileDto actualPrintFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
 
         assertThat(actualPrintFileDto.getUac()).isEqualTo(uacQidDto.getUac());
-
-
     }
 
     private PrintFileDto checkExpectedPrintFileDtoMessageReceived(BlockingQueue<String> queue)
@@ -106,31 +107,15 @@ public class ActionFulfilmentIT {
         return objectMapper.readValue(actualMessage, PrintFileDto.class);
     }
 
-    private ResponseManagementEvent getResponseManagementEvent(String actionPlanId) {
+    private ResponseManagementEvent getResponseManagementEvent(String caseId) {
         ResponseManagementEvent responseManagementEvent =
-                easyRandom.nextObject(ResponseManagementEvent.class);
+                new ResponseManagementEvent();
 
-        responseManagementEvent
-                .getPayload()
-                .getCollectionCase()
-                .setCaseRef(Integer.toString(easyRandom.nextInt()));
-        responseManagementEvent.getPayload().getCollectionCase().setId(UUID.randomUUID().toString());
-        responseManagementEvent.getPayload().getCollectionCase().setState("ACTIONABLE");
-        responseManagementEvent.getPayload().getCollectionCase().setActionPlanId(actionPlanId);
-
-        Random random = new Random();
-        responseManagementEvent
-                .getPayload()
-                .getCollectionCase()
-                .getAddress()
-                .setLatitude(Double.toString(random.nextDouble()));
-        responseManagementEvent
-                .getPayload()
-                .getCollectionCase()
-                .getAddress()
-                .setLongitude(Double.toString(random.nextDouble()));
-
-        responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
+        FulfilmentRequestDTO fulfilmentRequest = easyRandom.nextObject(FulfilmentRequestDTO.class);
+        fulfilmentRequest.setFulfilmentCode("P_OR_H1");
+        responseManagementEvent.setPayload(new Payload());
+        fulfilmentRequest.setCaseId(caseId);
+        responseManagementEvent.getPayload().setFulfilmentRequest(fulfilmentRequest);
 
         return responseManagementEvent;
     }
@@ -139,11 +124,9 @@ public class ActionFulfilmentIT {
         return easyRandom.nextObject(PrintFileDto.class);
     }
 
-    private ActionPlan setUpActionPlan(String name, String desc) {
-        ActionPlan actionPlan = new ActionPlan();
-        actionPlan.setName(name);
-        actionPlan.setDescription(desc);
-        actionPlan.setId(UUID.randomUUID());
-        return actionPlan;
+    private Case setUpCase() {
+        Case fulfilmentCase = easyRandom.nextObject(Case.class);
+        caseRepository.saveAndFlush(fulfilmentCase);
+        return fulfilmentCase;
     }
 }
