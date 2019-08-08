@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -20,6 +21,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
+import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 
 import java.io.IOException;
@@ -51,12 +53,14 @@ public class ActionFulfilmentIT {
     private String outboundPrinterQueue;
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8161).httpsPort(8443));
+    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8089).httpsPort(8443));
 
     @Autowired
     private RabbitQueueHelper rabbitQueueHelper;
 
     private EasyRandom easyRandom = new EasyRandom();
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Before
     @Transactional
@@ -72,12 +76,23 @@ public class ActionFulfilmentIT {
         // Given
         ResponseManagementEvent actionFulfilmentEvent = getResponseManagementEvent("1234");
         PrintFileDto printFileRequest = setupPrintFile();
+        String url = "/uacqid/create/";
+        UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
+        String returnJson = objectMapper.writeValueAsString(uacQidDto);
+        stubFor(
+                post(urlEqualTo(url))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.OK.value())
+                                        .withHeader("Content-Type", "application/json")
+                                        .withBody(returnJson)));
+
         // WHEN
         rabbitQueueHelper.sendMessage(eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
 
         PrintFileDto actualPrintFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
 
-        assertThat(actualPrintFileDto.getCaseRef()).isEqualTo(printFileRequest.getCaseRef());
+        assertThat(actualPrintFileDto.getUac()).isEqualTo(uacQidDto.getUac());
 
 
     }
