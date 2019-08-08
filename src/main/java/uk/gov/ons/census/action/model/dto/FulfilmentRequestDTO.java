@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @NoArgsConstructor
 public class FulfilmentRequestDTO {
@@ -17,5 +15,4 @@ public class FulfilmentRequestDTO {
   private String fulfilmentCode;
 
   private Contact contact;
-
 }

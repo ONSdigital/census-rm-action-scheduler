@@ -8,19 +8,19 @@ import uk.gov.ons.census.action.model.dto.UacQidDTO;
 
 @Service
 public class CaseService {
-    @Value("${caseapi.host}")
-    private String host;
+  @Value("${caseapi.host}")
+  private String host;
 
-    @Value("${caseapi.port}")
-    private String port;
+  @Value("${caseapi.port}")
+  private String port;
 
-    public UacQidDTO getUacQid(String questionnaireType) {
-        String url = "http://" + host + ":" + port + "/uacqid/create/";
-        RestTemplate restTemplate = new RestTemplate();
-        CaseDetailsDTO caseDetails = new CaseDetailsDTO();
-        caseDetails.setQuestionnaireType(questionnaireType);
+  public UacQidDTO getUacQid(String questionnaireType) {
+    String url = "http://" + host + ":" + port + "/uacqid/create/";
+    RestTemplate restTemplate = new RestTemplate();
+    CaseDetailsDTO caseDetails = new CaseDetailsDTO();
+    caseDetails.setQuestionnaireType(questionnaireType);
 
-        UacQidDTO uacQid = restTemplate.postForObject(url, caseDetails, UacQidDTO.class);
-        return uacQid;
-    }
+    UacQidDTO uacQid = restTemplate.postForObject(url, caseDetails, UacQidDTO.class);
+    return uacQid;
+  }
 }

@@ -100,6 +100,7 @@ public class QueueSetterUpper {
 
   @Bean
   public Binding eventsBinding() {
-    return new Binding(actionFulfilmentQueue, QUEUE, eventsExchange, eventsFulfilmentRequestBinding, null);
+    return new Binding(
+        actionFulfilmentQueue, QUEUE, eventsExchange, eventsFulfilmentRequestBinding, null);
   }
 }
