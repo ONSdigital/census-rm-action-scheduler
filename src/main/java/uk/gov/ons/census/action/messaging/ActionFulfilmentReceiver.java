@@ -44,18 +44,17 @@ public class ActionFulfilmentReceiver {
     UUID caseId =
         UUID.fromString(responseManagementEvent.getPayload().getFulfilmentRequest().getCaseId());
     Optional<Case> fulfilmentCase = caseRepository.findByCaseId(caseId);
+    log.with("Case ID", caseId).debug("Fulfilment Requested Event");
     if (fulfilmentCase.isEmpty()) {
       log.with("CaseId", caseId).error("Cannot find Case");
-      // TODO: Nak message
-      return;
+      throw new RuntimeException();
     }
     String packCode =
         responseManagementEvent.getPayload().getFulfilmentRequest().getFulfilmentCode();
     Optional<Integer> questionnaireType = determineQuestionnaireType(packCode);
     if (questionnaireType.isEmpty()) {
       log.with("Case Id", caseId).with("Packcode", packCode).error("Unknown packcode");
-      // TODO Nak message
-      return;
+      throw new RuntimeException();
     }
     UacQidDTO uacQid = caseService.getUacQid("1");
     PrintFileDto printFile =
