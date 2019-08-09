@@ -44,17 +44,21 @@ public class ActionFulfilmentReceiver {
     UUID caseId =
         UUID.fromString(responseManagementEvent.getPayload().getFulfilmentRequest().getCaseId());
     Optional<Case> fulfilmentCase = caseRepository.findByCaseId(caseId);
-    log.with("Case ID", caseId).debug("Fulfilment Requested Event");
+    log.with("caseId", caseId).debug("Fulfilment Requested Event");
     if (fulfilmentCase.isEmpty()) {
-      log.with("CaseId", caseId).error("Cannot find Case");
-      throw new RuntimeException();
+      log.with("caseId", caseId).error("Cannot find Case for fulfilment request.");
+      String error = "Cannot find case for fulfilment request." + caseId;
+      throw new RuntimeException(error);
     }
     String packCode =
         responseManagementEvent.getPayload().getFulfilmentRequest().getFulfilmentCode();
     Optional<Integer> questionnaireType = determineQuestionnaireType(packCode);
     if (questionnaireType.isEmpty()) {
-      log.with("Case Id", caseId).with("Packcode", packCode).error("Unknown packcode");
-      throw new RuntimeException();
+      log.with("caseId", caseId)
+          .with("PackCode", packCode)
+          .error("Unknown packCode in fulfilment request.");
+      String error = "Unknown packCode in fulfilment request. " + packCode + " caseId " + caseId;
+      throw new RuntimeException(error);
     }
     UacQidDTO uacQid = caseService.getUacQid("1");
     PrintFileDto printFile =
