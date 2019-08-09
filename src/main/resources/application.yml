@@ -38,7 +38,7 @@ queueconfig:
   inbound-queue: case.action
   action-fulfilment-inbound-queue: action.fulfilment
   events-exchange: events
-  events-fulfilment-request-binding: fulfilment.request
+  events-fulfilment-request-binding: event.fulfilment.request
   outbound-printer-queue: Action.Printer
   outbound-field-queue: Action.Field
   outbound-exchange: action-outbound-exchange
