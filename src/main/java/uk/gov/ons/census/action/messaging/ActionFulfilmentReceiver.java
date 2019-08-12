@@ -87,7 +87,7 @@ public class ActionFulfilmentReceiver {
     return printFileDto;
   }
 
-  private static Map<String, Integer> fulfilmentCodeToQuestionnaireType =
+  private static final Map<String, Integer> fulfilmentCodeToQuestionnaireType =
       Map.of(
           "P_OR_H1", 1,
           "P_OR_H2", 2,
