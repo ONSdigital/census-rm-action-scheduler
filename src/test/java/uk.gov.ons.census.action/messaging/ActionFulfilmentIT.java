@@ -72,7 +72,6 @@ public class ActionFulfilmentIT {
     // Given
     ResponseManagementEvent actionFulfilmentEvent =
         getResponseManagementEvent(fulfillmentCase.getCaseId().toString());
-    PrintFileDto printFileRequest = setupPrintFile();
     String url = "/uacqid/create/";
     UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
     String returnJson = objectMapper.writeValueAsString(uacQidDto);
@@ -112,10 +111,6 @@ public class ActionFulfilmentIT {
     responseManagementEvent.getPayload().setFulfilmentRequest(fulfilmentRequest);
 
     return responseManagementEvent;
-  }
-
-  private PrintFileDto setupPrintFile() {
-    return easyRandom.nextObject(PrintFileDto.class);
   }
 
   private Case setUpCase() {

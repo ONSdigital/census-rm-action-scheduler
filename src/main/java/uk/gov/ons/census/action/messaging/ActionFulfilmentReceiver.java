@@ -47,8 +47,8 @@ public class ActionFulfilmentReceiver {
     log.with("caseId", caseId).debug("Fulfilment Requested Event");
     if (fulfilmentCase.isEmpty()) {
       log.with("caseId", caseId).error("Cannot find Case for fulfilment request.");
-      String error = "Cannot find case for fulfilment request." + caseId;
-      throw new RuntimeException(error);
+      throw new RuntimeException(
+          String.format("Cannot find case %s for fulfilment request.", caseId));
     }
     String packCode =
         responseManagementEvent.getPayload().getFulfilmentRequest().getFulfilmentCode();
@@ -57,10 +57,11 @@ public class ActionFulfilmentReceiver {
       log.with("caseId", caseId)
           .with("PackCode", packCode)
           .error("Unknown packCode in fulfilment request.");
-      String error = "Unknown packCode in fulfilment request. " + packCode + " caseId " + caseId;
-      throw new RuntimeException(error);
+      throw new RuntimeException(
+          String.format(
+              "Unknown packCode %s in fulfilment request for caseId %s", packCode, caseId));
     }
-    UacQidDTO uacQid = caseService.getUacQid("1");
+    UacQidDTO uacQid = caseService.getUacQid(questionnaireType.get().toString());
     PrintFileDto printFile =
         populatePrintFileDto(fulfilmentCase.get(), uacQid, responseManagementEvent);
     rabbitTemplate.convertAndSend(outboundExchange, outboundPrinterRoutingKey, printFile);
@@ -86,13 +87,14 @@ public class ActionFulfilmentReceiver {
     return printFileDto;
   }
 
+  private static Map<String, Integer> fulfilmentCodeToQuestionnaireType =
+      Map.of(
+          "P_OR_H1", 1,
+          "P_OR_H2", 2,
+          "P_OR_H2W", 3,
+          "P_OR_H4", 4);
+
   private Optional<Integer> determineQuestionnaireType(String packCode) {
-    Map<String, Integer> fulfilmentCodeToQuestionnaireType =
-        Map.of(
-            "P_OR_H1", 1,
-            "P_OR_H2", 2,
-            "P_OR_H2W", 3,
-            "P_OR_H4", 4);
     return Optional.ofNullable(fulfilmentCodeToQuestionnaireType.get(packCode));
   }
 }
