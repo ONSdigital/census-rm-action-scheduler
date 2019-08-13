@@ -4,7 +4,7 @@ import java.util.UUID;
 import lombok.Data;
 
 @Data
-public class CaseDetailsDTO {
+public class UacCreateDTO {
 
   private UUID caseId;
   private String questionnaireType;
