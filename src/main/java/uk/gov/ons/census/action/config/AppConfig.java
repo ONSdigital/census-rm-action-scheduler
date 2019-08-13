@@ -23,6 +23,9 @@ public class AppConfig {
   @Value("${queueconfig.inbound-queue}")
   private String inboundQueue;
 
+  @Value("${queueconfig.action-fulfilment-inbound-queue}")
+  private String actionFulfilmentQueue;
+
   @Value("${queueconfig.consumers}")
   private int consumers;
 
@@ -32,10 +35,25 @@ public class AppConfig {
   }
 
   @Bean
+  public MessageChannel actionFulfilmentInputChannel() {
+    return new DirectChannel();
+  }
+
+  @Bean
   public AmqpInboundChannelAdapter inbound(
-      SimpleMessageListenerContainer listenerContainer,
+      @Qualifier("container") SimpleMessageListenerContainer listenerContainer,
       @Qualifier("caseCreatedInputChannel") MessageChannel channel) {
     AmqpInboundChannelAdapter adapter = new AmqpInboundChannelAdapter(listenerContainer);
+    adapter.setOutputChannel(channel);
+    return adapter;
+  }
+
+  @Bean
+  public AmqpInboundChannelAdapter fulfilmentRequestInbound(
+      @Qualifier("actionFulfilmentContainer")
+          SimpleMessageListenerContainer actionFulfilmentContainer,
+      @Qualifier("actionFulfilmentInputChannel") MessageChannel channel) {
+    AmqpInboundChannelAdapter adapter = new AmqpInboundChannelAdapter(actionFulfilmentContainer);
     adapter.setOutputChannel(channel);
     return adapter;
   }
@@ -59,6 +77,16 @@ public class AppConfig {
     SimpleMessageListenerContainer container =
         new SimpleMessageListenerContainer(connectionFactory);
     container.setQueueNames(inboundQueue);
+    container.setConcurrentConsumers(consumers);
+    return container;
+  }
+
+  @Bean
+  public SimpleMessageListenerContainer actionFulfilmentContainer(
+      ConnectionFactory connectionFactory) {
+    SimpleMessageListenerContainer container =
+        new SimpleMessageListenerContainer(connectionFactory);
+    container.setQueueNames(actionFulfilmentQueue);
     container.setConcurrentConsumers(consumers);
     return container;
   }

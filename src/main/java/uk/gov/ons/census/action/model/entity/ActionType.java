@@ -9,7 +9,9 @@ public enum ActionType {
   ICHHQW(ActionHandler.PRINTER), // Census household questionnaire for Wales
   ICHHQN(ActionHandler.PRINTER), // Census household questionnaire for NI
 
-  FF2QE(ActionHandler.FIELD); // Fieldwork follow up F2 questionnaire for England
+  FF2QE(ActionHandler.FIELD), // Fieldwork follow up F2 questionnaire for England
+
+  P_OR_HX(ActionHandler.PRINTER); // Census PQ request
 
   private final ActionHandler handler;
 

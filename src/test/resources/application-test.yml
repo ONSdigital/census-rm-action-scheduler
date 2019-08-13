@@ -15,3 +15,7 @@ qid:
 
 scheduler:
   frequency: 1000 #milliseconds
+
+caseapi:
+  host: localhost
+  port: 8089
