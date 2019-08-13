@@ -10,13 +10,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.census.action.client.CaseClient;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
-import uk.gov.ons.census.action.client.CaseClient;
 
 @MessageEndpoint
 public class ActionFulfilmentReceiver {
@@ -32,7 +32,7 @@ public class ActionFulfilmentReceiver {
   private String outboundPrinterRoutingKey;
 
   public ActionFulfilmentReceiver(
-          RabbitTemplate rabbitTemplate, CaseClient caseClient, CaseRepository caseRepository) {
+      RabbitTemplate rabbitTemplate, CaseClient caseClient, CaseRepository caseRepository) {
     this.rabbitTemplate = rabbitTemplate;
     this.caseClient = caseClient;
     this.caseRepository = caseRepository;
@@ -61,7 +61,7 @@ public class ActionFulfilmentReceiver {
           String.format(
               "Unknown packCode %s in fulfilment request for caseId %s", packCode, caseId));
     }
-    UacQidDTO uacQid = caseClient.getUacQid(questionnaireType.get().toString());
+    UacQidDTO uacQid = caseClient.getUacQid(caseId, questionnaireType.get().toString());
     PrintFileDto printFile =
         populatePrintFileDto(fulfilmentCase.get(), uacQid, responseManagementEvent);
     rabbitTemplate.convertAndSend(outboundExchange, outboundPrinterRoutingKey, printFile);

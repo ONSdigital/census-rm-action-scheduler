@@ -1,5 +1,6 @@
 package uk.gov.ons.census.action.client;
 
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -14,10 +15,11 @@ public class CaseClient {
   @Value("${caseapi.port}")
   private String port;
 
-  public UacQidDTO getUacQid(String questionnaireType) {
+  public UacQidDTO getUacQid(UUID caseId, String questionnaireType) {
     String url = "http://" + host + ":" + port + "/uacqid/create/";
     RestTemplate restTemplate = new RestTemplate();
     CaseDetailsDTO caseDetails = new CaseDetailsDTO();
+    caseDetails.setCaseId(caseId);
     caseDetails.setQuestionnaireType(questionnaireType);
 
     UacQidDTO uacQid = restTemplate.postForObject(url, caseDetails, UacQidDTO.class);
