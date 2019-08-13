@@ -16,13 +16,13 @@ import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
-import uk.gov.ons.census.action.service.CaseService;
+import uk.gov.ons.census.action.client.CaseClient;
 
 @MessageEndpoint
 public class ActionFulfilmentReceiver {
   private static final Logger log = LoggerFactory.getLogger(ActionFulfilmentReceiver.class);
   private final RabbitTemplate rabbitTemplate;
-  private final CaseService caseService;
+  private final CaseClient caseClient;
   private final CaseRepository caseRepository;
 
   @Value("${queueconfig.outbound-exchange}")
@@ -32,9 +32,9 @@ public class ActionFulfilmentReceiver {
   private String outboundPrinterRoutingKey;
 
   public ActionFulfilmentReceiver(
-      RabbitTemplate rabbitTemplate, CaseService caseService, CaseRepository caseRepository) {
+          RabbitTemplate rabbitTemplate, CaseClient caseClient, CaseRepository caseRepository) {
     this.rabbitTemplate = rabbitTemplate;
-    this.caseService = caseService;
+    this.caseClient = caseClient;
     this.caseRepository = caseRepository;
   }
 
@@ -61,7 +61,7 @@ public class ActionFulfilmentReceiver {
           String.format(
               "Unknown packCode %s in fulfilment request for caseId %s", packCode, caseId));
     }
-    UacQidDTO uacQid = caseService.getUacQid(questionnaireType.get().toString());
+    UacQidDTO uacQid = caseClient.getUacQid(questionnaireType.get().toString());
     PrintFileDto printFile =
         populatePrintFileDto(fulfilmentCase.get(), uacQid, responseManagementEvent);
     rabbitTemplate.convertAndSend(outboundExchange, outboundPrinterRoutingKey, printFile);

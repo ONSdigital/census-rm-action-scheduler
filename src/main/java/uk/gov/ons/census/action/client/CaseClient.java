@@ -1,13 +1,13 @@
-package uk.gov.ons.census.action.service;
+package uk.gov.ons.census.action.client;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.ons.census.action.model.dto.CaseDetailsDTO;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
 
-@Service
-public class CaseService {
+@Component
+public class CaseClient {
   @Value("${caseapi.host}")
   private String host;
 
