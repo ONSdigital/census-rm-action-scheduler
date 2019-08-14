@@ -50,16 +50,11 @@ public class ActionFulfilmentReceiver {
       throw new RuntimeException(
           String.format("Cannot find case %s for fulfilment request.", caseId));
     }
-    String packCode =
+    String fulfilmentCode =
         responseManagementEvent.getPayload().getFulfilmentRequest().getFulfilmentCode();
-    Optional<Integer> questionnaireType = determineQuestionnaireType(packCode);
+    Optional<Integer> questionnaireType = determineQuestionnaireType(fulfilmentCode);
     if (questionnaireType.isEmpty()) {
-      log.with("caseId", caseId)
-          .with("PackCode", packCode)
-          .error("Unknown packCode in fulfilment request.");
-      throw new RuntimeException(
-          String.format(
-              "Unknown packCode %s in fulfilment request for caseId %s", packCode, caseId));
+      return;
     }
     UacQidDTO uacQid = caseClient.getUacQid(caseId, questionnaireType.get().toString());
     PrintFileDto printFile =
