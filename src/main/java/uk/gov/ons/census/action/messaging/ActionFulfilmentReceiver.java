@@ -54,7 +54,20 @@ public class ActionFulfilmentReceiver {
         responseManagementEvent.getPayload().getFulfilmentRequest().getFulfilmentCode();
     Optional<Integer> questionnaireType = determineQuestionnaireType(fulfilmentCode);
     if (questionnaireType.isEmpty()) {
-      return;
+      switch (fulfilmentCode) {
+        case "UACHHT1":
+        case "UACHHT2":
+        case "UACHHT2W":
+        case "UACHHT4":
+        case "UACIT1":
+        case "UACIT2":
+        case "UACIT2W":
+        case "UACIT4":
+          return; // Ignore SMS fulfilments
+        default:
+          log.with("fulfilment_code", fulfilmentCode).warn("Unexpected fulfilment code received");
+          return;
+      }
     }
     UacQidDTO uacQid = caseClient.getUacQid(caseId, questionnaireType.get().toString());
     PrintFileDto printFile =
