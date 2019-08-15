@@ -2,8 +2,6 @@ package uk.gov.ons.census.action.messaging;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyObject;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +29,8 @@ public class ActionFulfilmentReceiverTest {
 
     when(caseRepository.findByCaseId(any(UUID.class))).thenReturn(Optional.of(caze));
 
-    ActionFulfilmentReceiver underTest = new ActionFulfilmentReceiver(rabbitTemplate, caseClient, caseRepository);
+    ActionFulfilmentReceiver underTest =
+        new ActionFulfilmentReceiver(rabbitTemplate, caseClient, caseRepository);
 
     ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
     event.getPayload().getFulfilmentRequest().setCaseId(UUID.randomUUID().toString());
@@ -50,7 +49,8 @@ public class ActionFulfilmentReceiverTest {
 
     when(caseRepository.findByCaseId(any(UUID.class))).thenReturn(Optional.of(caze));
 
-    ActionFulfilmentReceiver underTest = new ActionFulfilmentReceiver(rabbitTemplate, caseClient, caseRepository);
+    ActionFulfilmentReceiver underTest =
+        new ActionFulfilmentReceiver(rabbitTemplate, caseClient, caseRepository);
 
     ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
     event.getPayload().getFulfilmentRequest().setFulfilmentCode("UACHHT1");
