@@ -50,16 +50,24 @@ public class ActionFulfilmentReceiver {
       throw new RuntimeException(
           String.format("Cannot find case %s for fulfilment request.", caseId));
     }
-    String packCode =
+    String fulfilmentCode =
         responseManagementEvent.getPayload().getFulfilmentRequest().getFulfilmentCode();
-    Optional<Integer> questionnaireType = determineQuestionnaireType(packCode);
+    Optional<Integer> questionnaireType = determineQuestionnaireType(fulfilmentCode);
     if (questionnaireType.isEmpty()) {
-      log.with("caseId", caseId)
-          .with("PackCode", packCode)
-          .error("Unknown packCode in fulfilment request.");
-      throw new RuntimeException(
-          String.format(
-              "Unknown packCode %s in fulfilment request for caseId %s", packCode, caseId));
+      switch (fulfilmentCode) {
+        case "UACHHT1":
+        case "UACHHT2":
+        case "UACHHT2W":
+        case "UACHHT4":
+        case "UACIT1":
+        case "UACIT2":
+        case "UACIT2W":
+        case "UACIT4":
+          return; // Ignore SMS fulfilments
+        default:
+          log.with("fulfilment_code", fulfilmentCode).warn("Unexpected fulfilment code received");
+          return;
+      }
     }
     UacQidDTO uacQid = caseClient.getUacQid(caseId, questionnaireType.get().toString());
     PrintFileDto printFile =
