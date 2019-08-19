@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.jeasy.random.EasyRandom;
@@ -33,7 +34,7 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @RunWith(SpringJUnit4ClassRunner.class)
-public class ActionFulfilmentIT {
+public class FulfilmentRequestReceiverIT {
 
   @Value("${queueconfig.action-fulfilment-inbound-queue}")
   private String actionFulfilmentQueue;
@@ -71,7 +72,7 @@ public class ActionFulfilmentIT {
     Case fulfillmentCase = this.setUpCase();
     // Given
     ResponseManagementEvent actionFulfilmentEvent =
-        getResponseManagementEvent(fulfillmentCase.getCaseId().toString());
+        getResponseManagementEvent(fulfillmentCase.getCaseId());
     String url = "/uacqid/create/";
     UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
     String returnJson = objectMapper.writeValueAsString(uacQidDto);
@@ -101,7 +102,7 @@ public class ActionFulfilmentIT {
     return objectMapper.readValue(actualMessage, PrintFileDto.class);
   }
 
-  private ResponseManagementEvent getResponseManagementEvent(String caseId) {
+  private ResponseManagementEvent getResponseManagementEvent(UUID caseId) {
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
 
     FulfilmentRequestDTO fulfilmentRequest = easyRandom.nextObject(FulfilmentRequestDTO.class);
