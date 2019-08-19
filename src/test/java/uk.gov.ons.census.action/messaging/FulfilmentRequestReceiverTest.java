@@ -84,8 +84,7 @@ public class FulfilmentRequestReceiverTest {
     // Then
     PrintFileDto actualPrintFileDTO =
         checkCorrectPackCodeAndAddressAreSent(event, fulfilmentCase, ActionType.P_OR_HX);
-    assertEquals(uacQidDTO.getUac(), actualPrintFileDTO.getUac());
-    assertEquals(uacQidDTO.getQid(), actualPrintFileDTO.getQid());
+    assertThat(actualPrintFileDTO).isEqualToComparingOnlyGivenFields(uacQidDTO, "uac", "qid");
   }
 
   @Test
