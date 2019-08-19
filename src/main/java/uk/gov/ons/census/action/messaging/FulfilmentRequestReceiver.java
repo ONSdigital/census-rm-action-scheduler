@@ -99,6 +99,7 @@ public class FulfilmentRequestReceiver {
     printFileDto.setBatchQuantity(1);
     printFileDto.setPackCode(event.getPayload().getFulfilmentRequest().getFulfilmentCode());
     printFileDto.setActionType(actionType.name());
+    printFileDto.setCaseRef(fulfilmentCase.getCaseRef());
     return printFileDto;
   }
 

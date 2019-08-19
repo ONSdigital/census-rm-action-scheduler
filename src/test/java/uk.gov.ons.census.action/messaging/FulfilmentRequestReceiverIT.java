@@ -149,7 +149,13 @@ public class FulfilmentRequestReceiverIT {
       Case expectedCase, Contact expectedContact, PrintFileDto actualPrintFileDto) {
     assertThat(actualPrintFileDto)
         .isEqualToComparingOnlyGivenFields(
-            expectedCase, "addressLine1", "addressLine2", "addressLine3", "postcode", "townName");
+            expectedCase,
+            "addressLine1",
+            "addressLine2",
+            "addressLine3",
+            "postcode",
+            "townName",
+            "caseRef");
     assertThat(actualPrintFileDto)
         .isEqualToComparingOnlyGivenFields(expectedContact, "title", "forename", "surname");
   }
