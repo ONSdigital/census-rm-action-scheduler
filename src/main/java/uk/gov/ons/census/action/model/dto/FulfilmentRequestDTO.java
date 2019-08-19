@@ -1,9 +1,8 @@
 package uk.gov.ons.census.action.model.dto;
 
+import java.util.UUID;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor

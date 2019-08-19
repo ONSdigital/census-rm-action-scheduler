@@ -2,9 +2,7 @@ package uk.gov.ons.census.action.messaging;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -19,8 +17,6 @@ import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
-
-import static java.util.Objects.isNull;
 
 @MessageEndpoint
 public class FulfilmentRequestReceiver {

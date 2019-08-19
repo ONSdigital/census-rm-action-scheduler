@@ -67,12 +67,12 @@ public class FulfilmentRequestReceiverIT {
   }
 
   @Test
-  public void checkReceivedEventsAreEmitted() throws InterruptedException, IOException {
+  public void testQuestionnaireFulfilment() throws InterruptedException, IOException {
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
     Case fulfillmentCase = this.setUpCase();
     // Given
     ResponseManagementEvent actionFulfilmentEvent =
-        getResponseManagementEvent(fulfillmentCase.getCaseId());
+        getResponseManagementEvent(fulfillmentCase.getCaseId(), "P_OR_H1");
     String url = "/uacqid/create/";
     UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
     String returnJson = objectMapper.writeValueAsString(uacQidDto);
@@ -90,7 +90,84 @@ public class FulfilmentRequestReceiverIT {
 
     PrintFileDto actualPrintFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
 
-    assertThat(actualPrintFileDto.getUac()).isEqualTo(uacQidDto.getUac());
+    assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
+    checkAddressFieldsMatch(
+        fulfillmentCase,
+        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
+        actualPrintFileDto);
+  }
+
+  @Test
+  public void testLargePrintQuestionnaireFulfilment() throws InterruptedException, IOException {
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    Case fulfillmentCase = this.setUpCase();
+    // Given
+    ResponseManagementEvent actionFulfilmentEvent =
+        getResponseManagementEvent(fulfillmentCase.getCaseId(), "P_LP_HL1");
+    String url = "/uacqid/create/";
+    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
+    String returnJson = objectMapper.writeValueAsString(uacQidDto);
+    givenThat(
+        post(urlEqualTo(url))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpStatus.OK.value())
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(returnJson)));
+
+    // WHEN
+    rabbitQueueHelper.sendMessage(
+        eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
+
+    PrintFileDto actualPrintFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
+
+    checkAddressFieldsMatch(
+        fulfillmentCase,
+        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
+        actualPrintFileDto);
+    assertThat(actualPrintFileDto.getUac()).isNull();
+    assertThat(actualPrintFileDto.getQid()).isNull();
+  }
+
+  @Test
+  public void testTranslationBookletFulfilment() throws InterruptedException, IOException {
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    Case fulfillmentCase = this.setUpCase();
+    // Given
+    ResponseManagementEvent actionFulfilmentEvent =
+        getResponseManagementEvent(fulfillmentCase.getCaseId(), "P_TB_TBARA1");
+    String url = "/uacqid/create/";
+    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
+    String returnJson = objectMapper.writeValueAsString(uacQidDto);
+    givenThat(
+        post(urlEqualTo(url))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpStatus.OK.value())
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(returnJson)));
+
+    // WHEN
+    rabbitQueueHelper.sendMessage(
+        eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
+
+    PrintFileDto actualPrintFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
+
+    checkAddressFieldsMatch(
+        fulfillmentCase,
+        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
+        actualPrintFileDto);
+    assertThat(actualPrintFileDto.getUac()).isNull();
+    assertThat(actualPrintFileDto.getQid()).isNull();
+  }
+
+  private void checkAddressFieldsMatch(
+      Case expectedCase, Contact expectedContact, PrintFileDto actualPrintFileDto) {
+    assertThat(actualPrintFileDto)
+        .isEqualToComparingOnlyGivenFields(
+            expectedCase, "addressLine1", "addressLine2", "addressLine3", "postcode", "townName");
+    assertThat(actualPrintFileDto)
+        .isEqualToComparingOnlyGivenFields(expectedContact, "title", "forename", "surname");
   }
 
   private PrintFileDto checkExpectedPrintFileDtoMessageReceived(BlockingQueue<String> queue)
@@ -102,11 +179,11 @@ public class FulfilmentRequestReceiverIT {
     return objectMapper.readValue(actualMessage, PrintFileDto.class);
   }
 
-  private ResponseManagementEvent getResponseManagementEvent(UUID caseId) {
+  private ResponseManagementEvent getResponseManagementEvent(UUID caseId, String fulfilmentCode) {
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
 
     FulfilmentRequestDTO fulfilmentRequest = easyRandom.nextObject(FulfilmentRequestDTO.class);
-    fulfilmentRequest.setFulfilmentCode("P_OR_H1");
+    fulfilmentRequest.setFulfilmentCode(fulfilmentCode);
     responseManagementEvent.setPayload(new Payload());
     fulfilmentRequest.setCaseId(caseId);
     responseManagementEvent.getPayload().setFulfilmentRequest(fulfilmentRequest);

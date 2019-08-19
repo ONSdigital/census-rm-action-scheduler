@@ -1,5 +1,15 @@
 package uk.gov.ons.census.action.messaging;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Optional;
+import java.util.UUID;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,16 +26,6 @@ import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FulfilmentRequestReceiverTest {
@@ -70,46 +70,55 @@ public class FulfilmentRequestReceiverTest {
   }
 
   @Test
-  public void testReceiveFulfilmentRequestP_OR_H1() {
+  public void testOnRequestQuestionnaireFulfilment() {
     // Given
-    testOnRequestQuestionnaireFulfilment("P_OR_H1", ActionType.P_OR_HX, "1");
-  }
-
-  @Test
-  public void testReceiveFulfilmentRequestP_OR_H2() {
-    // Given
-    testOnRequestQuestionnaireFulfilment("P_OR_H2", ActionType.P_OR_HX, "2");
-  }
-
-  @Test
-  public void testReceiveFulfilmentRequestP_OR_H2W() {
-    // Given
-    testOnRequestQuestionnaireFulfilment("P_OR_H2W", ActionType.P_OR_HX, "3");
-  }
-
-  @Test
-  public void testReceiveFulfilmentRequestP_OR_H4() {
-    // Given
-    testOnRequestQuestionnaireFulfilment("P_OR_H4", ActionType.P_OR_HX, "4");
-  }
-
-  private void testOnRequestQuestionnaireFulfilment(
-      String fulfilmentCode, ActionType actionType, String questionnaireType) {
     Case fulfilmentCase = caseRepositoryReturnsRandomCase();
     ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
-    event.getPayload().getFulfilmentRequest().setFulfilmentCode(fulfilmentCode);
+    event.getPayload().getFulfilmentRequest().setFulfilmentCode("P_OR_H1");
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
-    when(caseClient.getUacQid(eq(fulfilmentCase.getCaseId()), eq(questionnaireType)))
-        .thenReturn(uacQidDTO);
+    when(caseClient.getUacQid(eq(fulfilmentCase.getCaseId()), eq("1"))).thenReturn(uacQidDTO);
 
     // When
     underTest.receiveEvent(event);
 
     // Then
-  checkCorrectPrintFileDTOIsSent(event, fulfilmentCase, actionType);
+    PrintFileDto actualPrintFileDTO =
+        checkCorrectPackCodeAndAddressAreSent(event, fulfilmentCase, ActionType.P_OR_HX);
+    assertEquals(uacQidDTO.getUac(), actualPrintFileDTO.getUac());
+    assertEquals(uacQidDTO.getQid(), actualPrintFileDTO.getQid());
   }
 
-  private void checkCorrectPrintFileDTOIsSent(
+  @Test
+  public void testLargePrintQuestionnaireFulfilment() {
+    // Given
+    Case fulfilmentCase = caseRepositoryReturnsRandomCase();
+    ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
+    event.getPayload().getFulfilmentRequest().setFulfilmentCode("P_LP_HL1");
+
+    // When
+    underTest.receiveEvent(event);
+
+    // Then
+    checkCorrectPackCodeAndAddressAreSent(event, fulfilmentCase, ActionType.P_LP_HX);
+    verify(caseClient, never()).getUacQid(any(UUID.class), any(String.class));
+  }
+
+  @Test
+  public void testTranslationBookletFulfilment() {
+    // Given
+    Case fulfilmentCase = caseRepositoryReturnsRandomCase();
+    ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
+    event.getPayload().getFulfilmentRequest().setFulfilmentCode("P_TB_TBARA1");
+
+    // When
+    underTest.receiveEvent(event);
+
+    // Then
+    checkCorrectPackCodeAndAddressAreSent(event, fulfilmentCase, ActionType.P_TB_TBX);
+    verify(caseClient, never()).getUacQid(any(UUID.class), any(String.class));
+  }
+
+  private PrintFileDto checkCorrectPackCodeAndAddressAreSent(
       ResponseManagementEvent event, Case fulfilmentCase, ActionType expectedActionType) {
     ArgumentCaptor<PrintFileDto> printFileDtoArgumentCaptor =
         ArgumentCaptor.forClass(PrintFileDto.class);
@@ -129,6 +138,7 @@ public class FulfilmentRequestReceiverTest {
     assertThat(actualPrintFileDTO)
         .isEqualToComparingOnlyGivenFields(
             event.getPayload().getFulfilmentRequest().getContact(), "title", "forename", "surname");
+    return actualPrintFileDTO;
   }
 
   private Case caseRepositoryReturnsRandomCase() {
