@@ -114,7 +114,7 @@ public class FulfilmentRequestReceiver {
       case "P_LP_HL2":
       case "P_LP_HL2W":
       case "P_LP_HL4":
-        return Optional.of(ActionType.P_LP_HX);
+        return Optional.of(ActionType.P_LP_HLX);
       case "P_TB_TBARA1":
       case "P_TB_TBBEN1":
       case "P_TB_TBCAN1":
@@ -133,6 +133,7 @@ public class FulfilmentRequestReceiver {
       case "P_TB_TBPOL4":
       case "P_TB_TBPOR1":
       case "P_TB_TBRUS1":
+      case "P_TB_TBURD1":
       case "P_TB_TBSOM1":
       case "P_TB_TBSPA1":
       case "P_TB_TBTUR1":

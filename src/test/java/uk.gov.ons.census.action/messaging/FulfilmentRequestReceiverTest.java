@@ -98,7 +98,7 @@ public class FulfilmentRequestReceiverTest {
     underTest.receiveEvent(event);
 
     // Then
-    checkCorrectPackCodeAndAddressAreSent(event, fulfilmentCase, ActionType.P_LP_HX);
+    checkCorrectPackCodeAndAddressAreSent(event, fulfilmentCase, ActionType.P_LP_HLX);
     verify(caseClient, never()).getUacQid(any(UUID.class), any(String.class));
   }
 
