@@ -48,8 +48,12 @@ public class FulfilmentRequestReceiverIT {
   @Value("${queueconfig.outbound-printer-queue}")
   private String outboundPrinterQueue;
 
+  @Value("${caseapi.port}")
+  private int caseApiPort;
+
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8089).httpsPort(8443));
+  public WireMockRule mockCaseApi =
+      new WireMockRule(wireMockConfig().port(caseApiPort).httpsPort(8443));
 
   @Autowired private RabbitQueueHelper rabbitQueueHelper;
 

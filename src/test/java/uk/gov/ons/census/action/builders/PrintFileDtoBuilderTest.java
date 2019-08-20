@@ -2,6 +2,7 @@ package uk.gov.ons.census.action.builders;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,16 +24,17 @@ public class PrintFileDtoBuilderTest {
   private static final String WELSH_QID = "WELSH_QID";
   private static final UUID BATCH_UUID = UUID.randomUUID();
   private static final ActionType expectedActionType = ActionType.ICL1E;
+  private static final String P_IC_ICL1 = "P_IC_ICL1";
 
-  private final HashMap<String, String> actionTypeToPackCodeMap =
+  private final HashMap<ActionType, String> actionTypeToPackCodeMap =
       new HashMap<>() {
         {
-          put("ICHHQE", "P_IC_H1");
-          put("ICHHQW", "P_IC_H2");
-          put("ICHHQN", "P_IC_H4");
-          put("ICL1E", "P_IC_ICL1");
-          put("ICL2W", "P_IC_ICL2B");
-          put("ICL4N", "P_IC_ICL4");
+          put(ActionType.ICHHQE, "P_IC_H1");
+          put(ActionType.ICHHQW, "P_IC_H2");
+          put(ActionType.ICHHQN, "P_IC_H4");
+          put(ActionType.ICL1E, "P_IC_ICL1");
+          put(ActionType.ICL2W, "P_IC_ICL2B");
+          put(ActionType.ICL4N, "P_IC_ICL4");
         }
       };
 
@@ -71,7 +73,7 @@ public class PrintFileDtoBuilderTest {
     uacQidTuple.setUacQidLinkWales(Optional.of(welshLink));
 
     QidUacBuilder qidUacBuilder = mock(QidUacBuilder.class);
-    when(qidUacBuilder.getUacQidLinks(any(Case.class))).thenReturn(uacQidTuple);
+    when(qidUacBuilder.getUacQidLinks(any(Case.class), eq(P_IC_ICL1))).thenReturn(uacQidTuple);
 
     return qidUacBuilder;
   }
@@ -85,10 +87,10 @@ public class PrintFileDtoBuilderTest {
 
     printFileDto.setCaseRef(caze.getCaseRef());
 
-    // TODO: where are these stored and used?
-    printFileDto.setTitle("");
-    printFileDto.setForename("");
-    printFileDto.setSurname("");
+    //    // TODO: where are these stored and used?
+    //    printFileDto.setTitle("");
+    //    printFileDto.setForename("");
+    //    printFileDto.setSurname("");
 
     printFileDto.setAddressLine1(caze.getAddressLine1());
     printFileDto.setAddressLine2(caze.getAddressLine2());
