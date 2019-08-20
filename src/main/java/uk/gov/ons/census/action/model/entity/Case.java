@@ -20,6 +20,8 @@ public class Case {
   @Column(name = "case_id")
   private UUID caseId;
 
+  @Column private String caseType;
+
   @Column private String arid;
 
   @Column private String estabArid;

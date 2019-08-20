@@ -55,6 +55,7 @@ public class EventReceiver {
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     setCaseDetails(collectionCase, newCase);
     newCase.setReceiptReceived(false);
+    newCase.setCaseType("HH");
     caseRepository.save(newCase);
   }
 
@@ -87,6 +88,7 @@ public class EventReceiver {
     caseDetails.setLongitude(collectionCase.getAddress().getLongitude());
     caseDetails.setUprn(collectionCase.getAddress().getUprn());
     caseDetails.setRegion(collectionCase.getAddress().getRegion());
+    caseDetails.setCaseType("HH");
 
     // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
     caseDetails.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
