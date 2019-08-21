@@ -44,15 +44,9 @@ public class FulfilmentRequestReceiver {
     Case fulfilmentCase = fetchFulfilmentCase(event);
     String fulfilmentCode = event.getPayload().getFulfilmentRequest().getFulfilmentCode();
 
-    Optional<ActionType> actionType;
-    try {
-      actionType = determineActionType(fulfilmentCode);
-    } catch (UnknownFulfilmentException e) {
-      log.with("fulfilmentCode", fulfilmentCode).warn("Unexpected fulfilment code received");
-      return;
-    }
+    Optional<ActionType> actionType = determineActionType(fulfilmentCode);
     if (actionType.isEmpty()) {
-      return; // Ignore SMS fulfilments
+      return;
     }
 
     PrintFileDto printFileDto =
@@ -73,9 +67,6 @@ public class FulfilmentRequestReceiver {
   private Case fetchFulfilmentCase(ResponseManagementEvent event) {
     UUID caseId = event.getPayload().getFulfilmentRequest().getCaseId();
     Optional<Case> fulfilmentCase = caseRepository.findByCaseId(caseId);
-    log.with("caseId", caseId)
-        .with("fulfilmentCode", event.getPayload().getFulfilmentRequest().getFulfilmentCode())
-        .debug("Fulfilment Requested Event");
     if (fulfilmentCase.isEmpty()) {
       log.with("caseId", caseId).error("Cannot find Case for fulfilment request.");
       throw new RuntimeException(
@@ -103,8 +94,7 @@ public class FulfilmentRequestReceiver {
     return printFileDto;
   }
 
-  private Optional<ActionType> determineActionType(String fulfilmentCode)
-      throws UnknownFulfilmentException {
+  private Optional<ActionType> determineActionType(String fulfilmentCode) {
     switch (fulfilmentCode) {
       case "P_OR_H1":
       case "P_OR_H2":
@@ -152,7 +142,8 @@ public class FulfilmentRequestReceiver {
       case "UACIT4":
         return Optional.empty(); // Ignore SMS fulfilments
       default:
-        throw new UnknownFulfilmentException(fulfilmentCode);
+        log.with("fulfilmentCode", fulfilmentCode).warn("Unexpected fulfilment code received");
+        return Optional.empty();
     }
   }
 
