@@ -100,6 +100,10 @@ public class FulfilmentRequestReceiver {
       case "P_OR_H2":
       case "P_OR_H2W":
       case "P_OR_H4":
+      case "P_OR_HC1":
+      case "P_OR_HC2":
+      case "P_OR_HC2W":
+      case "P_OR_HC4":
         return Optional.of(ActionType.P_OR_HX);
       case "P_LP_HL1":
       case "P_LP_HL2":
@@ -152,7 +156,11 @@ public class FulfilmentRequestReceiver {
           "P_OR_H1", 1,
           "P_OR_H2", 2,
           "P_OR_H2W", 3,
-          "P_OR_H4", 4);
+          "P_OR_H4", 4,
+          "P_OR_HC1", 11,
+          "P_OR_HC2", 12,
+          "P_OR_HC2W", 13,
+          "P_OR_HC4", 14);
 
   private Optional<Integer> determineQuestionnaireType(String packCode) {
     return Optional.ofNullable(fulfilmentCodeToQuestionnaireType.get(packCode));

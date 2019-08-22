@@ -88,6 +88,24 @@ public class FulfilmentRequestReceiverTest {
   }
 
   @Test
+  public void testOnRequestContinuationQuestionnaireFulfilment() {
+    // Given
+    Case fulfilmentCase = caseRepositoryReturnsRandomCase();
+    ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
+    event.getPayload().getFulfilmentRequest().setFulfilmentCode("P_OR_HC1");
+    UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
+    when(caseClient.getUacQid(eq(fulfilmentCase.getCaseId()), eq("11"))).thenReturn(uacQidDTO);
+
+    // When
+    underTest.receiveEvent(event);
+
+    // Then
+    PrintFileDto actualPrintFileDTO =
+        checkCorrectPackCodeAndAddressAreSent(event, fulfilmentCase, ActionType.P_OR_HX);
+    assertThat(actualPrintFileDTO).isEqualToComparingOnlyGivenFields(uacQidDTO, "uac", "qid");
+  }
+
+  @Test
   public void testLargePrintQuestionnaireFulfilment() {
     // Given
     Case fulfilmentCase = caseRepositoryReturnsRandomCase();
