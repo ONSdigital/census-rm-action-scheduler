@@ -43,7 +43,7 @@ public class PrintFileDtoBuilderTest {
     // Given
     EasyRandom easyRandom = new EasyRandom();
     Case testCaze = easyRandom.nextObject(Case.class);
-    QidUacBuilder uacQidBuilder = getUpQidUacBuilder();
+    QidUacBuilder uacQidBuilder = getQidUacBuilder();
 
     PrintFileDto expectedPrintFileDto = getExpectedPrintFileDto(testCaze);
     PrintFileDtoBuilder printFileDtoBuilder = new PrintFileDtoBuilder(uacQidBuilder);
@@ -60,7 +60,7 @@ public class PrintFileDtoBuilderTest {
     assertThat(actualPrintFileDto).isEqualToComparingFieldByField(expectedPrintFileDto);
   }
 
-  private QidUacBuilder getUpQidUacBuilder() {
+  private QidUacBuilder getQidUacBuilder() {
     UacQidTuple uacQidTuple = new UacQidTuple();
     UacQidLink englishLink = new UacQidLink();
     englishLink.setUac(ENGLISH_UAC);

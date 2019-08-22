@@ -26,9 +26,12 @@ public class QidUacBuilder {
           ActionType.P_RL_1RL1_2.name(),
           ActionType.P_RL_1RL2B_2.name(),
           ActionType.P_RL_2RL1_3a.name(),
-          ActionType.P_RL_2RL2B_3a.name());
-  private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE = 2;
-  private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE = 1;
+          ActionType.P_RL_2RL2B_3a.name(),
+          ActionType.P_QU_H1.name(),
+          ActionType.P_QU_H2.name(),
+          ActionType.P_QU_H4.name());
+  private static final int NUM_OF_UAC_QID_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE = 2;
+  private static final int NUM_OF_UAC_QID_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE = 1;
   private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
   private static final String WALES_IN_WELSH_QUESTIONNAIRE_TYPE = "03";
   private static final String UNKNOWN_COUNTRY_ERROR = "Unknown Country";
@@ -45,49 +48,71 @@ public class QidUacBuilder {
   }
 
   public UacQidTuple getUacQidLinks(Case linkedCase, String packCode) {
-    UacQidTuple uacQidTuple = new UacQidTuple();
 
-    if (packCodeRequiresNewUacQidPair(packCode)) {
-      uacQidTuple.setUacQidLink(createNewUacQidPair(linkedCase));
-      return uacQidTuple;
+    if (packCodeRequiresNewUacQids(packCode)) {
+      return createUacQidTupleWithNewPairs(linkedCase, packCode);
     }
 
     List<UacQidLink> uacQidLinks =
         uacQidLinkRepository.findByCaseId(linkedCase.getCaseId().toString());
 
     if (uacQidLinks == null || uacQidLinks.isEmpty()) {
-      throw new RuntimeException(); // TODO: How can we process this case without a UAC?
-    } else if (uacQidLinks.size() > NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE) {
-      if (isQuestionnaireWelsh(linkedCase.getTreatmentCode())
-          && uacQidLinks.size()
-              == NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE) {
-        uacQidTuple.setUacQidLink(
-            getSpecificUacQidLinkByQuestionnaireType(
-                uacQidLinks,
-                WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE,
-                WALES_IN_WELSH_QUESTIONNAIRE_TYPE));
-        uacQidTuple.setUacQidLinkWales(
-            Optional.ofNullable(
-                getSpecificUacQidLinkByQuestionnaireType(
-                    uacQidLinks,
-                    WALES_IN_WELSH_QUESTIONNAIRE_TYPE,
-                    WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE)));
-      } else {
-        throw new RuntimeException(); // TODO: How do we know which one to use?
-      }
-    } else if (!isQuestionnaireWelsh(linkedCase.getTreatmentCode())) {
-      // Implicitly from the logic above, there can only be one UAC/QID pair - the right one
-      uacQidTuple.setUacQidLink(uacQidLinks.get(0));
-    } else {
-      // Not enough UAC/QID links for a Welsh questionnaire
-      throw new RuntimeException();
-    }
+      throw new RuntimeException(); // We can't process this case with UACs
 
+    } else if (isStateCorrectForSingleUacQidPair(linkedCase, uacQidLinks)) {
+      return createUacQidTupleWithSinglePair(uacQidLinks);
+
+    } else if (isStateCorrectForSecondWelshUacQidPair(linkedCase, uacQidLinks)) {
+      return createUacQidTupleWithSecondWelshPair(uacQidLinks);
+
+    } else {
+      throw new RuntimeException(); // We can't process this case with the wrong number of UACs
+    }
+  }
+
+  private boolean isStateCorrectForSingleUacQidPair(Case linkedCase, List<UacQidLink> uacQidLinks) {
+    return !isQuestionnaireWelsh(linkedCase.getTreatmentCode())
+        && uacQidLinks.size() == NUM_OF_UAC_QID_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE;
+  }
+
+  private boolean isStateCorrectForSecondWelshUacQidPair(
+      Case linkedCase, List<UacQidLink> uacQidLinks) {
+    return isQuestionnaireWelsh(linkedCase.getTreatmentCode())
+        && uacQidLinks.size()
+            == NUM_OF_UAC_QID_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE;
+  }
+
+  private UacQidTuple createUacQidTupleWithSinglePair(List<UacQidLink> uacQidLinks) {
+    UacQidTuple uacQidTuple = new UacQidTuple();
+    uacQidTuple.setUacQidLink(uacQidLinks.get(0));
     return uacQidTuple;
   }
 
-  private UacQidLink createNewUacQidPair(Case linkedCase) {
-    int questionnaireType = calculateQuestionnaireType(linkedCase.getTreatmentCode());
+  private UacQidTuple createUacQidTupleWithSecondWelshPair(List<UacQidLink> uacQidLinks) {
+    UacQidTuple uacQidTuple = new UacQidTuple();
+    uacQidTuple.setUacQidLink(
+        getSpecificUacQidLinkByQuestionnaireType(
+            uacQidLinks, WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE, WALES_IN_WELSH_QUESTIONNAIRE_TYPE));
+    uacQidTuple.setUacQidLinkWales(
+        Optional.of(
+            getSpecificUacQidLinkByQuestionnaireType(
+                uacQidLinks,
+                WALES_IN_WELSH_QUESTIONNAIRE_TYPE,
+                WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE)));
+    return uacQidTuple;
+  }
+
+  private UacQidTuple createUacQidTupleWithNewPairs(Case linkedCase, String packCode) {
+    UacQidTuple uacQidTuple = new UacQidTuple();
+    uacQidTuple.setUacQidLink(
+        createNewUacQidPair(linkedCase, calculateQuestionnaireType(linkedCase.getTreatmentCode())));
+    if (packCode.equals(ActionType.P_QU_H2.name())) {
+      uacQidTuple.setUacQidLinkWales(Optional.of(createNewUacQidPair(linkedCase, 3)));
+    }
+    return uacQidTuple;
+  }
+
+  private UacQidLink createNewUacQidPair(Case linkedCase, int questionnaireType) {
     UacQidDTO newUacQidPair =
         caseClient.getUacQid(linkedCase.getCaseId(), Integer.toString(questionnaireType));
     UacQidLink newUacQidLink = new UacQidLink();
@@ -120,7 +145,7 @@ public class QidUacBuilder {
     throw new RuntimeException(); // We can't find the one we wanted
   }
 
-  private boolean packCodeRequiresNewUacQidPair(String packCode) {
+  private boolean packCodeRequiresNewUacQids(String packCode) {
     return packCodesRequiringNewUacQidPair.contains(packCode);
   }
 
