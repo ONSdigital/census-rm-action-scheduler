@@ -57,7 +57,7 @@ public class QidUacBuilder {
         uacQidLinkRepository.findByCaseId(linkedCase.getCaseId().toString());
 
     if (uacQidLinks == null || uacQidLinks.isEmpty()) {
-      throw new RuntimeException(); // We can't process this case with UACs
+      throw new RuntimeException(); // We can't process this case with no UACs
 
     } else if (isStateCorrectForSingleUacQidPair(linkedCase, uacQidLinks)) {
       return createUacQidTupleWithSinglePair(uacQidLinks);
@@ -66,7 +66,7 @@ public class QidUacBuilder {
       return createUacQidTupleWithSecondWelshPair(uacQidLinks);
 
     } else {
-      throw new RuntimeException(); // We can't process this case with the wrong number of UACs
+      throw new RuntimeException(); // We can't process this case with the wrong number of UACs for it's treatment code
     }
   }
 
