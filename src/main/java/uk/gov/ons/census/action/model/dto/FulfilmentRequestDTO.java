@@ -1,5 +1,6 @@
 package uk.gov.ons.census.action.model.dto;
 
+import java.util.UUID;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -7,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FulfilmentRequestDTO {
 
-  private String caseId;
+  private UUID caseId;
 
   private String fulfilmentCode;
 
