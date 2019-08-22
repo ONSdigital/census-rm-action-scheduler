@@ -66,7 +66,8 @@ public class QidUacBuilder {
       return createUacQidTupleWithSecondWelshPair(uacQidLinks);
 
     } else {
-      throw new RuntimeException(); // We can't process this case with the wrong number of UACs for it's treatment code
+      throw new RuntimeException(); // We can't process this case with the wrong number of UACs for
+      // it's treatment code
     }
   }
 
@@ -105,16 +106,18 @@ public class QidUacBuilder {
   private UacQidTuple createUacQidTupleWithNewPairs(Case linkedCase, String packCode) {
     UacQidTuple uacQidTuple = new UacQidTuple();
     uacQidTuple.setUacQidLink(
-        createNewUacQidPair(linkedCase, calculateQuestionnaireType(linkedCase.getTreatmentCode())));
+        createNewUacQidPair(
+            linkedCase,
+            Integer.toString(calculateQuestionnaireType(linkedCase.getTreatmentCode()))));
     if (packCode.equals(ActionType.P_QU_H2.name())) {
-      uacQidTuple.setUacQidLinkWales(Optional.of(createNewUacQidPair(linkedCase, 3)));
+      uacQidTuple.setUacQidLinkWales(
+          Optional.of(createNewUacQidPair(linkedCase, WALES_IN_WELSH_QUESTIONNAIRE_TYPE)));
     }
     return uacQidTuple;
   }
 
-  private UacQidLink createNewUacQidPair(Case linkedCase, int questionnaireType) {
-    UacQidDTO newUacQidPair =
-        caseClient.getUacQid(linkedCase.getCaseId(), Integer.toString(questionnaireType));
+  private UacQidLink createNewUacQidPair(Case linkedCase, String questionnaireType) {
+    UacQidDTO newUacQidPair = caseClient.getUacQid(linkedCase.getCaseId(), questionnaireType);
     UacQidLink newUacQidLink = new UacQidLink();
     newUacQidLink.setCaseId(linkedCase.getCaseId().toString());
     newUacQidLink.setQid(newUacQidPair.getQid());
