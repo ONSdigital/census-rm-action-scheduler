@@ -115,6 +115,8 @@ public class EventReceiver {
     if (collectionCase.getRefusalReceived() != null) {
       caseDetails.setRefusalReceived(collectionCase.getRefusalReceived());
     }
+
+    caseDetails.setAddressInvalid(collectionCase.getAddressInvalid());
   }
 
   private void processUacUpdated(Uac uac) {

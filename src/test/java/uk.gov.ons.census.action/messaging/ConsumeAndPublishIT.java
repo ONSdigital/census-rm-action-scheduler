@@ -157,6 +157,36 @@ public class ConsumeAndPublishIT {
   }
 
   @Test
+  public void checkFieldEventsAreNotEmittedForAddressInvalid() throws InterruptedException {
+    // Given
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundFieldQueue);
+
+    ActionPlan actionPlan = setUpActionPlan("happy", "path");
+    actionPlanRepository.saveAndFlush(actionPlan);
+    ActionRule actionRule = setUpFieldActionRule(actionPlan);
+    actionRuleRepository.saveAndFlush(actionRule);
+
+    ResponseManagementEvent caseCreatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    caseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
+    caseCreatedEvent.getPayload().getCollectionCase().setCeExpectedCapacity("666");
+    caseCreatedEvent.getPayload().getCollectionCase().setAddressInvalid(true);
+
+    Uac uac = getUac(caseCreatedEvent);
+    ResponseManagementEvent uacUpdatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    uacUpdatedEvent.getEvent().setType(EventType.UAC_UPDATED);
+    uacUpdatedEvent.getPayload().setUac(uac);
+
+    // WHEN
+    rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
+    rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
+
+    // THEN
+    checkExpectedMessageNotReceived(outputQueue);
+  }
+
+  @Test
   public void checkCaseWithNoLinkedUACQuidDoesntSendThenWorksWhenUACAdded()
       throws InterruptedException, IOException {
     // Given
@@ -299,6 +329,7 @@ public class ConsumeAndPublishIT {
         .setLongitude(Double.toString(random.nextDouble()));
 
     responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
+    responseManagementEvent.getPayload().getCollectionCase().setAddressInvalid(false);
 
     return responseManagementEvent;
   }
