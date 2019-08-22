@@ -29,12 +29,6 @@ public class PrintFileDtoBuilder {
     }
 
     printFileDto.setCaseRef(selectedCase.getCaseRef());
-
-    //    // TODO: Don't believe we have these at the moment
-    //    printFileDto.setTitle("");
-    //    printFileDto.setForename("");
-    //    printFileDto.setSurname("");
-
     printFileDto.setAddressLine1(selectedCase.getAddressLine1());
     printFileDto.setAddressLine2(selectedCase.getAddressLine2());
     printFileDto.setAddressLine3(selectedCase.getAddressLine3());
