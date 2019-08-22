@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.client.CaseClient;
 import uk.gov.ons.census.action.model.UacQidTuple;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
+import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
@@ -19,13 +20,13 @@ public class QidUacBuilder {
 
   private static final Set<String> packCodesRequiringNewUacQidPair =
       Set.of(
-          "P_RL_1RL1_1",
-          "P_RL_1RL2B_1",
-          "P_RL_1RL4",
-          "P_RL_1RL1_2",
-          "P_RL_1RL2B_2",
-          "P_RL_2RL1_3a",
-          "P_RL_2RL2B_3a");
+          ActionType.P_RL_1RL1_1.name(),
+          ActionType.P_RL_1RL2B_1.name(),
+          ActionType.P_RL_1RL4.name(),
+          ActionType.P_RL_1RL1_2.name(),
+          ActionType.P_RL_1RL2B_2.name(),
+          ActionType.P_RL_2RL1_3a.name(),
+          ActionType.P_RL_2RL2B_3a.name());
   private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE = 2;
   private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE = 1;
   private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
