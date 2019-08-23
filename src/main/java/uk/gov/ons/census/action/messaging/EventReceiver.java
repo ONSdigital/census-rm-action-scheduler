@@ -55,7 +55,7 @@ public class EventReceiver {
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     setCaseDetails(collectionCase, newCase);
     newCase.setReceiptReceived(false);
-    newCase.setCaseType("HH");
+    newCase.setCaseType(collectionCase.getCaseType());
     caseRepository.save(newCase);
   }
 
