@@ -86,4 +86,7 @@ public class Case {
 
   @Column(name = "refusal_received", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
   private boolean refusalReceived;
+
+  @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+  private boolean addressInvalid;
 }
