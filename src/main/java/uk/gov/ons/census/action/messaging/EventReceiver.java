@@ -87,13 +87,13 @@ public class EventReceiver {
     caseDetails.setLongitude(collectionCase.getAddress().getLongitude());
     caseDetails.setUprn(collectionCase.getAddress().getUprn());
     caseDetails.setRegion(collectionCase.getAddress().getRegion());
-    caseDetails.setCaseType(collectionCase.getCaseType());
 
     // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
     caseDetails.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
     caseDetails.setTreatmentCode(collectionCase.getTreatmentCode()); // This is essential
     caseDetails.setAddressLevel(collectionCase.getAddress().getAddressLevel());
     caseDetails.setAbpCode(collectionCase.getAddress().getApbCode());
+    caseDetails.setCaseType(collectionCase.getCaseType());
     caseDetails.setAddressType(collectionCase.getAddress().getAddressType());
     caseDetails.setUprn(collectionCase.getAddress().getUprn());
     caseDetails.setEstabArid(collectionCase.getAddress().getEstabArid());
