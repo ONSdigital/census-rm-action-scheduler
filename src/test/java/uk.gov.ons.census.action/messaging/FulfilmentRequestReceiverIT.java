@@ -49,7 +49,7 @@ public class FulfilmentRequestReceiverIT {
   private String outboundPrinterQueue;
 
   @Rule
-  public WireMockRule mockCaseApi = new WireMockRule(wireMockConfig().port(8089).httpsPort(8443));
+  public WireMockRule mockCaseApi = new WireMockRule(wireMockConfig().port(8089));
 
   @Autowired private RabbitQueueHelper rabbitQueueHelper;
 
