@@ -72,8 +72,7 @@ public class ActionRuleProcessorIT {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  @Rule
-  public WireMockRule mockCaseApi = new WireMockRule(wireMockConfig().port(8089));
+  @Rule public WireMockRule mockCaseApi = new WireMockRule(wireMockConfig().port(8089));
 
   @Test
   public void testReminderLetterActionCreatesNewUac() throws IOException, InterruptedException {
