@@ -36,7 +36,6 @@ public class QidUacBuilderTest {
   private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
   private static final String WALES_IN_WELSH_QUESTIONNAIRE_TYPE = "03";
 
-
   private static final EasyRandom easyRandom = new EasyRandom();
 
   @Test
@@ -364,7 +363,8 @@ public class QidUacBuilderTest {
         qidUacBuilder.getUacQidLinks(linkedCase, reminderLetterPackCode);
 
     // Then
-    verify(caseClient).getUacQid(eq(linkedCase.getCaseId()), eq(WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE));
+    verify(caseClient)
+        .getUacQid(eq(linkedCase.getCaseId()), eq(WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE));
     verify(caseClient).getUacQid(eq(linkedCase.getCaseId()), eq(WALES_IN_WELSH_QUESTIONNAIRE_TYPE));
     assertThat(actualUacQidTuple.getUacQidLink())
         .isEqualToComparingOnlyGivenFields(uacQidDTO, "uac", "qid");

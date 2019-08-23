@@ -106,9 +106,7 @@ public class QidUacBuilder {
   private UacQidTuple createUacQidTupleWithNewPairs(Case linkedCase, String packCode) {
     UacQidTuple uacQidTuple = new UacQidTuple();
     uacQidTuple.setUacQidLink(
-        createNewUacQidPair(
-            linkedCase,
-            calculateQuestionnaireType(linkedCase.getTreatmentCode())));
+        createNewUacQidPair(linkedCase, calculateQuestionnaireType(linkedCase.getTreatmentCode())));
     if (packCode.equals(ActionType.P_QU_H2.name())) {
       uacQidTuple.setUacQidLinkWales(
           Optional.of(createNewUacQidPair(linkedCase, WALES_IN_WELSH_QUESTIONNAIRE_TYPE)));
