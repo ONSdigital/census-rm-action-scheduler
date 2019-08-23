@@ -32,6 +32,11 @@ public class QidUacBuilderTest {
   private final QidUacBuilder qidUacBuilder = new QidUacBuilder(uacQidLinkRepository, caseClient);
 
   private static final String TEST_PACK_CODE = "TEST";
+  private static final String ENGLISH_QUESTIONNAIRE_TYPE = "01";
+  private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
+  private static final String WALES_IN_WELSH_QUESTIONNAIRE_TYPE = "03";
+
+
   private static final EasyRandom easyRandom = new EasyRandom();
 
   @Test
@@ -301,10 +306,9 @@ public class QidUacBuilderTest {
     // Given
     Case linkedCase = easyRandom.nextObject(Case.class);
     linkedCase.setTreatmentCode("HH_LF2R1E");
-    String reminderLetterPackCode = "P_RL_1RL1_1";
-    String expectedQuestionnaireType = "1";
+    String reminderLetterPackCode = ActionType.P_RL_1RL1_1.name();
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
-    when(caseClient.getUacQid(eq(linkedCase.getCaseId()), eq(expectedQuestionnaireType)))
+    when(caseClient.getUacQid(eq(linkedCase.getCaseId()), eq(ENGLISH_QUESTIONNAIRE_TYPE)))
         .thenReturn(uacQidDTO);
 
     // When
@@ -312,10 +316,64 @@ public class QidUacBuilderTest {
         qidUacBuilder.getUacQidLinks(linkedCase, reminderLetterPackCode);
 
     // Then
-    verify(caseClient).getUacQid(eq(linkedCase.getCaseId()), eq(expectedQuestionnaireType));
+    verify(caseClient).getUacQid(eq(linkedCase.getCaseId()), eq(ENGLISH_QUESTIONNAIRE_TYPE));
     assertThat(actualUacQidTuple.getUacQidLink())
         .isEqualToComparingOnlyGivenFields(uacQidDTO, "uac", "qid");
     assertThat(actualUacQidTuple.getUacQidLink().getCaseId())
+        .isEqualTo(linkedCase.getCaseId().toString());
+  }
+
+  @Test
+  public void testNewUacIsRequestedForReminderQuestionnaire() {
+    // Given
+    Case linkedCase = easyRandom.nextObject(Case.class);
+    linkedCase.setTreatmentCode("HH_LF2R3BE");
+    String reminderLetterPackCode = ActionType.P_QU_H1.name();
+    String expectedQuestionnaireType = "1";
+    UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
+    when(caseClient.getUacQid(eq(linkedCase.getCaseId()), eq(ENGLISH_QUESTIONNAIRE_TYPE)))
+        .thenReturn(uacQidDTO);
+
+    // When
+    UacQidTuple actualUacQidTuple =
+        qidUacBuilder.getUacQidLinks(linkedCase, reminderLetterPackCode);
+
+    // Then
+    verify(caseClient).getUacQid(eq(linkedCase.getCaseId()), eq(ENGLISH_QUESTIONNAIRE_TYPE));
+    assertThat(actualUacQidTuple.getUacQidLink())
+        .isEqualToComparingOnlyGivenFields(uacQidDTO, "uac", "qid");
+    assertThat(actualUacQidTuple.getUacQidLink().getCaseId())
+        .isEqualTo(linkedCase.getCaseId().toString());
+  }
+
+  @Test
+  public void testNewUacIsRequestedForWelshReminderQuestionnaire() {
+    // Given
+    Case linkedCase = easyRandom.nextObject(Case.class);
+    linkedCase.setTreatmentCode("HH_LF2R3BW");
+    String reminderLetterPackCode = ActionType.P_QU_H2.name();
+    UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
+    UacQidDTO welshUacQidDTO = easyRandom.nextObject(UacQidDTO.class);
+    when(caseClient.getUacQid(eq(linkedCase.getCaseId()), eq(WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE)))
+        .thenReturn(uacQidDTO);
+    when(caseClient.getUacQid(eq(linkedCase.getCaseId()), eq(WALES_IN_WELSH_QUESTIONNAIRE_TYPE)))
+        .thenReturn(welshUacQidDTO);
+
+    // When
+    UacQidTuple actualUacQidTuple =
+        qidUacBuilder.getUacQidLinks(linkedCase, reminderLetterPackCode);
+
+    // Then
+    verify(caseClient).getUacQid(eq(linkedCase.getCaseId()), eq(WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE));
+    verify(caseClient).getUacQid(eq(linkedCase.getCaseId()), eq(WALES_IN_WELSH_QUESTIONNAIRE_TYPE));
+    assertThat(actualUacQidTuple.getUacQidLink())
+        .isEqualToComparingOnlyGivenFields(uacQidDTO, "uac", "qid");
+    assertThat(actualUacQidTuple.getUacQidLink().getCaseId())
+        .isEqualTo(linkedCase.getCaseId().toString());
+    assertThat(actualUacQidTuple.getUacQidLinkWales().isPresent()).isTrue();
+    assertThat(actualUacQidTuple.getUacQidLinkWales().get())
+        .isEqualToComparingOnlyGivenFields(welshUacQidDTO, "uac", "qid");
+    assertThat(actualUacQidTuple.getUacQidLinkWales().get().getCaseId())
         .isEqualTo(linkedCase.getCaseId().toString());
   }
 
@@ -324,10 +382,10 @@ public class QidUacBuilderTest {
     // Given
 
     // When
-    int actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("HH_LF2R3BE");
+    String actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("HH_LF2R3BE");
 
     // Then
-    assertEquals(1, actualQuestionnaireType);
+    assertEquals("01", actualQuestionnaireType);
   }
 
   @Test
@@ -335,10 +393,10 @@ public class QidUacBuilderTest {
     // Given
 
     // When
-    int actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("HH_LF2R1W");
+    String actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("HH_LF2R1W");
 
     // Then
-    assertEquals(2, actualQuestionnaireType);
+    assertEquals("02", actualQuestionnaireType);
   }
 
   @Test
@@ -346,10 +404,10 @@ public class QidUacBuilderTest {
     // Given
 
     // When
-    int actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("HH_1LSFN");
+    String actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("HH_1LSFN");
 
     // Then
-    assertEquals(4, actualQuestionnaireType);
+    assertEquals("04", actualQuestionnaireType);
   }
 
   @Test
@@ -357,10 +415,10 @@ public class QidUacBuilderTest {
     // Given
 
     // When
-    int actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CI_L666E");
+    String actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CI_L666E");
 
     // Then
-    assertEquals(21, actualQuestionnaireType);
+    assertEquals("21", actualQuestionnaireType);
   }
 
   @Test
@@ -368,10 +426,10 @@ public class QidUacBuilderTest {
     // Given
 
     // When
-    int actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CI_L666W");
+    String actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CI_L666W");
 
     // Then
-    assertEquals(22, actualQuestionnaireType);
+    assertEquals("22", actualQuestionnaireType);
   }
 
   @Test
@@ -379,10 +437,10 @@ public class QidUacBuilderTest {
     // Given
 
     // When
-    int actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CI_L666N");
+    String actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CI_L666N");
 
     // Then
-    assertEquals(24, actualQuestionnaireType);
+    assertEquals("24", actualQuestionnaireType);
   }
 
   @Test
@@ -390,10 +448,10 @@ public class QidUacBuilderTest {
     // Given
 
     // When
-    int actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CE_L666E");
+    String actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CE_L666E");
 
     // Then
-    assertEquals(31, actualQuestionnaireType);
+    assertEquals("31", actualQuestionnaireType);
   }
 
   @Test
@@ -401,10 +459,10 @@ public class QidUacBuilderTest {
     // Given
 
     // When
-    int actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CE_L666W");
+    String actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CE_L666W");
 
     // Then
-    assertEquals(32, actualQuestionnaireType);
+    assertEquals("32", actualQuestionnaireType);
   }
 
   @Test
@@ -412,10 +470,10 @@ public class QidUacBuilderTest {
     // Given
 
     // When
-    int actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CE_L666N");
+    String actualQuestionnaireType = QidUacBuilder.calculateQuestionnaireType("CE_L666N");
 
     // Then
-    assertEquals(34, actualQuestionnaireType);
+    assertEquals("34", actualQuestionnaireType);
   }
 
   @Test(expected = IllegalArgumentException.class)

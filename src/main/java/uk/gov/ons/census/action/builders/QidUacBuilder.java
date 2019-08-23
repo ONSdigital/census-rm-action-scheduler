@@ -60,10 +60,10 @@ public class QidUacBuilder {
       throw new RuntimeException(); // We can't process this case with no UACs
 
     } else if (isStateCorrectForSingleUacQidPair(linkedCase, uacQidLinks)) {
-      return createUacQidTupleWithSinglePair(uacQidLinks);
+      return getUacQidTupleWithSinglePair(uacQidLinks);
 
     } else if (isStateCorrectForSecondWelshUacQidPair(linkedCase, uacQidLinks)) {
-      return createUacQidTupleWithSecondWelshPair(uacQidLinks);
+      return getUacQidTupleWithSecondWelshPair(uacQidLinks);
 
     } else {
       throw new RuntimeException(); // We can't process this case with the wrong number of UACs for
@@ -83,13 +83,13 @@ public class QidUacBuilder {
             == NUM_OF_UAC_QID_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE;
   }
 
-  private UacQidTuple createUacQidTupleWithSinglePair(List<UacQidLink> uacQidLinks) {
+  private UacQidTuple getUacQidTupleWithSinglePair(List<UacQidLink> uacQidLinks) {
     UacQidTuple uacQidTuple = new UacQidTuple();
     uacQidTuple.setUacQidLink(uacQidLinks.get(0));
     return uacQidTuple;
   }
 
-  private UacQidTuple createUacQidTupleWithSecondWelshPair(List<UacQidLink> uacQidLinks) {
+  private UacQidTuple getUacQidTupleWithSecondWelshPair(List<UacQidLink> uacQidLinks) {
     UacQidTuple uacQidTuple = new UacQidTuple();
     uacQidTuple.setUacQidLink(
         getSpecificUacQidLinkByQuestionnaireType(
@@ -108,7 +108,7 @@ public class QidUacBuilder {
     uacQidTuple.setUacQidLink(
         createNewUacQidPair(
             linkedCase,
-            Integer.toString(calculateQuestionnaireType(linkedCase.getTreatmentCode()))));
+            calculateQuestionnaireType(linkedCase.getTreatmentCode())));
     if (packCode.equals(ActionType.P_QU_H2.name())) {
       uacQidTuple.setUacQidLinkWales(
           Optional.of(createNewUacQidPair(linkedCase, WALES_IN_WELSH_QUESTIONNAIRE_TYPE)));
@@ -152,7 +152,7 @@ public class QidUacBuilder {
     return packCodesRequiringNewUacQidPair.contains(packCode);
   }
 
-  public static int calculateQuestionnaireType(String treatmentCode) {
+  public static String calculateQuestionnaireType(String treatmentCode) {
     String country = treatmentCode.substring(treatmentCode.length() - 1);
     if (!country.equals("E") && !country.equals("W") && !country.equals("N")) {
       log.with("treatment_code", treatmentCode).error(UNKNOWN_COUNTRY_ERROR);
@@ -162,29 +162,29 @@ public class QidUacBuilder {
     if (treatmentCode.startsWith("HH")) {
       switch (country) {
         case "E":
-          return 1;
+          return "01";
         case "W":
-          return 2;
+          return "02";
         case "N":
-          return 4;
+          return "04";
       }
     } else if (treatmentCode.startsWith("CI")) {
       switch (country) {
         case "E":
-          return 21;
+          return "21";
         case "W":
-          return 22;
+          return "22";
         case "N":
-          return 24;
+          return "24";
       }
     } else if (treatmentCode.startsWith("CE")) {
       switch (country) {
         case "E":
-          return 31;
+          return "31";
         case "W":
-          return 32;
+          return "32";
         case "N":
-          return 34;
+          return "34";
       }
     } else {
       log.with("treatment_code", treatmentCode).error(UNEXPECTED_CASE_TYPE_ERROR);
