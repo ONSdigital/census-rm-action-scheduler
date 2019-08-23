@@ -88,6 +88,7 @@ public class EventReceiver {
     caseDetails.setTreatmentCode(collectionCase.getTreatmentCode()); // This is essential
     caseDetails.setAddressLevel(collectionCase.getAddress().getAddressLevel());
     caseDetails.setAbpCode(collectionCase.getAddress().getApbCode());
+    caseDetails.setCaseType(collectionCase.getCaseType());
     caseDetails.setAddressType(collectionCase.getAddress().getAddressType());
     caseDetails.setUprn(collectionCase.getAddress().getUprn());
     caseDetails.setEstabArid(collectionCase.getAddress().getEstabArid());
