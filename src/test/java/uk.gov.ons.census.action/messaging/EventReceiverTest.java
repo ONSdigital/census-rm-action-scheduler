@@ -76,6 +76,8 @@ public class EventReceiverTest {
         .getCollectionCase()
         .setId("d09ac28e-d62f-4cdd-a5f9-e366e05f0fcd");
     responseManagementEvent.getPayload().getCollectionCase().setState("ACTIONABLE");
+    responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
+    responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
     return responseManagementEvent;
   }
 

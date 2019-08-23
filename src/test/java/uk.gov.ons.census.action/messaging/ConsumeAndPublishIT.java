@@ -328,6 +328,7 @@ public class ConsumeAndPublishIT {
         .getAddress()
         .setLongitude(Double.toString(random.nextDouble()));
 
+    responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setAddressInvalid(false);
 
