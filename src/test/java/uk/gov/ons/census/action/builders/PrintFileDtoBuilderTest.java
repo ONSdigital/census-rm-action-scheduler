@@ -86,17 +86,12 @@ public class PrintFileDtoBuilderTest {
     printFileDto.setQidWales(WELSH_QID);
 
     printFileDto.setCaseRef(caze.getCaseRef());
-
-    //    // TODO: where are these stored and used?
-    //    printFileDto.setTitle("");
-    //    printFileDto.setForename("");
-    //    printFileDto.setSurname("");
-
     printFileDto.setAddressLine1(caze.getAddressLine1());
     printFileDto.setAddressLine2(caze.getAddressLine2());
     printFileDto.setAddressLine3(caze.getAddressLine3());
     printFileDto.setTownName(caze.getTownName());
     printFileDto.setPostcode(caze.getPostcode());
+
     printFileDto.setBatchId(BATCH_UUID.toString());
     printFileDto.setPackCode(actionTypeToPackCodeMap.get(expectedActionType));
     printFileDto.setActionType("test_actiontype");
