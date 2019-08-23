@@ -70,8 +70,6 @@ public class EventReceiver {
   private void setCaseDetails(CollectionCase collectionCase, Case caseDetails) {
     caseDetails.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
     caseDetails.setCaseId(UUID.fromString(collectionCase.getId()));
-    caseDetails.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
-    caseDetails.setCaseId(UUID.fromString(collectionCase.getId()));
     caseDetails.setState(CaseState.valueOf(collectionCase.getState()));
     caseDetails.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
     caseDetails.setAddressLine1(collectionCase.getAddress().getAddressLine1());
