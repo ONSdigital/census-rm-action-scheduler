@@ -26,4 +26,5 @@ public class CollectionCase {
   private String ceExpectedCapacity;
   private Boolean receiptReceived;
   private Boolean refusalReceived;
+  private Boolean addressInvalid;
 }

@@ -1,6 +1,5 @@
 package uk.gov.ons.census.action.builders;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.entity.ActionRule;
@@ -8,9 +7,6 @@ import uk.gov.ons.census.action.model.entity.Case;
 
 @Component
 public class FieldworkFollowupBuilder {
-
-  @Value("${queueconfig.outbound-exchange}")
-  private String outboundExchange;
 
   public FieldworkFollowup buildFieldworkFollowup(Case caze, ActionRule actionRule) {
 
