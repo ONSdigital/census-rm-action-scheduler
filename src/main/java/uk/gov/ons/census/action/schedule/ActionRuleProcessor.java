@@ -233,6 +233,9 @@ public class ActionRuleProcessor {
           put("P_RL_1RL2B_2", "P_RL_1RL2B_2");
           put("P_RL_2RL1_3a", "P_RL_2RL1_3a");
           put("P_RL_2RL2B_3a", "P_RL_2RL2B_3a");
+          put("P_QU_H1", "P_QU_H1");
+          put("P_QU_H2", "P_QU_H2");
+          put("P_QU_H4", "P_QU_H4");
         }
       };
 }
