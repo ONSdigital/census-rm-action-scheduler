@@ -99,6 +99,38 @@ public class FulfilmentRequestReceiverIT {
   }
 
   @Test
+  public void testContinuationQuestionnaireFulfilment() throws InterruptedException, IOException {
+
+    // Given
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    Case fulfillmentCase = this.setUpCase();
+    ResponseManagementEvent actionFulfilmentEvent =
+        getResponseManagementEvent(fulfillmentCase.getCaseId(), "P_OR_HC1");
+    String url = "/uacqid/create/";
+    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
+    String returnJson = objectMapper.writeValueAsString(uacQidDto);
+    givenThat(
+        post(urlEqualTo(url))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpStatus.OK.value())
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(returnJson)));
+
+    // When
+    rabbitQueueHelper.sendMessage(
+        eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
+
+    // Then
+    PrintFileDto actualPrintFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
+    checkAddressFieldsMatch(
+        fulfillmentCase,
+        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
+        actualPrintFileDto);
+    assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
+  }
+
+  @Test
   public void testLargePrintQuestionnaireFulfilment() throws InterruptedException, IOException {
 
     // Given
