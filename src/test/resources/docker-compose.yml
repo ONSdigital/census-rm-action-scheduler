@@ -22,3 +22,6 @@ services:
       - "35672:5672"
       - "46671:15671"
       - "46672:15672"
+    volumes:
+      - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
+      - ./definitions.json:/opt/definitions.json:ro
