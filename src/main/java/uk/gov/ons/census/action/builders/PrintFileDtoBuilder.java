@@ -15,8 +15,9 @@ public class PrintFileDtoBuilder {
   }
 
   public PrintFileDto buildPrintFileDto(
-      Case caze, String packCode, UUID batchUUID, String actionType) {
-    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(caze);
+      Case selectedCase, String packCode, UUID batchUUID, String actionType) {
+
+    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(selectedCase, packCode);
 
     PrintFileDto printFileDto = new PrintFileDto();
     printFileDto.setUac(uacQidTuple.getUacQidLink().getUac());
@@ -27,22 +28,16 @@ public class PrintFileDtoBuilder {
       printFileDto.setQidWales(uacQidTuple.getUacQidLinkWales().get().getQid());
     }
 
-    printFileDto.setCaseRef(caze.getCaseRef());
-
-    // TODO: Don't believe we have these at the moment
-    printFileDto.setTitle("");
-    printFileDto.setForename("");
-    printFileDto.setSurname("");
-
-    printFileDto.setAddressLine1(caze.getAddressLine1());
-    printFileDto.setAddressLine2(caze.getAddressLine2());
-    printFileDto.setAddressLine3(caze.getAddressLine3());
-    printFileDto.setTownName(caze.getTownName());
-    printFileDto.setPostcode(caze.getPostcode());
+    printFileDto.setCaseRef(selectedCase.getCaseRef());
+    printFileDto.setAddressLine1(selectedCase.getAddressLine1());
+    printFileDto.setAddressLine2(selectedCase.getAddressLine2());
+    printFileDto.setAddressLine3(selectedCase.getAddressLine3());
+    printFileDto.setTownName(selectedCase.getTownName());
+    printFileDto.setPostcode(selectedCase.getPostcode());
     printFileDto.setBatchId(batchUUID.toString());
     printFileDto.setPackCode(packCode);
     printFileDto.setActionType(actionType);
-    printFileDto.setFieldCoordinatorId(caze.getFieldCoordinatorId());
+    printFileDto.setFieldCoordinatorId(selectedCase.getFieldCoordinatorId());
 
     return printFileDto;
   }
