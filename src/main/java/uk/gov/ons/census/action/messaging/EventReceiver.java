@@ -8,7 +8,6 @@ import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.CollectionCase;
-import uk.gov.ons.census.action.model.dto.Event;
 import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
@@ -39,9 +38,7 @@ public class EventReceiver {
     } else if (responseManagementEvent.getEvent().getType() == EventType.UAC_UPDATED) {
       processUacUpdated(responseManagementEvent.getPayload().getUac());
     } else if (responseManagementEvent.getEvent().getType() == EventType.CASE_UPDATED) {
-      processCaseUpdatedEvent(
-          responseManagementEvent.getEvent(),
-          responseManagementEvent.getPayload().getCollectionCase());
+      processCaseUpdatedEvent(responseManagementEvent.getPayload().getCollectionCase());
     } else {
       // This code can't be reached because under the class structure the EventType is limited to
       // enums at this point?
@@ -51,14 +48,11 @@ public class EventReceiver {
 
   private void processCaseCreatedEvent(CollectionCase collectionCase) {
     Case newCase = new Case();
-    newCase.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
-    newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     setCaseDetails(collectionCase, newCase);
-    newCase.setReceiptReceived(false);
     caseRepository.save(newCase);
   }
 
-  private void processCaseUpdatedEvent(Event event, CollectionCase collectionCase) {
+  private void processCaseUpdatedEvent(CollectionCase collectionCase) {
     String caseId = collectionCase.getId();
 
     Optional<Case> cazeOpt = caseRepository.findByCaseId(UUID.fromString(caseId));
@@ -69,12 +63,13 @@ public class EventReceiver {
     }
 
     Case updatedCase = cazeOpt.get();
-    updatedCase.setCaseId(UUID.fromString(caseId));
     setCaseDetails(collectionCase, updatedCase);
     caseRepository.save(updatedCase);
   }
 
   private void setCaseDetails(CollectionCase collectionCase, Case caseDetails) {
+    caseDetails.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
+    caseDetails.setCaseId(UUID.fromString(collectionCase.getId()));
     caseDetails.setState(CaseState.valueOf(collectionCase.getState()));
     caseDetails.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
     caseDetails.setAddressLine1(collectionCase.getAddress().getAddressLine1());
@@ -93,6 +88,7 @@ public class EventReceiver {
     caseDetails.setTreatmentCode(collectionCase.getTreatmentCode()); // This is essential
     caseDetails.setAddressLevel(collectionCase.getAddress().getAddressLevel());
     caseDetails.setAbpCode(collectionCase.getAddress().getApbCode());
+    caseDetails.setCaseType(collectionCase.getCaseType());
     caseDetails.setAddressType(collectionCase.getAddress().getAddressType());
     caseDetails.setUprn(collectionCase.getAddress().getUprn());
     caseDetails.setEstabArid(collectionCase.getAddress().getEstabArid());
@@ -107,14 +103,9 @@ public class EventReceiver {
     caseDetails.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
     caseDetails.setFieldOfficerId(collectionCase.getFieldOfficerId());
     caseDetails.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
-
-    if (collectionCase.getReceiptReceived() != null) {
-      caseDetails.setReceiptReceived(collectionCase.getReceiptReceived());
-    }
-
-    if (collectionCase.getRefusalReceived() != null) {
-      caseDetails.setRefusalReceived(collectionCase.getRefusalReceived());
-    }
+    caseDetails.setReceiptReceived(collectionCase.getReceiptReceived());
+    caseDetails.setRefusalReceived(collectionCase.getRefusalReceived());
+    caseDetails.setAddressInvalid(collectionCase.getAddressInvalid());
   }
 
   private void processUacUpdated(Uac uac) {

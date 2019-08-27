@@ -20,6 +20,8 @@ public class Case {
   @Column(name = "case_id")
   private UUID caseId;
 
+  @Column private String caseType;
+
   @Column private String arid;
 
   @Column private String estabArid;
@@ -86,4 +88,7 @@ public class Case {
 
   @Column(name = "refusal_received", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
   private boolean refusalReceived;
+
+  @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+  private boolean addressInvalid;
 }

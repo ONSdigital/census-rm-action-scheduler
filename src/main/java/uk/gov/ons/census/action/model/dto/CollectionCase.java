@@ -6,6 +6,7 @@ import lombok.Data;
 public class CollectionCase {
   private String id;
   private String caseRef;
+  private String caseType;
   private String survey;
   private String collectionExerciseId;
   private Address address;
@@ -25,4 +26,5 @@ public class CollectionCase {
   private String ceExpectedCapacity;
   private Boolean receiptReceived;
   private Boolean refusalReceived;
+  private Boolean addressInvalid;
 }
