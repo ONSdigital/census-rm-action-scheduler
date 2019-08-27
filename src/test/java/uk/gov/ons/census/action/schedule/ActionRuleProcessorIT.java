@@ -32,8 +32,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
-import uk.gov.ons.census.action.builders.QidUacBuilder;
 import uk.gov.ons.census.action.messaging.RabbitQueueHelper;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
@@ -44,7 +42,6 @@ import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionPlanRepository;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
-import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @ContextConfiguration
 @SpringBootTest
