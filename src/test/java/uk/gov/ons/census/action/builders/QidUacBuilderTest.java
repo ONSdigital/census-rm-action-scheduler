@@ -31,7 +31,6 @@ public class QidUacBuilderTest {
 
   private final QidUacBuilder qidUacBuilder = new QidUacBuilder(uacQidLinkRepository, caseClient);
 
-  private static final String TEST_PACK_CODE = "TEST";
   private static final String ENGLISH_QUESTIONNAIRE_TYPE = "01";
   private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
   private static final String WALES_IN_WELSH_QUESTIONNAIRE_TYPE = "03";
@@ -69,7 +68,7 @@ public class QidUacBuilderTest {
             + WALES_TREATMENT_CODE_SUFFIX);
 
     // when
-    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(testCase, TEST_PACK_CODE);
+    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(testCase, ActionType.ICHHQW);
 
     UacQidLink actualEnglandUacQidLink = uacQidTuple.getUacQidLink();
     assertThat(actualEnglandUacQidLink.getCaseId()).isEqualTo(testCase.getCaseId().toString());
@@ -104,7 +103,7 @@ public class QidUacBuilderTest {
     testCase.setTreatmentCode("NotWelshTreatmentCode");
 
     // when
-    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(testCase, TEST_PACK_CODE);
+    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(testCase, ActionType.ICL1E);
 
     UacQidLink actualEnglandUacQidLink = uacQidTuple.getUacQidLink();
     assertThat(actualEnglandUacQidLink.getCaseId()).isEqualTo(testCase.getCaseId().toString());
@@ -139,7 +138,7 @@ public class QidUacBuilderTest {
         .thenReturn(uacQidLinks);
 
     // When
-    qidUacBuilder.getUacQidLinks(testCase, TEST_PACK_CODE);
+    qidUacBuilder.getUacQidLinks(testCase, ActionType.ICHHQW);
 
     // Then
     // Exception thrown - expected
@@ -169,10 +168,10 @@ public class QidUacBuilderTest {
         .thenReturn(uacQidLinks);
 
     // When
-    qidUacBuilder.getUacQidLinks(testCase, TEST_PACK_CODE);
+    qidUacBuilder.getUacQidLinks(testCase, ActionType.ICHHQW);
 
     // Then
-    // Exception thrown - expected
+    // Exception thrown - The second welsh QID must have questionnaire type "03"
   }
 
   @Test(expected = RuntimeException.class)
@@ -209,7 +208,7 @@ public class QidUacBuilderTest {
             + WALES_TREATMENT_CODE_SUFFIX);
 
     // When
-    qidUacBuilder.getUacQidLinks(testCase, TEST_PACK_CODE);
+    qidUacBuilder.getUacQidLinks(testCase, ActionType.ICHHQW);
 
     // Then
     // Exception thrown - expected
@@ -238,7 +237,7 @@ public class QidUacBuilderTest {
             + WALES_TREATMENT_CODE_SUFFIX);
 
     // When
-    qidUacBuilder.getUacQidLinks(testCase, TEST_PACK_CODE);
+    qidUacBuilder.getUacQidLinks(testCase, ActionType.ICHHQW);
 
     // Then
     // Exception thrown - expected
@@ -258,7 +257,7 @@ public class QidUacBuilderTest {
         .thenReturn(Collections.EMPTY_LIST);
 
     // When
-    qidUacBuilder.getUacQidLinks(testCase, TEST_PACK_CODE);
+    qidUacBuilder.getUacQidLinks(testCase, ActionType.ICL1E);
 
     // Then
     // Exception thrown - expected
@@ -294,14 +293,14 @@ public class QidUacBuilderTest {
         .thenReturn(uacQidLinks);
 
     // When
-    qidUacBuilder.getUacQidLinks(testCase, TEST_PACK_CODE);
+    qidUacBuilder.getUacQidLinks(testCase, ActionType.ICHHQW);
 
     // Then
     // Exception thrown - expected
   }
 
   @Test
-  public void testNewUacIsRequestedForReminderLetterPackCode() {
+  public void testNewUacIsRequestedForReminderLetter() {
     // Given
     Case linkedCase = easyRandom.nextObject(Case.class);
     linkedCase.setTreatmentCode("HH_LF2R1E");
@@ -312,7 +311,7 @@ public class QidUacBuilderTest {
 
     // When
     UacQidTuple actualUacQidTuple =
-        qidUacBuilder.getUacQidLinks(linkedCase, reminderLetterPackCode);
+        qidUacBuilder.getUacQidLinks(linkedCase, ActionType.P_RL_1RL1_1);
 
     // Then
     verify(caseClient).getUacQid(eq(linkedCase.getCaseId()), eq(ENGLISH_QUESTIONNAIRE_TYPE));
@@ -334,8 +333,7 @@ public class QidUacBuilderTest {
         .thenReturn(uacQidDTO);
 
     // When
-    UacQidTuple actualUacQidTuple =
-        qidUacBuilder.getUacQidLinks(linkedCase, reminderLetterPackCode);
+    UacQidTuple actualUacQidTuple = qidUacBuilder.getUacQidLinks(linkedCase, ActionType.P_QU_H1);
 
     // Then
     verify(caseClient).getUacQid(eq(linkedCase.getCaseId()), eq(ENGLISH_QUESTIONNAIRE_TYPE));
@@ -359,8 +357,7 @@ public class QidUacBuilderTest {
         .thenReturn(welshUacQidDTO);
 
     // When
-    UacQidTuple actualUacQidTuple =
-        qidUacBuilder.getUacQidLinks(linkedCase, reminderLetterPackCode);
+    UacQidTuple actualUacQidTuple = qidUacBuilder.getUacQidLinks(linkedCase, ActionType.P_QU_H2);
 
     // Then
     verify(caseClient)
