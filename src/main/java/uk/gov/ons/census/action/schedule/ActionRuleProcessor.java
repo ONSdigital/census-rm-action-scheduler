@@ -145,8 +145,8 @@ public class ActionRuleProcessor {
           batchLog.info(
               "Sending in progress, sent {} printer action messages so far", messagesSent - 1);
         }
-        batchLog.info("Finished sending, sent {} printer action messages", messagesSent);
       }
+      batchLog.info("Finished sending, sent {} printer action messages", messagesSent);
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(e); // Roll the whole transaction back
     }
@@ -165,15 +165,16 @@ public class ActionRuleProcessor {
       List<Future<FieldworkFollowup>> results =
           EXECUTOR_SERVICE.invokeAll(fieldworkFollowupBuilders);
 
-      log.info("About to send {} FieldworkFollowup messages", results.size());
+      log.info("About to send {} field action messages", results.size());
       int messagesSent = 0;
       for (Future<FieldworkFollowup> result : results) {
-        if (messagesSent++ % 1000 == 0) {
-          log.info("Sent {} FieldworkFollowup messages", messagesSent - 1);
-        }
 
         rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
+        if (messagesSent++ % 1000 == 0) {
+          log.info("Finished sending, sent {} field action messages", messagesSent - 1);
+        }
       }
+      log.info("Finished sending, sent {} field action messages", messagesSent);
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(e); // Roll the whole transaction back
     }
