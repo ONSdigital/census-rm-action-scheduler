@@ -32,6 +32,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
+import uk.gov.ons.census.action.builders.QidUacBuilder;
 import uk.gov.ons.census.action.messaging.RabbitQueueHelper;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
@@ -51,17 +53,14 @@ import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ActionRuleProcessorIT {
 
-  private static final int DELAY_ACTION_BY_SECONDS = 5;
-
   @Value("${queueconfig.outbound-printer-queue}")
   private String outboundPrinterQueue;
 
   @Autowired private RabbitQueueHelper rabbitQueueHelper;
   @Autowired private CaseRepository caseRepository;
-  @Autowired private UacQidLinkRepository uacQidLinkRepository;
   @Autowired private ActionRuleRepository actionRuleRepository;
   @Autowired private ActionPlanRepository actionPlanRepository;
-  @Autowired private ActionRuleProcessor actionRuleProcessor;
+
   private static final EasyRandom easyRandom = new EasyRandom();
 
   @Value("${caseapi.port}")
@@ -149,6 +148,7 @@ public class ActionRuleProcessorIT {
     randomCase.setActionPlanId(actionPlan.getId().toString());
     randomCase.setReceiptReceived(false);
     randomCase.setRefusalReceived(false);
+    randomCase.setAddressInvalid(false);
     randomCase.setTreatmentCode("HH_LF2R1E");
     caseRepository.saveAndFlush(randomCase);
     return randomCase;
