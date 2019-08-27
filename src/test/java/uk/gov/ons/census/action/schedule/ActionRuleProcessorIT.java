@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.jeasy.random.EasyRandom;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +33,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.messaging.RabbitQueueHelper;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
@@ -69,6 +71,17 @@ public class ActionRuleProcessorIT {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Rule public WireMockRule mockCaseApi = new WireMockRule(wireMockConfig().port(8089));
+
+  @Before
+  @Transactional
+  public void setUp() {
+    rabbitQueueHelper.purgeQueue(outboundPrinterQueue);
+    caseRepository.deleteAllInBatch();
+    actionRuleRepository.deleteAllInBatch();
+    actionPlanRepository.deleteAll();
+    actionRuleRepository.deleteAll();
+    actionPlanRepository.deleteAllInBatch();
+  }
 
   @Test
   public void testReminderLetterActionCreatesNewUac() throws IOException, InterruptedException {
