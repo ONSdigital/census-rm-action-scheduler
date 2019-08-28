@@ -16,6 +16,7 @@ public class CaseClient {
   private String port;
 
   public UacQidDTO getUacQid(UUID caseId, String questionnaireType) {
+    //    Should be URIBuilder
     String url = "http://" + host + ":" + port + "/uacqid/create/";
     RestTemplate restTemplate = new RestTemplate();
     UacCreateDTO caseDetails = new UacCreateDTO();
