@@ -30,6 +30,7 @@ import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
+import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
@@ -113,21 +114,21 @@ public class ActionRuleProcessor {
     final String packCode =
         actionTypeToPackCodeMap.get(triggeredActionRule.getActionType().toString());
 
-    List<Callable<PrintFileDto>> callables = new LinkedList<>();
+    List<Callable<PrintFileDto>> printFileDtoBuilders = new LinkedList<>();
 
     cases.forEach(
-        caze -> {
-          callables.add(
-              () ->
-                  printFileDtoBuilder.buildPrintFileDto(
-                      caze, packCode, batchId, triggeredActionRule.getActionType().toString()));
-        });
+        caze ->
+            printFileDtoBuilders.add(
+                () ->
+                    printFileDtoBuilder.buildPrintFileDto(
+                        caze, packCode, batchId, triggeredActionRule.getActionType())));
 
     try {
-      final int batchQty = callables.size();
-      List<Future<PrintFileDto>> results = EXECUTOR_SERVICE.invokeAll(callables);
+      final int batchQty = printFileDtoBuilders.size();
+      List<Future<PrintFileDto>> results = EXECUTOR_SERVICE.invokeAll(printFileDtoBuilders);
 
-      log.info("About to send {} PrintFileDto messages", results.size());
+      Logger batchLog = log.with("batchId", batchId).with("packCode", packCode);
+      batchLog.info("About to send {} printer action messages", results.size());
 
       int messagesSent = 0;
 
@@ -142,36 +143,39 @@ public class ActionRuleProcessor {
         rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
         if (messagesSent++ % 1000 == 0) {
-          log.info("Sent {} PrintFileDto messages", messagesSent - 1);
+          batchLog.info(
+              "Sending in progress, sent {} printer action messages so far", messagesSent - 1);
         }
       }
+      batchLog.info("Finished sending, sent {} printer action messages", messagesSent);
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(e); // Roll the whole transaction back
     }
   }
 
   private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
-    List<Callable<FieldworkFollowup>> callables = new LinkedList<>();
+    List<Callable<FieldworkFollowup>> fieldworkFollowupBuilders = new LinkedList<>();
     cases.forEach(
-        caze -> {
-          callables.add(
-              () -> fieldworkFollowupBuilder.buildFieldworkFollowup(caze, triggeredActionRule));
-        });
+        caze ->
+            fieldworkFollowupBuilders.add(
+                () -> fieldworkFollowupBuilder.buildFieldworkFollowup(caze, triggeredActionRule)));
 
     try {
       final String routingKey = getRoutingKey(triggeredActionRule);
 
-      List<Future<FieldworkFollowup>> results = EXECUTOR_SERVICE.invokeAll(callables);
+      List<Future<FieldworkFollowup>> results =
+          EXECUTOR_SERVICE.invokeAll(fieldworkFollowupBuilders);
 
-      log.info("About to send {} FieldworkFollowup messages", results.size());
+      log.info("About to send {} field action messages", results.size());
       int messagesSent = 0;
       for (Future<FieldworkFollowup> result : results) {
-        if (messagesSent++ % 1000 == 0) {
-          log.info("Sent {} FieldworkFollowup messages", messagesSent - 1);
-        }
 
         rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
+        if (messagesSent++ % 1000 == 0) {
+          log.info("Finished sending, sent {} field action messages", messagesSent - 1);
+        }
       }
+      log.info("Finished sending, sent {} field action messages", messagesSent);
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(e); // Roll the whole transaction back
     }
@@ -217,12 +221,22 @@ public class ActionRuleProcessor {
   private final HashMap<String, String> actionTypeToPackCodeMap =
       new HashMap<>() {
         {
-          put("ICHHQE", "P_IC_H1");
-          put("ICHHQW", "P_IC_H2");
-          put("ICHHQN", "P_IC_H4");
-          put("ICL1E", "P_IC_ICL1");
-          put("ICL2W", "P_IC_ICL2B");
-          put("ICL4N", "P_IC_ICL4");
+          put(ActionType.ICHHQE.name(), "P_IC_H1");
+          put(ActionType.ICHHQW.name(), "P_IC_H2");
+          put(ActionType.ICHHQN.name(), "P_IC_H4");
+          put(ActionType.ICL1E.name(), "P_IC_ICL1");
+          put(ActionType.ICL2W.name(), "P_IC_ICL2B");
+          put(ActionType.ICL4N.name(), "P_IC_ICL4");
+          put(ActionType.P_RL_1RL1_1.name(), ActionType.P_RL_1RL1_1.name());
+          put(ActionType.P_RL_1RL2B_1.name(), ActionType.P_RL_1RL2B_1.name());
+          put(ActionType.P_RL_1RL4.name(), ActionType.P_RL_1RL4.name());
+          put(ActionType.P_RL_1RL1_2.name(), ActionType.P_RL_1RL1_2.name());
+          put(ActionType.P_RL_1RL2B_2.name(), ActionType.P_RL_1RL2B_2.name());
+          put(ActionType.P_RL_2RL1_3a.name(), ActionType.P_RL_2RL1_3a.name());
+          put(ActionType.P_RL_2RL2B_3a.name(), ActionType.P_RL_2RL2B_3a.name());
+          put(ActionType.P_QU_H1.name(), ActionType.P_QU_H1.name());
+          put(ActionType.P_QU_H2.name(), ActionType.P_QU_H2.name());
+          put(ActionType.P_QU_H4.name(), ActionType.P_QU_H4.name());
         }
       };
 }
