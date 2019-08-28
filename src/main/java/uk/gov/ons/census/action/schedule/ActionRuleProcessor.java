@@ -30,6 +30,7 @@ import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
+import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
@@ -120,7 +121,7 @@ public class ActionRuleProcessor {
             printFileDtoBuilders.add(
                 () ->
                     printFileDtoBuilder.buildPrintFileDto(
-                        caze, packCode, batchId, triggeredActionRule.getActionType().toString())));
+                        caze, packCode, batchId, triggeredActionRule.getActionType())));
 
     try {
       final int batchQty = printFileDtoBuilders.size();
@@ -220,19 +221,22 @@ public class ActionRuleProcessor {
   private final HashMap<String, String> actionTypeToPackCodeMap =
       new HashMap<>() {
         {
-          put("ICHHQE", "P_IC_H1");
-          put("ICHHQW", "P_IC_H2");
-          put("ICHHQN", "P_IC_H4");
-          put("ICL1E", "P_IC_ICL1");
-          put("ICL2W", "P_IC_ICL2B");
-          put("ICL4N", "P_IC_ICL4");
-          put("P_RL_1RL1_1", "P_RL_1RL1_1");
-          put("P_RL_1RL2B_1", "P_RL_1RL2B_1");
-          put("P_RL_1RL4", "P_RL_1RL4");
-          put("P_RL_1RL1_2", "P_RL_1RL1_2");
-          put("P_RL_1RL2B_2", "P_RL_1RL2B_2");
-          put("P_RL_2RL1_3a", "P_RL_2RL1_3a");
-          put("P_RL_2RL2B_3a", "P_RL_2RL2B_3a");
+          put(ActionType.ICHHQE.name(), "P_IC_H1");
+          put(ActionType.ICHHQW.name(), "P_IC_H2");
+          put(ActionType.ICHHQN.name(), "P_IC_H4");
+          put(ActionType.ICL1E.name(), "P_IC_ICL1");
+          put(ActionType.ICL2W.name(), "P_IC_ICL2B");
+          put(ActionType.ICL4N.name(), "P_IC_ICL4");
+          put(ActionType.P_RL_1RL1_1.name(), ActionType.P_RL_1RL1_1.name());
+          put(ActionType.P_RL_1RL2B_1.name(), ActionType.P_RL_1RL2B_1.name());
+          put(ActionType.P_RL_1RL4.name(), ActionType.P_RL_1RL4.name());
+          put(ActionType.P_RL_1RL1_2.name(), ActionType.P_RL_1RL1_2.name());
+          put(ActionType.P_RL_1RL2B_2.name(), ActionType.P_RL_1RL2B_2.name());
+          put(ActionType.P_RL_2RL1_3a.name(), ActionType.P_RL_2RL1_3a.name());
+          put(ActionType.P_RL_2RL2B_3a.name(), ActionType.P_RL_2RL2B_3a.name());
+          put(ActionType.P_QU_H1.name(), ActionType.P_QU_H1.name());
+          put(ActionType.P_QU_H2.name(), ActionType.P_QU_H2.name());
+          put(ActionType.P_QU_H4.name(), ActionType.P_QU_H4.name());
         }
       };
 }

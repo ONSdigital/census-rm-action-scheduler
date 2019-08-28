@@ -1,6 +1,7 @@
 package uk.gov.ons.census.action.schedule;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.exactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -10,6 +11,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.io.IOException;
@@ -52,6 +54,8 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ActionRuleProcessorIT {
 
+  private static final String UAC_QID_CREATE_URL = "/uacqid/create/";
+
   @Value("${queueconfig.outbound-printer-queue}")
   private String outboundPrinterQueue;
 
@@ -86,20 +90,11 @@ public class ActionRuleProcessorIT {
   @Test
   public void testReminderLetterActionCreatesNewUac() throws IOException, InterruptedException {
     // Given
-    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
-    String returnJson = objectMapper.writeValueAsString(uacQidDto);
-    String uacCreateUrl = "/uacqid/create/";
-    stubFor(
-        post(urlEqualTo(uacCreateUrl))
-            .willReturn(
-                aResponse()
-                    .withStatus(HttpStatus.OK.value())
-                    .withHeader("Content-Type", "application/json")
-                    .withBody(returnJson)));
+    UacQidDTO uacQidDto = stubCreateUacQid();
     BlockingQueue<String> printerQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
     ActionPlan actionPlan = setUpActionPlan();
     Case randomCase = setUpCase(actionPlan);
-    ActionRule actionRule = setUpActionRule(ActionType.P_RL_1RL1_1, actionPlan);
+    setUpActionRule(ActionType.P_RL_1RL1_1, actionPlan);
 
     // When the action plan triggers
     String actualMessage = printerQueue.poll(20, TimeUnit.SECONDS);
@@ -107,7 +102,7 @@ public class ActionRuleProcessorIT {
     // Then
     assertThat(actualMessage).isNotNull();
     PrintFileDto actualPrintFileDto = objectMapper.readValue(actualMessage, PrintFileDto.class);
-    verify(exactly(1), postRequestedFor(urlEqualTo(uacCreateUrl)));
+    verify(exactly(1), postRequestedFor(urlEqualTo(UAC_QID_CREATE_URL)));
 
     assertThat(actualPrintFileDto.getActionType()).isEqualTo(ActionType.P_RL_1RL1_1.name());
     assertThat(actualPrintFileDto.getPackCode()).isEqualTo(ActionType.P_RL_1RL1_1.name());
@@ -126,6 +121,111 @@ public class ActionRuleProcessorIT {
             "batchQuantity",
             "packCode",
             "actionType");
+  }
+
+  @Test
+  public void testReminderQuestionnaireActionCreatesNewUac()
+      throws IOException, InterruptedException {
+    // Given
+    UacQidDTO uacQidDto = stubCreateUacQid();
+    BlockingQueue<String> printerQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    ActionPlan actionPlan = setUpActionPlan();
+    Case randomCase = setUpCase(actionPlan);
+    setUpActionRule(ActionType.P_QU_H1, actionPlan);
+
+    // When the action plan triggers
+    String actualMessage = printerQueue.poll(20, TimeUnit.SECONDS);
+
+    // Then
+    assertThat(actualMessage).isNotNull();
+    PrintFileDto actualPrintFileDto = objectMapper.readValue(actualMessage, PrintFileDto.class);
+    verify(exactly(1), postRequestedFor(urlEqualTo(UAC_QID_CREATE_URL)));
+
+    assertThat(actualPrintFileDto.getActionType()).isEqualTo(ActionType.P_QU_H1.name());
+    assertThat(actualPrintFileDto.getPackCode()).isEqualTo(ActionType.P_QU_H1.name());
+    assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
+    assertThat(actualPrintFileDto)
+        .isEqualToIgnoringGivenFields(
+            randomCase,
+            "uac",
+            "qid",
+            "uacWales",
+            "qidWales",
+            "title",
+            "forename",
+            "surname",
+            "batchId",
+            "batchQuantity",
+            "packCode",
+            "actionType");
+  }
+
+  @Test
+  public void testWelshReminderQuestionnaireActionCreates2NewUacs()
+      throws IOException, InterruptedException {
+    // Given
+    UacQidDTO uacQidDto = stubCreateUacQid();
+    UacQidDTO welshUacQidDto = stubCreateWelshUacQid();
+    BlockingQueue<String> printerQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    ActionPlan actionPlan = setUpActionPlan();
+    Case randomCase = setUpCase(actionPlan);
+    setUpActionRule(ActionType.P_QU_H2, actionPlan);
+
+    // When the action plan triggers
+    String actualMessage = printerQueue.poll(20, TimeUnit.SECONDS);
+
+    // Then
+    assertThat(actualMessage).isNotNull();
+    PrintFileDto actualPrintFileDto = objectMapper.readValue(actualMessage, PrintFileDto.class);
+    verify(exactly(2), postRequestedFor(urlEqualTo(UAC_QID_CREATE_URL)));
+
+    assertThat(actualPrintFileDto.getActionType()).isEqualTo(ActionType.P_QU_H2.name());
+    assertThat(actualPrintFileDto.getPackCode()).isEqualTo(ActionType.P_QU_H2.name());
+    assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
+    assertThat(actualPrintFileDto.getUacWales()).isEqualTo(welshUacQidDto.getUac());
+    assertThat(actualPrintFileDto.getQidWales()).isEqualTo(welshUacQidDto.getQid());
+    assertThat(actualPrintFileDto)
+        .isEqualToIgnoringGivenFields(
+            randomCase,
+            "uac",
+            "qid",
+            "uacWales",
+            "qidWales",
+            "title",
+            "forename",
+            "surname",
+            "batchId",
+            "batchQuantity",
+            "packCode",
+            "actionType");
+  }
+
+  private UacQidDTO stubCreateUacQid() throws JsonProcessingException {
+    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
+    String returnJson = objectMapper.writeValueAsString(uacQidDto);
+    String UAC_QID_CREATE_URL = "/uacqid/create/";
+    stubFor(
+        post(urlEqualTo(UAC_QID_CREATE_URL))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpStatus.OK.value())
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(returnJson)));
+    return uacQidDto;
+  }
+
+  private UacQidDTO stubCreateWelshUacQid() throws JsonProcessingException {
+    UacQidDTO welshUacQidDto = easyRandom.nextObject(UacQidDTO.class);
+    String welshUacQidDtoJson = objectMapper.writeValueAsString(welshUacQidDto);
+    stubFor(
+        post(urlEqualTo(UAC_QID_CREATE_URL))
+            .withRequestBody(containing("\"questionnaireType\":\"03\""))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpStatus.OK.value())
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(welshUacQidDtoJson)));
+    return welshUacQidDto;
   }
 
   private ActionPlan setUpActionPlan() {
