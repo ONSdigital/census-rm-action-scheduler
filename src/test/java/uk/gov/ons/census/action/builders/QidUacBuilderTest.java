@@ -326,8 +326,6 @@ public class QidUacBuilderTest {
     // Given
     Case linkedCase = easyRandom.nextObject(Case.class);
     linkedCase.setTreatmentCode("HH_LF2R3BE");
-    String reminderLetterPackCode = ActionType.P_QU_H1.name();
-    String expectedQuestionnaireType = "1";
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
     when(caseClient.getUacQid(eq(linkedCase.getCaseId()), eq(ENGLISH_QUESTIONNAIRE_TYPE)))
         .thenReturn(uacQidDTO);
@@ -348,7 +346,6 @@ public class QidUacBuilderTest {
     // Given
     Case linkedCase = easyRandom.nextObject(Case.class);
     linkedCase.setTreatmentCode("HH_LF2R3BW");
-    String reminderLetterPackCode = ActionType.P_QU_H2.name();
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
     UacQidDTO welshUacQidDTO = easyRandom.nextObject(UacQidDTO.class);
     when(caseClient.getUacQid(eq(linkedCase.getCaseId()), eq(WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE)))
