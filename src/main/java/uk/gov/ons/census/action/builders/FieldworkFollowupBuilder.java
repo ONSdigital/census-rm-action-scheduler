@@ -34,10 +34,10 @@ public class FieldworkFollowupBuilder {
     followup.setFieldOfficerId(caze.getFieldOfficerId());
     followup.setFieldCoordinatorId(caze.getFieldCoordinatorId());
     followup.setCeExpectedCapacity(caze.getCeExpectedCapacity());
+    followup.setUndeliveredAsAddress(caze.isUndeliveredAsAddressed());
 
     // TODO: set surveyName, undeliveredAsAddress and blankQreReturned from caze
     followup.setSurveyName("CENSUS");
-    followup.setUndeliveredAsAddress(false);
     followup.setBlankQreReturned(false);
 
     // TODO: ccsQuestionnaireUrl, ceDeliveryReqd,
