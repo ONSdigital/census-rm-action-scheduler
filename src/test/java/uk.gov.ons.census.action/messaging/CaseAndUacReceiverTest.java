@@ -21,19 +21,20 @@ import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
-public class EventReceiverTest {
+public class CaseAndUacReceiverTest {
   private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final UacQidLinkRepository uacQidLinkRepository = mock(UacQidLinkRepository.class);
 
   @Test
   public void testCaseCreated() {
     // given
-    EventReceiver eventReceiver = new EventReceiver(caseRepository, uacQidLinkRepository);
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
 
     // when
-    eventReceiver.receiveEvent(responseManagementEvent);
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
 
     // then
     ArgumentCaptor<Case> eventArgumentCaptor = ArgumentCaptor.forClass(Case.class);
@@ -47,12 +48,13 @@ public class EventReceiverTest {
   @Test
   public void testCaseUpdate() {
     // given
-    EventReceiver eventReceiver = new EventReceiver(caseRepository, uacQidLinkRepository);
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.UAC_UPDATED);
 
     // when
-    eventReceiver.receiveEvent(responseManagementEvent);
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
 
     // then
     ArgumentCaptor<UacQidLink> eventArgumentCaptor = ArgumentCaptor.forClass(UacQidLink.class);

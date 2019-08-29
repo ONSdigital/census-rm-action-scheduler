@@ -18,14 +18,15 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @MessageEndpoint
-public class EventReceiver {
-  private static final Logger log = LoggerFactory.getLogger(EventReceiver.class);
+public class CaseAndUacReceiver {
+  private static final Logger log = LoggerFactory.getLogger(CaseAndUacReceiver.class);
   private static final String CASE_NOT_FOUND_ERROR = "Failed to find case by case id '%s'";
 
   private final CaseRepository caseRepository;
   private final UacQidLinkRepository uacQidLinkRepository;
 
-  public EventReceiver(CaseRepository caseRepository, UacQidLinkRepository uacQidLinkRepository) {
+  public CaseAndUacReceiver(
+      CaseRepository caseRepository, UacQidLinkRepository uacQidLinkRepository) {
     this.caseRepository = caseRepository;
     this.uacQidLinkRepository = uacQidLinkRepository;
   }
