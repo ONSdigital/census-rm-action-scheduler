@@ -46,7 +46,7 @@ public class FieldworkFollowupBuilderTest {
 
     // Then
     assertThat(actualResult.getSurveyName()).isEqualTo("CENSUS");
-    assertThat(actualResult.getUndeliveredAsAddress()).isFalse();
+    assertThat(actualResult.getUndeliveredAsAddress()).isEqualTo(caze.isUndeliveredAsAddressed());
     assertThat(actualResult.getBlankQreReturned()).isFalse();
     assertThat(actualResult.getCaseId()).isEqualTo(caze.getCaseId().toString());
     assertThat(actualResult.getCaseRef()).isEqualTo(Integer.toString(caze.getCaseRef()));
