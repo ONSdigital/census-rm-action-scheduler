@@ -213,14 +213,11 @@ public class ActionRuleProcessorIT {
   }
 
   @Test
-  public void testIndividualCaseReminderNotSent()
-          throws IOException, InterruptedException {
-    // Given
-    UacQidDTO uacQidDto = stubCreateUacQid();
-    UacQidDTO welshUacQidDto = stubCreateWelshUacQid();
+  public void testIndividualCaseReminderNotSent() throws InterruptedException {
+    // Given we have an HI case with a valid Treatment Code.
     BlockingQueue<String> printerQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
     ActionPlan actionPlan = setUpActionPlan();
-    Case randomCase = setUpIndividualCase(actionPlan);
+    setUpIndividualCase(actionPlan);
     setUpActionRule(ActionType.P_QU_H2, actionPlan);
 
     // When the action plan triggers

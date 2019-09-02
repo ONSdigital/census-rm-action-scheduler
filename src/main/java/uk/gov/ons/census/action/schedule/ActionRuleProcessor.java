@@ -188,7 +188,11 @@ public class ActionRuleProcessor {
 
   private Specification<Case> createSpecificationForActionableCases(String actionPlanId) {
     return where(isActionPlanIdEqualTo(actionPlanId))
-        .and(excludeReceiptedCases().and(excludeRefusedCases()).and(excludeAddressInvalidCases()).and(excludeHiCases()));
+        .and(
+            excludeReceiptedCases()
+                .and(excludeRefusedCases())
+                .and(excludeAddressInvalidCases())
+                .and(excludeHiCases()));
   }
 
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
@@ -213,7 +217,7 @@ public class ActionRuleProcessor {
 
   private Specification<Case> excludeHiCases() {
     return (Specification<Case>)
-            (root, query, builder) -> builder.notEqual(root.get("caseType"), HOUSEHOLD_INDIVIDUAL);
+        (root, query, builder) -> builder.notEqual(root.get("caseType"), HOUSEHOLD_INDIVIDUAL);
   }
 
   private Specification<Case> isClassifierIn(
