@@ -172,12 +172,10 @@ public class FulfilmentRequestReceiver {
       case "UACIT4":
         return Optional.empty(); // Ignore SMS fulfilments
       case "P_OR_I1":
-        return Optional.of(ActionType.P_OR_I1);
       case "P_OR_I2":
       case "P_OR_I2W":
-        return Optional.of(ActionType.P_OR_I2);
       case "P_OR_I4":
-        return Optional.of(ActionType.P_OR_I4);
+        return Optional.of(ActionType.P_OR_IX);
       default:
         log.with("fulfilmentCode", fulfilmentCode).warn("Unexpected fulfilment code received");
         return Optional.empty();

@@ -120,7 +120,7 @@ public class FulfilmentRequestReceiverTest {
   @Test
   public void testOnRequestIndividualQuestionnaireFulfilmentEngland() {
     testIndividualResponseRequest(
-        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND, "21", ActionType.P_OR_I1);
+        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND, "21", ActionType.P_OR_IX);
   }
 
   @Test(expected = RuntimeException.class)
@@ -144,19 +144,19 @@ public class FulfilmentRequestReceiverTest {
   @Test
   public void testOnRequestIndividualQuestionnaireFulfilmentWalesEnglish() {
     testIndividualResponseRequest(
-        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_ENGLISH, "22", ActionType.P_OR_I2);
+        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_ENGLISH, "22", ActionType.P_OR_IX);
   }
 
   @Test
   public void testOnRequestIndividualQuestionnaireFulfilmentWalesWelsh() {
     testIndividualResponseRequest(
-        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_WELSH, "23", ActionType.P_OR_I2);
+        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_WELSH, "23", ActionType.P_OR_IX);
   }
 
   @Test
   public void testOnRequestIndividualQuestionnaireFulfilmentNorthernIreland() {
     testIndividualResponseRequest(
-        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_NORTHERN_IRELAND, "24", ActionType.P_OR_I4);
+        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_NORTHERN_IRELAND, "24", ActionType.P_OR_IX);
   }
 
   private void testIndividualResponseRequest(
