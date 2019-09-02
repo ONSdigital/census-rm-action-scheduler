@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -212,34 +213,21 @@ public class ActionRuleProcessorIT {
   }
 
   @Test
-  public void testFieldworkActionRule() throws IOException, InterruptedException {
+  public void testIndividualCaseReminderNotSent()
+          throws IOException, InterruptedException {
     // Given
-    BlockingQueue<String> fieldQueue = rabbitQueueHelper.listen(outboundFieldQueue);
-    BlockingQueue<String> caseSelectedEventQueue = rabbitQueueHelper.listen(actionCaseQueue);
-
+    UacQidDTO uacQidDto = stubCreateUacQid();
+    UacQidDTO welshUacQidDto = stubCreateWelshUacQid();
+    BlockingQueue<String> printerQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
     ActionPlan actionPlan = setUpActionPlan();
-    Case randomCase = setUpCase(actionPlan);
-    ActionRule actionRule = setUpActionRule(ActionType.FIELD, actionPlan);
+    Case randomCase = setUpIndividualCase(actionPlan);
+    setUpActionRule(ActionType.P_QU_H2, actionPlan);
 
     // When the action plan triggers
-    String actualMessage = fieldQueue.poll(20, TimeUnit.SECONDS);
-    String actualActionToCaseMessage = caseSelectedEventQueue.poll(20, TimeUnit.SECONDS);
+    String actualMessage = printerQueue.poll(20, TimeUnit.SECONDS);
 
     // Then
-    assertThat(actualMessage).isNotNull();
-    FieldworkFollowup actualFieldworkFollowup =
-        objectMapper.readValue(actualMessage, FieldworkFollowup.class);
-    assertThat(actualFieldworkFollowup.getCaseRef())
-        .isEqualTo(Integer.toString(randomCase.getCaseRef()));
-
-    assertThat(actualActionToCaseMessage).isNotNull();
-    ResponseManagementEvent actualRmEvent =
-        objectMapper.readValue(actualActionToCaseMessage, ResponseManagementEvent.class);
-    assertThat(actualRmEvent.getEvent().getType()).isEqualTo(EventType.FIELD_CASE_SELECTED);
-    assertThat(actualRmEvent.getPayload().getFieldCaseSelected().getCaseRef())
-        .isEqualTo(randomCase.getCaseRef());
-    assertThat(actualRmEvent.getPayload().getFieldCaseSelected().getActionRuleId())
-        .isEqualTo(actionRule.getId().toString());
+    assertNull("Received Message for HI case, expected none", actualMessage);
   }
 
   private UacQidDTO stubCreateUacQid() throws JsonProcessingException {
@@ -255,6 +243,37 @@ public class ActionRuleProcessorIT {
                     .withBody(returnJson)));
     return uacQidDto;
   }
+
+    @Test
+    public void testFieldworkActionRule() throws IOException, InterruptedException {
+        // Given
+        BlockingQueue<String> fieldQueue = rabbitQueueHelper.listen(outboundFieldQueue);
+        BlockingQueue<String> caseSelectedEventQueue = rabbitQueueHelper.listen(actionCaseQueue);
+
+        ActionPlan actionPlan = setUpActionPlan();
+        Case randomCase = setUpCase(actionPlan);
+        ActionRule actionRule = setUpActionRule(ActionType.FIELD, actionPlan);
+
+        // When the action plan triggers
+        String actualMessage = fieldQueue.poll(20, TimeUnit.SECONDS);
+        String actualActionToCaseMessage = caseSelectedEventQueue.poll(20, TimeUnit.SECONDS);
+
+        // Then
+        assertThat(actualMessage).isNotNull();
+        FieldworkFollowup actualFieldworkFollowup =
+                objectMapper.readValue(actualMessage, FieldworkFollowup.class);
+        assertThat(actualFieldworkFollowup.getCaseRef())
+                .isEqualTo(Integer.toString(randomCase.getCaseRef()));
+
+        assertThat(actualActionToCaseMessage).isNotNull();
+        ResponseManagementEvent actualRmEvent =
+                objectMapper.readValue(actualActionToCaseMessage, ResponseManagementEvent.class);
+        assertThat(actualRmEvent.getEvent().getType()).isEqualTo(EventType.FIELD_CASE_SELECTED);
+        assertThat(actualRmEvent.getPayload().getFieldCaseSelected().getCaseRef())
+                .isEqualTo(randomCase.getCaseRef());
+        assertThat(actualRmEvent.getPayload().getFieldCaseSelected().getActionRuleId())
+                .isEqualTo(actionRule.getId().toString());
+    }
 
   private UacQidDTO stubCreateWelshUacQid() throws JsonProcessingException {
     UacQidDTO welshUacQidDto = easyRandom.nextObject(UacQidDTO.class);
@@ -302,6 +321,18 @@ public class ActionRuleProcessorIT {
     randomCase.setRefusalReceived(false);
     randomCase.setAddressInvalid(false);
     randomCase.setTreatmentCode("HH_LF2R1E");
+    caseRepository.saveAndFlush(randomCase);
+    return randomCase;
+  }
+
+  private Case setUpIndividualCase(ActionPlan actionPlan) {
+    Case randomCase = easyRandom.nextObject(Case.class);
+    randomCase.setActionPlanId(actionPlan.getId().toString());
+    randomCase.setReceiptReceived(false);
+    randomCase.setRefusalReceived(false);
+    randomCase.setAddressInvalid(false);
+    randomCase.setTreatmentCode("HH_LF2R1E");
+    randomCase.setCaseType("HI");
     caseRepository.saveAndFlush(randomCase);
     return randomCase;
   }
