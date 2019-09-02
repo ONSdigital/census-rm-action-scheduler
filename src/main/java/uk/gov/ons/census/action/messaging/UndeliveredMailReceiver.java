@@ -43,36 +43,34 @@ public class UndeliveredMailReceiver {
   @ServiceActivator(inputChannel = "undeliveredMailInputChannel")
   public void receiveMessage(ResponseManagementEvent event) {
     String questionnaireId = event.getPayload().getFulfilmentInformation().getQuestionnaireId();
-    Case caze;
+    Optional<Case> caseOpt;
 
     if (!StringUtils.isEmpty(questionnaireId)) {
       Optional<UacQidLink> uacQidLinkOpt = uacQidLinkRepository.findByQid(questionnaireId);
       if (uacQidLinkOpt.isEmpty()) {
-        throw new RuntimeException();
+        throw new RuntimeException(); // This should never happen
       }
 
-      String caseId = uacQidLinkOpt.get().getCaseId();
-      Optional<Case> caseOpt = caseRepository.findByCaseId(UUID.fromString(caseId));
-
-      if (caseOpt.isEmpty()) {
-        throw new RuntimeException();
-      }
-
-      caze = caseOpt.get();
+      caseOpt = caseRepository.findByCaseId(UUID.fromString(uacQidLinkOpt.get().getCaseId()));
     } else {
-      String caseId = event.getPayload().getFulfilmentInformation().getCaseRef();
-      Optional<Case> caseOpt = caseRepository.findByCaseId(UUID.fromString(caseId));
+      int caseRef = Integer.parseInt(event.getPayload().getFulfilmentInformation().getCaseRef());
+      caseOpt = caseRepository.findById(caseRef);
+    }
 
-      if (caseOpt.isEmpty()) {
-        throw new RuntimeException();
-      }
+    if (caseOpt.isEmpty()) {
+      throw new RuntimeException(); // This should never happen
+    }
 
-      caze = caseOpt.get();
+    Case caze = caseOpt.get();
+
+    if (caze.isAddressInvalid() || caze.isReceiptReceived() || caze.isRefusalReceived() ||
+        StringUtils.isEmpty(caze.getFieldCoordinatorId()) || "HI".equals(caze.getCaseType())) {
+      return; // We want to ignore this case - don't send to Field
     }
 
     // FWMT do not need an action plan or action type, and they make no sense in this context
     FieldworkFollowup fieldworkFollowup =
-        fieldworkFollowupBuilder.buildFieldworkFollowup(caze, "dummy", "dummy");
+        fieldworkFollowupBuilder.buildFieldworkFollowup(caze, "dummy", "dummy", true);
 
     String routingKey = RoutingKeyBuilder.getRoutingKey(ActionHandler.FIELD);
     rabbitTemplate.convertAndSend(outboundExchange, routingKey, fieldworkFollowup);

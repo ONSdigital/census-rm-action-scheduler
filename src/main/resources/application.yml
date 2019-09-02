@@ -46,6 +46,7 @@ queueconfig:
   outbound-field-routing-key: Action.Field.binding
   action-case-exchange: action-case-exchange
   action-case-queue: action.events
+  undelivered-mail-queue: action.undeliveredMailQueue
   consumers: 50
 
 healthcheck:
