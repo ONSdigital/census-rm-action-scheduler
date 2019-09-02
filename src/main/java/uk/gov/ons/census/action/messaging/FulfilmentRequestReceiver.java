@@ -4,6 +4,7 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -13,7 +14,6 @@ import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.client.CaseClient;
-import uk.gov.ons.census.action.model.PackCodeQuestionnaireActionType;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
@@ -24,15 +24,7 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 @MessageEndpoint
 public class FulfilmentRequestReceiver {
   private static final Set<String> individualResponseRequestCodes =
-      new HashSet<>(
-          Arrays.asList(
-              PackCodeQuestionnaireActionType.ENGLAND_INDIVIDUAL_QUESTIONNAIRE_PRINT.getPackCode(),
-              PackCodeQuestionnaireActionType.WALES_INDIVIDUAL_QUESTIONNAIRE_PRINT.getPackCode(),
-              PackCodeQuestionnaireActionType.WALES_WELSH_INDIVIDUAL_QUESTIONNAIRE_PRINT
-                  .getPackCode(),
-              PackCodeQuestionnaireActionType.NIRELAND_INDIVIDUAL_QUESTIONNAIRE_PRINT
-                  .getPackCode()));
-
+      new HashSet<>(Arrays.asList("P_OR_I1", "P_OR_I2", "P_OR_I2W", "P_OR_I4"));
   private static final Logger log = LoggerFactory.getLogger(FulfilmentRequestReceiver.class);
   private final RabbitTemplate rabbitTemplate;
   private final CaseClient caseClient;
@@ -86,12 +78,10 @@ public class FulfilmentRequestReceiver {
     PrintFileDto printFileDto =
         createAndPopulatePrintFileDto(fulfilmentCase, actionType.get(), event);
 
-    Optional<PackCodeQuestionnaireActionType> questionnaireType =
-        PackCodeQuestionnaireActionType.getFromPackCode(fulfilmentCode);
+    Optional<String> questionnaireType = determineQuestionnaireType(fulfilmentCode);
 
     if (questionnaireType.isPresent()) {
-      UacQidDTO uacQid =
-          caseClient.getUacQid(caseId, questionnaireType.get().getQuestionnaireType());
+      UacQidDTO uacQid = caseClient.getUacQid(caseId, questionnaireType.get());
       printFileDto.setQid(uacQid.getQid());
       printFileDto.setUac(uacQid.getUac());
     }
@@ -129,15 +119,18 @@ public class FulfilmentRequestReceiver {
   }
 
   private Optional<ActionType> determineActionType(String fulfilmentCode) {
-    Optional<PackCodeQuestionnaireActionType> packCodeQuestionnaireActionType =
-        PackCodeQuestionnaireActionType.getFromPackCode(fulfilmentCode);
-
-    if (packCodeQuestionnaireActionType.isPresent()) {
-      return Optional.of(packCodeQuestionnaireActionType.get().getActionType());
-    }
 
     // These are currently not added as Enums, as not known.
     switch (fulfilmentCode) {
+      case "P_OR_H1":
+      case "P_OR_H2":
+      case "P_OR_H2W":
+      case "P_OR_H4":
+      case "P_OR_HC1":
+      case "P_OR_HC2":
+      case "P_OR_HC2W":
+      case "P_OR_HC4":
+        return Optional.of(ActionType.P_OR_HX);
       case "P_LP_HL1":
       case "P_LP_HL2":
       case "P_LP_HL2W":
@@ -178,9 +171,35 @@ public class FulfilmentRequestReceiver {
       case "UACIT2W":
       case "UACIT4":
         return Optional.empty(); // Ignore SMS fulfilments
+      case "P_OR_I1":
+        return Optional.of(ActionType.P_OR_I1);
+      case "P_OR_I2":
+      case "P_OR_I2W":
+        return Optional.of(ActionType.P_OR_I2);
+      case "P_OR_I4":
+        return Optional.of(ActionType.P_OR_I4);
       default:
         log.with("fulfilmentCode", fulfilmentCode).warn("Unexpected fulfilment code received");
         return Optional.empty();
     }
+  }
+
+  static final Map<String, String> fulfilmentCodeToQuestionnaireType =
+      Map.ofEntries(
+          Map.entry("P_OR_H1", "1"),
+          Map.entry("P_OR_H2", "2"),
+          Map.entry("P_OR_H2W", "3"),
+          Map.entry("P_OR_H4", "4"),
+          Map.entry("P_OR_HC1", "11"),
+          Map.entry("P_OR_HC2", "12"),
+          Map.entry("P_OR_HC2W", "13"),
+          Map.entry("P_OR_HC4", "14"),
+          Map.entry("P_OR_I1", "21"),
+          Map.entry("P_OR_I2", "22"),
+          Map.entry("P_OR_I2W", "23"),
+          Map.entry("P_OR_I4", "24"));
+
+  private Optional<String> determineQuestionnaireType(String packCode) {
+    return Optional.ofNullable(fulfilmentCodeToQuestionnaireType.get(packCode));
   }
 }

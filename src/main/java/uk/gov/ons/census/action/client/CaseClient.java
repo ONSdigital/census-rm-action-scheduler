@@ -23,7 +23,6 @@ public class CaseClient {
     caseDetails.setCaseId(caseId);
     caseDetails.setQuestionnaireType(questionnaireType);
 
-    UacQidDTO uacQid = restTemplate.postForObject(url, caseDetails, UacQidDTO.class);
-    return uacQid;
+    return restTemplate.postForObject(url, caseDetails, UacQidDTO.class);
   }
 }
