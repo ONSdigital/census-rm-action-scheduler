@@ -4,6 +4,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.UacQidTuple;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
+import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 
 @Component
@@ -15,9 +16,9 @@ public class PrintFileDtoBuilder {
   }
 
   public PrintFileDto buildPrintFileDto(
-      Case selectedCase, String packCode, UUID batchUUID, String actionType) {
+      Case selectedCase, String packCode, UUID batchUUID, ActionType actionType) {
 
-    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(selectedCase, packCode);
+    UacQidTuple uacQidTuple = qidUacBuilder.getUacQidLinks(selectedCase, actionType);
 
     PrintFileDto printFileDto = new PrintFileDto();
     printFileDto.setUac(uacQidTuple.getUacQidLink().getUac());
@@ -36,7 +37,7 @@ public class PrintFileDtoBuilder {
     printFileDto.setPostcode(selectedCase.getPostcode());
     printFileDto.setBatchId(batchUUID.toString());
     printFileDto.setPackCode(packCode);
-    printFileDto.setActionType(actionType);
+    printFileDto.setActionType(actionType.toString());
     printFileDto.setFieldCoordinatorId(selectedCase.getFieldCoordinatorId());
 
     return printFileDto;

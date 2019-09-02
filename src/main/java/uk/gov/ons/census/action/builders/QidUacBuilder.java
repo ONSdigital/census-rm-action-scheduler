@@ -18,17 +18,16 @@ import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 public class QidUacBuilder {
   private static final Logger log = LoggerFactory.getLogger(QidUacBuilder.class);
 
-  private static final Set<String> packCodesRequiringNewUacQidPair =
+  private static final Set<ActionType> initialContactActionTypes =
       Set.of(
-          ActionType.P_RL_1RL1_1.name(),
-          ActionType.P_RL_1RL2B_1.name(),
-          ActionType.P_RL_1RL4.name(),
-          ActionType.P_RL_1RL1_2.name(),
-          ActionType.P_RL_1RL2B_2.name(),
-          ActionType.P_RL_2RL1_3a.name(),
-          ActionType.P_RL_2RL2B_3a.name());
-  private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE = 2;
-  private static final int NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE = 1;
+          ActionType.ICHHQE,
+          ActionType.ICHHQW,
+          ActionType.ICHHQN,
+          ActionType.ICL1E,
+          ActionType.ICL2W,
+          ActionType.ICL4N);
+  private static final int NUM_OF_UAC_QID_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE = 2;
+  private static final int NUM_OF_UAC_QID_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE = 1;
   private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";
   private static final String WALES_IN_WELSH_QUESTIONNAIRE_TYPE = "03";
   private static final String UNKNOWN_COUNTRY_ERROR = "Unknown Country";
@@ -44,52 +43,82 @@ public class QidUacBuilder {
     this.caseClient = caseClient;
   }
 
-  public UacQidTuple getUacQidLinks(Case linkedCase, String packCode) {
-    UacQidTuple uacQidTuple = new UacQidTuple();
+  public UacQidTuple getUacQidLinks(Case linkedCase, ActionType actionType) {
 
-    if (packCodeRequiresNewUacQidPair(packCode)) {
-      uacQidTuple.setUacQidLink(createNewUacQidPair(linkedCase));
-      return uacQidTuple;
+    if (isInitialContactActionType(actionType)) {
+      return fetchExistingUacQidPairsForAction(linkedCase, actionType);
+    } else {
+      return createNewUacQidPairsForAction(linkedCase, actionType);
     }
+  }
+
+  private UacQidTuple fetchExistingUacQidPairsForAction(Case linkedCase, ActionType actionType) {
 
     List<UacQidLink> uacQidLinks =
         uacQidLinkRepository.findByCaseId(linkedCase.getCaseId().toString());
 
     if (uacQidLinks == null || uacQidLinks.isEmpty()) {
-      throw new RuntimeException(); // TODO: How can we process this case without a UAC?
-    } else if (uacQidLinks.size() > NUM_OF_UAC_IAC_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE) {
-      if (isQuestionnaireWelsh(linkedCase.getTreatmentCode())
-          && uacQidLinks.size()
-              == NUM_OF_UAC_IAC_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE) {
-        uacQidTuple.setUacQidLink(
-            getSpecificUacQidLinkByQuestionnaireType(
-                uacQidLinks,
-                WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE,
-                WALES_IN_WELSH_QUESTIONNAIRE_TYPE));
-        uacQidTuple.setUacQidLinkWales(
-            Optional.ofNullable(
-                getSpecificUacQidLinkByQuestionnaireType(
-                    uacQidLinks,
-                    WALES_IN_WELSH_QUESTIONNAIRE_TYPE,
-                    WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE)));
-      } else {
-        throw new RuntimeException(); // TODO: How do we know which one to use?
-      }
-    } else if (!isQuestionnaireWelsh(linkedCase.getTreatmentCode())) {
-      // Implicitly from the logic above, there can only be one UAC/QID pair - the right one
-      uacQidTuple.setUacQidLink(uacQidLinks.get(0));
-    } else {
-      // Not enough UAC/QID links for a Welsh questionnaire
-      throw new RuntimeException();
-    }
+      throw new RuntimeException(); // We can't process this case with no UACs
 
+    } else if (!actionType.equals(ActionType.ICHHQW)
+        && isStateCorrectForSingleUacQidPair(linkedCase, uacQidLinks)) {
+      return getUacQidTupleWithSinglePair(uacQidLinks);
+
+    } else if (actionType.equals(ActionType.ICHHQW)
+        && isStateCorrectForSecondWelshUacQidPair(linkedCase, uacQidLinks)) {
+      return getUacQidTupleWithSecondWelshPair(uacQidLinks);
+
+    } else {
+      throw new RuntimeException(); // We can't process this case with the wrong number of UACs for
+      // it's treatment code
+    }
+  }
+
+  private boolean isStateCorrectForSingleUacQidPair(Case linkedCase, List<UacQidLink> uacQidLinks) {
+    return !isQuestionnaireWelsh(linkedCase.getTreatmentCode())
+        && uacQidLinks.size() == NUM_OF_UAC_QID_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE;
+  }
+
+  private boolean isStateCorrectForSecondWelshUacQidPair(
+      Case linkedCase, List<UacQidLink> uacQidLinks) {
+    return isQuestionnaireWelsh(linkedCase.getTreatmentCode())
+        && uacQidLinks.size()
+            == NUM_OF_UAC_QID_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE;
+  }
+
+  private UacQidTuple getUacQidTupleWithSinglePair(List<UacQidLink> uacQidLinks) {
+    UacQidTuple uacQidTuple = new UacQidTuple();
+    uacQidTuple.setUacQidLink(uacQidLinks.get(0));
     return uacQidTuple;
   }
 
-  private UacQidLink createNewUacQidPair(Case linkedCase) {
-    int questionnaireType = calculateQuestionnaireType(linkedCase.getTreatmentCode());
-    UacQidDTO newUacQidPair =
-        caseClient.getUacQid(linkedCase.getCaseId(), Integer.toString(questionnaireType));
+  private UacQidTuple getUacQidTupleWithSecondWelshPair(List<UacQidLink> uacQidLinks) {
+    UacQidTuple uacQidTuple = new UacQidTuple();
+    uacQidTuple.setUacQidLink(
+        getSpecificUacQidLinkByQuestionnaireType(
+            uacQidLinks, WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE, WALES_IN_WELSH_QUESTIONNAIRE_TYPE));
+    uacQidTuple.setUacQidLinkWales(
+        Optional.of(
+            getSpecificUacQidLinkByQuestionnaireType(
+                uacQidLinks,
+                WALES_IN_WELSH_QUESTIONNAIRE_TYPE,
+                WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE)));
+    return uacQidTuple;
+  }
+
+  private UacQidTuple createNewUacQidPairsForAction(Case linkedCase, ActionType actionType) {
+    UacQidTuple uacQidTuple = new UacQidTuple();
+    uacQidTuple.setUacQidLink(
+        createNewUacQidPair(linkedCase, calculateQuestionnaireType(linkedCase.getTreatmentCode())));
+    if (actionType.equals(ActionType.P_QU_H2)) {
+      uacQidTuple.setUacQidLinkWales(
+          Optional.of(createNewUacQidPair(linkedCase, WALES_IN_WELSH_QUESTIONNAIRE_TYPE)));
+    }
+    return uacQidTuple;
+  }
+
+  private UacQidLink createNewUacQidPair(Case linkedCase, String questionnaireType) {
+    UacQidDTO newUacQidPair = caseClient.getUacQid(linkedCase.getCaseId(), questionnaireType);
     UacQidLink newUacQidLink = new UacQidLink();
     newUacQidLink.setCaseId(linkedCase.getCaseId().toString());
     newUacQidLink.setQid(newUacQidPair.getQid());
@@ -120,11 +149,11 @@ public class QidUacBuilder {
     throw new RuntimeException(); // We can't find the one we wanted
   }
 
-  private boolean packCodeRequiresNewUacQidPair(String packCode) {
-    return packCodesRequiringNewUacQidPair.contains(packCode);
+  private boolean isInitialContactActionType(ActionType actionType) {
+    return initialContactActionTypes.contains(actionType);
   }
 
-  public static int calculateQuestionnaireType(String treatmentCode) {
+  public static String calculateQuestionnaireType(String treatmentCode) {
     String country = treatmentCode.substring(treatmentCode.length() - 1);
     if (!country.equals("E") && !country.equals("W") && !country.equals("N")) {
       log.with("treatment_code", treatmentCode).error(UNKNOWN_COUNTRY_ERROR);
@@ -134,29 +163,29 @@ public class QidUacBuilder {
     if (treatmentCode.startsWith("HH")) {
       switch (country) {
         case "E":
-          return 1;
+          return "01";
         case "W":
-          return 2;
+          return "02";
         case "N":
-          return 4;
+          return "04";
       }
     } else if (treatmentCode.startsWith("CI")) {
       switch (country) {
         case "E":
-          return 21;
+          return "21";
         case "W":
-          return 22;
+          return "22";
         case "N":
-          return 24;
+          return "24";
       }
     } else if (treatmentCode.startsWith("CE")) {
       switch (country) {
         case "E":
-          return 31;
+          return "31";
         case "W":
-          return 32;
+          return "32";
         case "N":
-          return 34;
+          return "34";
       }
     } else {
       log.with("treatment_code", treatmentCode).error(UNEXPECTED_CASE_TYPE_ERROR);

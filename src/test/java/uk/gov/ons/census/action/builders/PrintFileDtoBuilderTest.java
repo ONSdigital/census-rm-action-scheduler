@@ -2,7 +2,6 @@ package uk.gov.ons.census.action.builders;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -43,7 +42,7 @@ public class PrintFileDtoBuilderTest {
     // Given
     EasyRandom easyRandom = new EasyRandom();
     Case testCaze = easyRandom.nextObject(Case.class);
-    QidUacBuilder uacQidBuilder = getUpQidUacBuilder();
+    QidUacBuilder uacQidBuilder = getQidUacBuilder();
 
     PrintFileDto expectedPrintFileDto = getExpectedPrintFileDto(testCaze);
     PrintFileDtoBuilder printFileDtoBuilder = new PrintFileDtoBuilder(uacQidBuilder);
@@ -54,13 +53,13 @@ public class PrintFileDtoBuilderTest {
             testCaze,
             actionTypeToPackCodeMap.get(expectedActionType),
             BATCH_UUID,
-            "test_actiontype");
+            ActionType.ICHHQW);
 
     // Then
     assertThat(actualPrintFileDto).isEqualToComparingFieldByField(expectedPrintFileDto);
   }
 
-  private QidUacBuilder getUpQidUacBuilder() {
+  private QidUacBuilder getQidUacBuilder() {
     UacQidTuple uacQidTuple = new UacQidTuple();
     UacQidLink englishLink = new UacQidLink();
     englishLink.setUac(ENGLISH_UAC);
@@ -73,7 +72,8 @@ public class PrintFileDtoBuilderTest {
     uacQidTuple.setUacQidLinkWales(Optional.of(welshLink));
 
     QidUacBuilder qidUacBuilder = mock(QidUacBuilder.class);
-    when(qidUacBuilder.getUacQidLinks(any(Case.class), eq(P_IC_ICL1))).thenReturn(uacQidTuple);
+    when(qidUacBuilder.getUacQidLinks(any(Case.class), any(ActionType.class)))
+        .thenReturn(uacQidTuple);
 
     return qidUacBuilder;
   }
@@ -94,7 +94,7 @@ public class PrintFileDtoBuilderTest {
 
     printFileDto.setBatchId(BATCH_UUID.toString());
     printFileDto.setPackCode(actionTypeToPackCodeMap.get(expectedActionType));
-    printFileDto.setActionType("test_actiontype");
+    printFileDto.setActionType(ActionType.ICHHQW.toString());
     printFileDto.setFieldCoordinatorId(caze.getFieldCoordinatorId());
 
     return printFileDto;

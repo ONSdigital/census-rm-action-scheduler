@@ -28,6 +28,11 @@ public enum ActionType {
   P_RL_2RL1_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for England addresses
   P_RL_2RL2B_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for Wales addresses
 
+  // Reminder questionnaires
+  P_QU_H1(ActionHandler.PRINTER),
+  P_QU_H2(ActionHandler.PRINTER),
+  P_QU_H4(ActionHandler.PRINTER),
+
   // Ad hoc fulfilment requests
   P_OR_HX(ActionHandler.PRINTER), // Household questionnaires
   P_LP_HLX(ActionHandler.PRINTER), // Household questionnaires large print

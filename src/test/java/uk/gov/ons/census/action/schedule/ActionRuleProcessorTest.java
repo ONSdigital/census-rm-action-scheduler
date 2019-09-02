@@ -59,7 +59,7 @@ public class ActionRuleProcessorTest {
     List<Case> cases = getRandomCases(expectedCaseCount);
 
     when(printFileDtoBuilder.buildPrintFileDto(
-            any(Case.class), any(String.class), any(UUID.class), anyString()))
+            any(Case.class), any(String.class), any(UUID.class), eq(ActionType.ICL1E)))
         .thenReturn(new PrintFileDto());
 
     when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
@@ -146,7 +146,8 @@ public class ActionRuleProcessorTest {
 
     doThrow(RuntimeException.class)
         .when(printFileDtoBuilder)
-        .buildPrintFileDto(any(Case.class), any(String.class), any(UUID.class), anyString());
+        .buildPrintFileDto(
+            any(Case.class), any(String.class), any(UUID.class), eq(ActionType.ICL1E));
 
     // when
     ActionRuleProcessor actionRuleProcessor =
@@ -188,7 +189,7 @@ public class ActionRuleProcessorTest {
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
     when(printFileDtoBuilder.buildPrintFileDto(
-            any(Case.class), any(String.class), any(UUID.class), anyString()))
+            any(Case.class), any(String.class), any(UUID.class), eq(ActionType.ICL1E)))
         .thenReturn(new PrintFileDto());
 
     when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
