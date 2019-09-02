@@ -63,8 +63,11 @@ public class UndeliveredMailReceiver {
 
     Case caze = caseOpt.get();
 
-    if (caze.isAddressInvalid() || caze.isReceiptReceived() || caze.isRefusalReceived() ||
-        StringUtils.isEmpty(caze.getFieldCoordinatorId()) || "HI".equals(caze.getCaseType())) {
+    if (caze.isAddressInvalid()
+        || caze.isReceiptReceived()
+        || caze.isRefusalReceived()
+        || StringUtils.isEmpty(caze.getFieldCoordinatorId())
+        || "HI".equals(caze.getCaseType())) {
       return; // We want to ignore this case - don't send to Field
     }
 

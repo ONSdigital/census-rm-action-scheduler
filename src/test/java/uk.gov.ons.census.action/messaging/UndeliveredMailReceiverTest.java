@@ -61,8 +61,7 @@ public class UndeliveredMailReceiverTest {
     verify(caseRepository).findByCaseId(eq(testCaseId));
     verify(fieldworkFollowupBuilder)
         .buildFieldworkFollowup(eq(caze), eq("dummy"), eq("dummy"), eq(true));
-    verify(rabbitTemplate)
-        .convertAndSend(any(), eq("Action.Field.binding"), eq(fieldworkFollowup));
+    verify(rabbitTemplate).convertAndSend(any(), eq("Action.Field.binding"), eq(fieldworkFollowup));
   }
 
   @Test
@@ -83,7 +82,7 @@ public class UndeliveredMailReceiverTest {
     // Given
     when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(
-        eq(caze), eq("dummy"), eq("dummy"), eq(true)))
+            eq(caze), eq("dummy"), eq("dummy"), eq(true)))
         .thenReturn(fieldworkFollowup);
 
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
@@ -99,8 +98,7 @@ public class UndeliveredMailReceiverTest {
     verify(caseRepository).findById(eq(123));
     verify(fieldworkFollowupBuilder)
         .buildFieldworkFollowup(eq(caze), eq("dummy"), eq("dummy"), eq(true));
-    verify(rabbitTemplate)
-        .convertAndSend(any(), eq("Action.Field.binding"), eq(fieldworkFollowup));
+    verify(rabbitTemplate).convertAndSend(any(), eq("Action.Field.binding"), eq(fieldworkFollowup));
   }
 
   @Test
@@ -122,7 +120,7 @@ public class UndeliveredMailReceiverTest {
     // Given
     when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(
-        eq(caze), eq("dummy"), eq("dummy"), eq(true)))
+            eq(caze), eq("dummy"), eq("dummy"), eq(true)))
         .thenReturn(fieldworkFollowup);
 
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
@@ -157,7 +155,7 @@ public class UndeliveredMailReceiverTest {
     // Given
     when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(
-        eq(caze), eq("dummy"), eq("dummy"), eq(true)))
+            eq(caze), eq("dummy"), eq("dummy"), eq(true)))
         .thenReturn(fieldworkFollowup);
 
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
@@ -192,7 +190,7 @@ public class UndeliveredMailReceiverTest {
     // Given
     when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(
-        eq(caze), eq("dummy"), eq("dummy"), eq(true)))
+            eq(caze), eq("dummy"), eq("dummy"), eq(true)))
         .thenReturn(fieldworkFollowup);
 
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
@@ -227,7 +225,7 @@ public class UndeliveredMailReceiverTest {
     // Given
     when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(
-        eq(caze), eq("dummy"), eq("dummy"), eq(true)))
+            eq(caze), eq("dummy"), eq("dummy"), eq(true)))
         .thenReturn(fieldworkFollowup);
 
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
@@ -260,7 +258,7 @@ public class UndeliveredMailReceiverTest {
     // Given
     when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(
-        eq(caze), eq("dummy"), eq("dummy"), eq(true)))
+            eq(caze), eq("dummy"), eq("dummy"), eq(true)))
         .thenReturn(fieldworkFollowup);
 
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();

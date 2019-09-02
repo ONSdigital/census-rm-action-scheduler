@@ -1,43 +1,30 @@
 package uk.gov.ons.census.action.messaging;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.givenThat;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static uk.gov.ons.census.action.model.dto.EventType.UNDELIVERED_MAIL_REPORTED;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.io.IOException;
-import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.model.dto.Contact;
 import uk.gov.ons.census.action.model.dto.Event;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.FulfilmentInformation;
-import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
 import uk.gov.ons.census.action.model.dto.Payload;
-import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
-import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
@@ -84,14 +71,18 @@ public class UndeliveredMailReceiverIT {
     responseManagementEvent.getEvent().setType(UNDELIVERED_MAIL_REPORTED);
     responseManagementEvent.setPayload(new Payload());
     responseManagementEvent.getPayload().setFulfilmentInformation(new FulfilmentInformation());
-    responseManagementEvent.getPayload().getFulfilmentInformation().setQuestionnaireId(uacQidLink.getQid());
+    responseManagementEvent
+        .getPayload()
+        .getFulfilmentInformation()
+        .setQuestionnaireId(uacQidLink.getQid());
 
     // When
     rabbitQueueHelper.sendMessage(
         eventsExchange, "event.fulfilment.undelivered", responseManagementEvent);
 
     // Then
-    FieldworkFollowup actualFieldworkFollowup = checkExpectedFieldworkFollowupMessageReceived(outputQueue);
+    FieldworkFollowup actualFieldworkFollowup =
+        checkExpectedFieldworkFollowupMessageReceived(outputQueue);
     checkTheThings(actualFieldworkFollowup, caze);
   }
 
@@ -106,19 +97,23 @@ public class UndeliveredMailReceiverIT {
     responseManagementEvent.getEvent().setType(UNDELIVERED_MAIL_REPORTED);
     responseManagementEvent.setPayload(new Payload());
     responseManagementEvent.getPayload().setFulfilmentInformation(new FulfilmentInformation());
-    responseManagementEvent.getPayload().getFulfilmentInformation().setCaseRef(Integer.toString(caze.getCaseRef()));
+    responseManagementEvent
+        .getPayload()
+        .getFulfilmentInformation()
+        .setCaseRef(Integer.toString(caze.getCaseRef()));
 
     // When
     rabbitQueueHelper.sendMessage(
         eventsExchange, "event.fulfilment.undelivered", responseManagementEvent);
 
     // Then
-    FieldworkFollowup actualFieldworkFollowup = checkExpectedFieldworkFollowupMessageReceived(outputQueue);
+    FieldworkFollowup actualFieldworkFollowup =
+        checkExpectedFieldworkFollowupMessageReceived(outputQueue);
     checkTheThings(actualFieldworkFollowup, caze);
   }
 
-  private FieldworkFollowup checkExpectedFieldworkFollowupMessageReceived(BlockingQueue<String> queue)
-      throws InterruptedException, IOException {
+  private FieldworkFollowup checkExpectedFieldworkFollowupMessageReceived(
+      BlockingQueue<String> queue) throws InterruptedException, IOException {
     ObjectMapper objectMapper = new ObjectMapper();
     String actualMessage = queue.poll(20, TimeUnit.SECONDS);
     assertNotNull("Did not receive message before timeout", actualMessage);
