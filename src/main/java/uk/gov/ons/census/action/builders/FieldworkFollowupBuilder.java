@@ -2,13 +2,12 @@ package uk.gov.ons.census.action.builders;
 
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
-import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.Case;
 
 @Component
 public class FieldworkFollowupBuilder {
 
-  public FieldworkFollowup buildFieldworkFollowup(Case caze, ActionRule actionRule) {
+  public FieldworkFollowup buildFieldworkFollowup(Case caze, String actionPlan, String actionType) {
 
     FieldworkFollowup followup = new FieldworkFollowup();
     followup.setAddressLine1(caze.getAddressLine1());
@@ -24,8 +23,8 @@ public class FieldworkFollowupBuilder {
     followup.setArid(caze.getArid());
     followup.setLatitude(caze.getLatitude());
     followup.setLongitude(caze.getLongitude());
-    followup.setActionPlan(actionRule.getActionPlan().getId().toString());
-    followup.setActionType(actionRule.getActionType().toString());
+    followup.setActionPlan(actionPlan);
+    followup.setActionType(actionType);
     followup.setCaseId(caze.getCaseId().toString());
     followup.setCaseRef(Integer.toString(caze.getCaseRef()));
     followup.setAddressType(caze.getAddressType());

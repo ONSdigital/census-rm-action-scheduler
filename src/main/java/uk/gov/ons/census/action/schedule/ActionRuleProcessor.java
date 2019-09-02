@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.builders.FieldworkFollowupBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
+import uk.gov.ons.census.action.builders.RoutingKeyBuilder;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
@@ -39,8 +40,6 @@ import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
 public class ActionRuleProcessor {
   private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
   private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(50);
-  private static final String ROUTING_KEY_PREFIX = "Action.";
-  private static final String ROUTING_KEY_SUFFIX = ".binding";
 
   private final ActionRuleRepository actionRuleRepo;
   private final FieldworkFollowupBuilder fieldworkFollowupBuilder;
@@ -99,17 +98,10 @@ public class ActionRuleProcessor {
     }
   }
 
-  private String getRoutingKey(ActionRule triggeredActionRule) {
-    return String.format(
-        "%s%s%s",
-        ROUTING_KEY_PREFIX,
-        triggeredActionRule.getActionType().getHandler().getRoutingKey(),
-        ROUTING_KEY_SUFFIX);
-  }
-
   private void executePrinterCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     UUID batchId = UUID.randomUUID();
-    String routingKey = getRoutingKey(triggeredActionRule);
+    String routingKey =
+        RoutingKeyBuilder.getRoutingKey(triggeredActionRule.getActionType().getHandler());
 
     final String packCode =
         actionTypeToPackCodeMap.get(triggeredActionRule.getActionType().toString());
@@ -158,10 +150,15 @@ public class ActionRuleProcessor {
     cases.forEach(
         caze ->
             fieldworkFollowupBuilders.add(
-                () -> fieldworkFollowupBuilder.buildFieldworkFollowup(caze, triggeredActionRule)));
+                () ->
+                    fieldworkFollowupBuilder.buildFieldworkFollowup(
+                        caze,
+                        triggeredActionRule.getActionPlan().getId().toString(),
+                        triggeredActionRule.getActionType().name())));
 
     try {
-      final String routingKey = getRoutingKey(triggeredActionRule);
+      final String routingKey =
+          RoutingKeyBuilder.getRoutingKey(triggeredActionRule.getActionType().getHandler());
 
       List<Future<FieldworkFollowup>> results =
           EXECUTOR_SERVICE.invokeAll(fieldworkFollowupBuilders);
