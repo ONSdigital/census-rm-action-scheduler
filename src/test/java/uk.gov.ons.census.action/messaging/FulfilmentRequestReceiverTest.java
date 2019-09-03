@@ -39,9 +39,6 @@ public class FulfilmentRequestReceiverTest {
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
-  @Value("${queueconfig.outbound-printer-routing-key}")
-  private String outboundPrinterRoutingKey;
-
   private EasyRandom easyRandom = new EasyRandom();
 
   @Test
@@ -142,7 +139,7 @@ public class FulfilmentRequestReceiverTest {
     verify(rabbitTemplate)
         .convertAndSend(
             eq(outboundExchange),
-            eq(outboundPrinterRoutingKey),
+            eq("Action.Printer.binding"),
             printFileDtoArgumentCaptor.capture());
     PrintFileDto actualPrintFileDTO = printFileDtoArgumentCaptor.getValue();
     assertEquals(
