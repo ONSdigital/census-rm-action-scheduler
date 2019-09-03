@@ -73,7 +73,11 @@ public class UndeliveredMailReceiver {
 
     // FWMT do not need an action plan or action type, and they make no sense in this context
     FieldworkFollowup fieldworkFollowup =
-        fieldworkFollowupBuilder.buildFieldworkFollowup(caze, "dummy", "dummy", true);
+        fieldworkFollowupBuilder.buildFieldworkFollowup(caze, "dummy", "dummy");
+
+    // We need to force override of this, because Action Scheduler's copy of the case probably
+    // hasn't been updated yet - Case Processor is handling the message at exactly the same time.
+    fieldworkFollowup.setUndeliveredAsAddress(true);
 
     String routingKey = RoutingKeyBuilder.getRoutingKey(ActionHandler.FIELD);
     rabbitTemplate.convertAndSend(outboundExchange, routingKey, fieldworkFollowup);

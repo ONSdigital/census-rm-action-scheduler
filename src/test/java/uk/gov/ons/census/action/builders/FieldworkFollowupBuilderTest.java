@@ -27,10 +27,7 @@ public class FieldworkFollowupBuilderTest {
     FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder();
     FieldworkFollowup actualResult =
         underTest.buildFieldworkFollowup(
-            caze,
-            actionRule.getActionPlan().getId().toString(),
-            actionRule.getActionType().name(),
-            caze.isUndeliveredAsAddressed());
+            caze, actionRule.getActionPlan().getId().toString(), actionRule.getActionType().name());
 
     // Then
     assertThat(caze.getLatitude()).isEqualTo(actualResult.getLatitude());
@@ -49,10 +46,7 @@ public class FieldworkFollowupBuilderTest {
     FieldworkFollowupBuilder underTest = new FieldworkFollowupBuilder();
     FieldworkFollowup actualResult =
         underTest.buildFieldworkFollowup(
-            caze,
-            actionRule.getActionPlan().getId().toString(),
-            actionRule.getActionType().name(),
-            caze.isUndeliveredAsAddressed());
+            caze, actionRule.getActionPlan().getId().toString(), actionRule.getActionType().name());
 
     // Then
     assertThat(actualResult.getSurveyName()).isEqualTo("CENSUS");

@@ -7,8 +7,7 @@ import uk.gov.ons.census.action.model.entity.Case;
 @Component
 public class FieldworkFollowupBuilder {
 
-  public FieldworkFollowup buildFieldworkFollowup(
-      Case caze, String actionPlan, String actionType, boolean undeliveredAsAddressed) {
+  public FieldworkFollowup buildFieldworkFollowup(Case caze, String actionPlan, String actionType) {
 
     FieldworkFollowup followup = new FieldworkFollowup();
     followup.setAddressLine1(caze.getAddressLine1());
@@ -34,7 +33,7 @@ public class FieldworkFollowupBuilder {
     followup.setFieldOfficerId(caze.getFieldOfficerId());
     followup.setFieldCoordinatorId(caze.getFieldCoordinatorId());
     followup.setCeExpectedCapacity(caze.getCeExpectedCapacity());
-    followup.setUndeliveredAsAddress(undeliveredAsAddressed);
+    followup.setUndeliveredAsAddress(caze.isUndeliveredAsAddressed());
 
     // TODO: set surveyName, undeliveredAsAddress and blankQreReturned from caze
     followup.setSurveyName("CENSUS");

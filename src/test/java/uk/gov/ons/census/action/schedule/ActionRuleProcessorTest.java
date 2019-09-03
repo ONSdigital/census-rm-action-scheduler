@@ -100,8 +100,7 @@ public class ActionRuleProcessorTest {
 
     when(customCaseRepository.streamAll(any(Specification.class))).thenReturn(cases.stream());
 
-    when(fieldworkFollowupBuilder.buildFieldworkFollowup(
-            any(Case.class), anyString(), anyString(), anyBoolean()))
+    when(fieldworkFollowupBuilder.buildFieldworkFollowup(any(Case.class), anyString(), anyString()))
         .thenReturn(new FieldworkFollowup());
 
     when(printCaseSelectedBuilder.buildMessage(any(PrintFileDto.class), any(UUID.class)))
@@ -125,8 +124,7 @@ public class ActionRuleProcessorTest {
         .buildFieldworkFollowup(
             any(Case.class),
             eq(actionRule.getActionPlan().getId().toString()),
-            eq(actionRule.getActionType().name()),
-            anyBoolean());
+            eq(actionRule.getActionType().name()));
 
     ArgumentCaptor<ActionRule> actionRuleCaptor = ArgumentCaptor.forClass(ActionRule.class);
     verify(actionRuleRepo, times(1)).save(actionRuleCaptor.capture());

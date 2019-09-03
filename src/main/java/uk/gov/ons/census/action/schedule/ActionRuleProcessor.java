@@ -154,8 +154,7 @@ public class ActionRuleProcessor {
                     fieldworkFollowupBuilder.buildFieldworkFollowup(
                         caze,
                         triggeredActionRule.getActionPlan().getId().toString(),
-                        triggeredActionRule.getActionType().name(),
-                        caze.isUndeliveredAsAddressed())));
+                        triggeredActionRule.getActionType().name())));
 
     try {
       final String routingKey =
