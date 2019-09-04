@@ -188,10 +188,7 @@ public class FulfilmentRequestReceiverIT {
     UUID childCaseId = fulfillmentCase.getCaseId();
     ResponseManagementEvent actionFulfilmentEvent =
         getResponseManagementEvent(parentCaseId, PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND);
-    actionFulfilmentEvent
-        .getPayload()
-        .getFulfilmentRequest()
-        .setIndividualCaseId(childCaseId.toString());
+    actionFulfilmentEvent.getPayload().getFulfilmentRequest().setIndividualCaseId(childCaseId);
 
     String url = "/uacqid/create/";
     UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
@@ -228,10 +225,7 @@ public class FulfilmentRequestReceiverIT {
     UUID childCaseId = fulfillmentCase.getCaseId();
     ResponseManagementEvent actionFulfilmentEvent =
         getResponseManagementEvent(parentCaseId, PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND);
-    actionFulfilmentEvent
-        .getPayload()
-        .getFulfilmentRequest()
-        .setIndividualCaseId(childCaseId.toString());
+    actionFulfilmentEvent.getPayload().getFulfilmentRequest().setIndividualCaseId(childCaseId);
 
     String url = "/uacqid/create/";
     UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);

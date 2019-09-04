@@ -56,7 +56,7 @@ public class FulfilmentRequestReceiver {
     UUID caseId = event.getPayload().getFulfilmentRequest().getCaseId();
 
     if (individualResponseRequestCodes.contains(fulfilmentCode)) {
-      caseId = UUID.fromString(event.getPayload().getFulfilmentRequest().getIndividualCaseId());
+      caseId = event.getPayload().getFulfilmentRequest().getIndividualCaseId();
 
       // Here be dragons
 
@@ -69,7 +69,8 @@ public class FulfilmentRequestReceiver {
          */
         Thread.sleep(1000);
       } catch (InterruptedException e) {
-        throw new RuntimeException("sleep Exception, really");
+        // only happens on process shutdown"
+        throw new RuntimeException();
       }
     }
 

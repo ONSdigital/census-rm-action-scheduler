@@ -132,7 +132,7 @@ public class FulfilmentRequestReceiverTest {
     ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
     FulfilmentRequestDTO fulfilmentRequest = event.getPayload().getFulfilmentRequest();
     fulfilmentRequest.setFulfilmentCode(PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND);
-    fulfilmentRequest.setIndividualCaseId(TEST_INDIVIDUAL_CASE_ID.toString());
+    fulfilmentRequest.setIndividualCaseId(TEST_INDIVIDUAL_CASE_ID);
 
     // When
     underTest.receiveEvent(event);
@@ -173,7 +173,7 @@ public class FulfilmentRequestReceiverTest {
     ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
     FulfilmentRequestDTO fulfilmentRequest = event.getPayload().getFulfilmentRequest();
     fulfilmentRequest.setFulfilmentCode(fulfilmentCode);
-    fulfilmentRequest.setIndividualCaseId(TEST_INDIVIDUAL_CASE_ID.toString());
+    fulfilmentRequest.setIndividualCaseId(TEST_INDIVIDUAL_CASE_ID);
 
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
 

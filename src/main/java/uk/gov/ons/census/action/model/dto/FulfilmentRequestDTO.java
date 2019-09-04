@@ -13,5 +13,5 @@ public class FulfilmentRequestDTO {
   private Contact contact;
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String individualCaseId;
+  private UUID individualCaseId;
 }
