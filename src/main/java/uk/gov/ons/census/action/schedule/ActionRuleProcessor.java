@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.builders.FieldworkFollowupBuilder;
 import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
-import uk.gov.ons.census.action.builders.RoutingKeyBuilder;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
@@ -100,8 +99,7 @@ public class ActionRuleProcessor {
 
   private void executePrinterCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     UUID batchId = UUID.randomUUID();
-    String routingKey =
-        RoutingKeyBuilder.getRoutingKey(triggeredActionRule.getActionType().getHandler());
+    String routingKey = triggeredActionRule.getActionType().getHandler().getRoutingKey();
 
     final String packCode =
         actionTypeToPackCodeMap.get(triggeredActionRule.getActionType().toString());
@@ -157,8 +155,7 @@ public class ActionRuleProcessor {
                         triggeredActionRule.getActionType().name())));
 
     try {
-      final String routingKey =
-          RoutingKeyBuilder.getRoutingKey(triggeredActionRule.getActionType().getHandler());
+      final String routingKey = triggeredActionRule.getActionType().getHandler().getRoutingKey();
 
       List<Future<FieldworkFollowup>> results =
           EXECUTOR_SERVICE.invokeAll(fieldworkFollowupBuilders);

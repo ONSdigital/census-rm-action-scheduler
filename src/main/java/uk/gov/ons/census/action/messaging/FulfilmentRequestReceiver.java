@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.builders.RoutingKeyBuilder;
 import uk.gov.ons.census.action.client.CaseClient;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
@@ -60,8 +59,8 @@ public class FulfilmentRequestReceiver {
       printFileDto.setUac(uacQid.getUac());
     }
 
-    String routingKey = RoutingKeyBuilder.getRoutingKey(ActionHandler.PRINTER);
-    rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
+    rabbitTemplate.convertAndSend(
+        outboundExchange, ActionHandler.PRINTER.getRoutingKey(), printFileDto);
   }
 
   private Case fetchFulfilmentCase(ResponseManagementEvent event) {

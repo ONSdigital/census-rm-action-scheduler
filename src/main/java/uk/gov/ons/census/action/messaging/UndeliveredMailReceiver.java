@@ -9,7 +9,6 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import uk.gov.ons.census.action.builders.FieldworkFollowupBuilder;
-import uk.gov.ons.census.action.builders.RoutingKeyBuilder;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
@@ -79,7 +78,7 @@ public class UndeliveredMailReceiver {
     // hasn't been updated yet - Case Processor is handling the message at exactly the same time.
     fieldworkFollowup.setUndeliveredAsAddress(true);
 
-    String routingKey = RoutingKeyBuilder.getRoutingKey(ActionHandler.FIELD);
-    rabbitTemplate.convertAndSend(outboundExchange, routingKey, fieldworkFollowup);
+    rabbitTemplate.convertAndSend(
+        outboundExchange, ActionHandler.FIELD.getRoutingKey(), fieldworkFollowup);
   }
 }
