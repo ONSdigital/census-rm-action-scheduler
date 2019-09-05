@@ -8,4 +8,5 @@ public class Payload {
   private Uac uac;
   private PrintCaseSelected printCaseSelected;
   private FulfilmentRequestDTO fulfilmentRequest;
+  private FulfilmentInformation fulfilmentInformation;
 }

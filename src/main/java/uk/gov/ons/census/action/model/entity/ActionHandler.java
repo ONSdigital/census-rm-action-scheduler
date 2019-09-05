@@ -1,8 +1,8 @@
 package uk.gov.ons.census.action.model.entity;
 
 public enum ActionHandler {
-  PRINTER("Printer"),
-  FIELD("Field");
+  PRINTER("Action.Printer.binding"),
+  FIELD("Action.Field.binding");
 
   private final String routingKey;
 

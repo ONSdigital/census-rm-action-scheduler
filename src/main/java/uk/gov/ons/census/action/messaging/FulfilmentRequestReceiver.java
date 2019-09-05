@@ -17,6 +17,7 @@ import uk.gov.ons.census.action.client.CaseClient;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
+import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
@@ -32,9 +33,6 @@ public class FulfilmentRequestReceiver {
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
-
-  @Value("${queueconfig.outbound-printer-routing-key}")
-  private String outboundPrinterRoutingKey;
 
   public FulfilmentRequestReceiver(
       RabbitTemplate rabbitTemplate, CaseClient caseClient, CaseRepository caseRepository) {
@@ -87,7 +85,8 @@ public class FulfilmentRequestReceiver {
       printFileDto.setUac(uacQid.getUac());
     }
 
-    rabbitTemplate.convertAndSend(outboundExchange, outboundPrinterRoutingKey, printFileDto);
+    rabbitTemplate.convertAndSend(
+        outboundExchange, ActionHandler.PRINTER.getRoutingKey(), printFileDto);
   }
 
   private Case fetchFulfilmentCase(UUID caseId) {

@@ -33,6 +33,7 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FulfilmentRequestReceiverIT {
+  private static final String EVENTS_FULFILMENT_REQUEST_BINDING = "event.fulfilment.request";
   private static final String PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND = "P_OR_I1";
 
   @Value("${queueconfig.action-fulfilment-inbound-queue}")
@@ -40,9 +41,6 @@ public class FulfilmentRequestReceiverIT {
 
   @Value("${queueconfig.events-exchange}")
   private String eventsExchange;
-
-  @Value("${queueconfig.events-fulfilment-request-binding}")
-  private String eventsFulfilmentRequestBinding;
 
   @Value("${queueconfig.outbound-printer-queue}")
   private String outboundPrinterQueue;
@@ -85,7 +83,7 @@ public class FulfilmentRequestReceiverIT {
 
     // When
     rabbitQueueHelper.sendMessage(
-        eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
+        eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
 
     // Then
     PrintFileDto actualPrintFileDto =
@@ -118,7 +116,7 @@ public class FulfilmentRequestReceiverIT {
 
     // When
     rabbitQueueHelper.sendMessage(
-        eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
+        eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
 
     // Then
     PrintFileDto actualPrintFileDto =
@@ -141,7 +139,7 @@ public class FulfilmentRequestReceiverIT {
 
     // When
     rabbitQueueHelper.sendMessage(
-        eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
+        eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
 
     // Then
     PrintFileDto actualPrintFileDto =
@@ -166,7 +164,7 @@ public class FulfilmentRequestReceiverIT {
 
     // When
     rabbitQueueHelper.sendMessage(
-        eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
+        eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
 
     PrintFileDto actualPrintFileDto =
         rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
@@ -202,7 +200,7 @@ public class FulfilmentRequestReceiverIT {
                     .withBody(returnJson)));
 
     rabbitQueueHelper.sendMessage(
-        eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
+        eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
 
     PrintFileDto actualPrintFileDto =
         rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
@@ -239,7 +237,7 @@ public class FulfilmentRequestReceiverIT {
                     .withBody(returnJson)));
 
     rabbitQueueHelper.sendMessage(
-        eventsExchange, eventsFulfilmentRequestBinding, actionFulfilmentEvent);
+        eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
 
     rabbitQueueHelper.checkNoMessagesSent(outputQueue);
 
