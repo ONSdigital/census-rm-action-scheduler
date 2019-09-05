@@ -37,7 +37,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.messaging.RabbitQueueHelper;
+import uk.gov.ons.census.action.model.dto.EventType;
+import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
+import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
@@ -58,6 +61,12 @@ public class ActionRuleProcessorIT {
 
   @Value("${queueconfig.outbound-printer-queue}")
   private String outboundPrinterQueue;
+
+  @Value("${queueconfig.outbound-field-queue}")
+  private String outboundFieldQueue;
+
+  @Value("${queueconfig.action-case-queue}")
+  private String actionCaseQueue;
 
   @Autowired private RabbitQueueHelper rabbitQueueHelper;
   @Autowired private CaseRepository caseRepository;
@@ -80,6 +89,8 @@ public class ActionRuleProcessorIT {
   @Transactional
   public void setUp() {
     rabbitQueueHelper.purgeQueue(outboundPrinterQueue);
+    rabbitQueueHelper.purgeQueue(outboundFieldQueue);
+    rabbitQueueHelper.purgeQueue(actionCaseQueue);
     caseRepository.deleteAllInBatch();
     actionRuleRepository.deleteAllInBatch();
     actionPlanRepository.deleteAll();
@@ -198,6 +209,37 @@ public class ActionRuleProcessorIT {
             "batchQuantity",
             "packCode",
             "actionType");
+  }
+
+  @Test
+  public void testFieldworkActionRule() throws IOException, InterruptedException {
+    // Given
+    BlockingQueue<String> fieldQueue = rabbitQueueHelper.listen(outboundFieldQueue);
+    BlockingQueue<String> caseSelectedEventQueue = rabbitQueueHelper.listen(actionCaseQueue);
+
+    ActionPlan actionPlan = setUpActionPlan();
+    Case randomCase = setUpCase(actionPlan);
+    ActionRule actionRule = setUpActionRule(ActionType.FF2QE, actionPlan);
+
+    // When the action plan triggers
+    String actualMessage = fieldQueue.poll(20, TimeUnit.SECONDS);
+    String actualActionToCaseMessage = caseSelectedEventQueue.poll(20, TimeUnit.SECONDS);
+
+    // Then
+    assertThat(actualMessage).isNotNull();
+    FieldworkFollowup actualFieldworkFollowup =
+        objectMapper.readValue(actualMessage, FieldworkFollowup.class);
+    assertThat(actualFieldworkFollowup.getCaseRef())
+        .isEqualTo(Integer.toString(randomCase.getCaseRef()));
+
+    assertThat(actualActionToCaseMessage).isNotNull();
+    ResponseManagementEvent actualRmEvent =
+        objectMapper.readValue(actualActionToCaseMessage, ResponseManagementEvent.class);
+    assertThat(actualRmEvent.getEvent().getType()).isEqualTo(EventType.FIELD_CASE_SELECTED);
+    assertThat(actualRmEvent.getPayload().getFieldCaseSelected().getCaseRef())
+        .isEqualTo(randomCase.getCaseRef());
+    assertThat(actualRmEvent.getPayload().getFieldCaseSelected().getActionRuleId())
+        .isEqualTo(actionRule.getId().toString());
   }
 
   private UacQidDTO stubCreateUacQid() throws JsonProcessingException {

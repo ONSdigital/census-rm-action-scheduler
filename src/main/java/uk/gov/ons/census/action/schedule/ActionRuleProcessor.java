@@ -22,8 +22,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.census.action.builders.CaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.FieldworkFollowupBuilder;
-import uk.gov.ons.census.action.builders.PrintCaseSelectedBuilder;
 import uk.gov.ons.census.action.builders.PrintFileDtoBuilder;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
@@ -43,7 +43,7 @@ public class ActionRuleProcessor {
   private final ActionRuleRepository actionRuleRepo;
   private final FieldworkFollowupBuilder fieldworkFollowupBuilder;
   private final PrintFileDtoBuilder printFileDtoBuilder;
-  private final PrintCaseSelectedBuilder printCaseSelectedBuilder;
+  private final CaseSelectedBuilder caseSelectedBuilder;
   private final RabbitTemplate rabbitTemplate;
   private final CustomCaseRepository customCaseRepository;
 
@@ -57,13 +57,13 @@ public class ActionRuleProcessor {
       ActionRuleRepository actionRuleRepo,
       FieldworkFollowupBuilder fieldworkFollowupBuilder,
       PrintFileDtoBuilder printFileDtoBuilder,
-      PrintCaseSelectedBuilder printCaseSelectedBuilder,
+      CaseSelectedBuilder caseSelectedBuilder,
       RabbitTemplate rabbitTemplate,
       CustomCaseRepository customCaseRepository) {
     this.actionRuleRepo = actionRuleRepo;
     this.fieldworkFollowupBuilder = fieldworkFollowupBuilder;
     this.printFileDtoBuilder = printFileDtoBuilder;
-    this.printCaseSelectedBuilder = printCaseSelectedBuilder;
+    this.caseSelectedBuilder = caseSelectedBuilder;
     this.rabbitTemplate = rabbitTemplate;
     this.customCaseRepository = customCaseRepository;
   }
@@ -128,7 +128,7 @@ public class ActionRuleProcessor {
         rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
 
         ResponseManagementEvent printCaseSelected =
-            printCaseSelectedBuilder.buildMessage(printFileDto, triggeredActionRule.getId());
+            caseSelectedBuilder.buildPrintMessage(printFileDto, triggeredActionRule.getId());
 
         rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
@@ -163,8 +163,15 @@ public class ActionRuleProcessor {
       log.info("About to send {} field action messages", results.size());
       int messagesSent = 0;
       for (Future<FieldworkFollowup> result : results) {
+        FieldworkFollowup fieldworkFollowup = result.get();
+        rabbitTemplate.convertAndSend(outboundExchange, routingKey, fieldworkFollowup);
 
-        rabbitTemplate.convertAndSend(outboundExchange, routingKey, result.get());
+        ResponseManagementEvent fieldCaseSelected =
+            caseSelectedBuilder.buildFieldMessage(
+                fieldworkFollowup.getCaseRef(), triggeredActionRule.getId());
+
+        rabbitTemplate.convertAndSend(actionCaseExchange, "", fieldCaseSelected);
+
         if (messagesSent++ % 1000 == 0) {
           log.info("Finished sending, sent {} field action messages", messagesSent - 1);
         }
