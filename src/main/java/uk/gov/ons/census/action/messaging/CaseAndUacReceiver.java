@@ -18,14 +18,15 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @MessageEndpoint
-public class EventReceiver {
-  private static final Logger log = LoggerFactory.getLogger(EventReceiver.class);
+public class CaseAndUacReceiver {
+  private static final Logger log = LoggerFactory.getLogger(CaseAndUacReceiver.class);
   private static final String CASE_NOT_FOUND_ERROR = "Failed to find case by case id '%s'";
 
   private final CaseRepository caseRepository;
   private final UacQidLinkRepository uacQidLinkRepository;
 
-  public EventReceiver(CaseRepository caseRepository, UacQidLinkRepository uacQidLinkRepository) {
+  public CaseAndUacReceiver(
+      CaseRepository caseRepository, UacQidLinkRepository uacQidLinkRepository) {
     this.caseRepository = caseRepository;
     this.uacQidLinkRepository = uacQidLinkRepository;
   }
@@ -82,6 +83,7 @@ public class EventReceiver {
     caseDetails.setLongitude(collectionCase.getAddress().getLongitude());
     caseDetails.setUprn(collectionCase.getAddress().getUprn());
     caseDetails.setRegion(collectionCase.getAddress().getRegion());
+    // Nope don't add new stuff here... look at the comment below...
 
     // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
     caseDetails.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
@@ -106,6 +108,8 @@ public class EventReceiver {
     caseDetails.setReceiptReceived(collectionCase.getReceiptReceived());
     caseDetails.setRefusalReceived(collectionCase.getRefusalReceived());
     caseDetails.setAddressInvalid(collectionCase.getAddressInvalid());
+    caseDetails.setUndeliveredAsAddressed(collectionCase.getUndeliveredAsAddressed());
+    // Yep. Here is a good place to add new stuff.
   }
 
   private void processUacUpdated(Uac uac) {

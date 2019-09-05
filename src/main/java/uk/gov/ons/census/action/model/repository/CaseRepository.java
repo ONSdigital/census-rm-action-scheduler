@@ -8,6 +8,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import uk.gov.ons.census.action.model.entity.Case;
 
 @RestResource(exported = false)
-public interface CaseRepository extends JpaRepository<Case, UUID>, JpaSpecificationExecutor<Case> {
+public interface CaseRepository
+    extends JpaRepository<Case, Integer>, JpaSpecificationExecutor<Case> {
   Optional<Case> findByCaseId(UUID caseId);
 }

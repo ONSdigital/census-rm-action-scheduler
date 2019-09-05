@@ -1,7 +1,13 @@
 package uk.gov.ons.census.action.messaging;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -59,5 +65,19 @@ public class RabbitQueueHelper {
       backoff = @Backoff(delay = 5000))
   public void purgeQueue(String queueName) {
     amqpAdmin.purgeQueue(queueName);
+  }
+
+  public <T> T checkExpectedMessageReceived(BlockingQueue<String> queue, Class<T> theClass)
+      throws InterruptedException, IOException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    String actualMessage = queue.poll(10, TimeUnit.SECONDS);
+    assertNotNull("Did not receive message before timeout", actualMessage);
+
+    return objectMapper.readValue(actualMessage, theClass);
+  }
+
+  public void checkNoMessagesSent(BlockingQueue<String> queue) throws InterruptedException {
+    String actualMessage = queue.poll(10, TimeUnit.SECONDS);
+    assertNull(actualMessage);
   }
 }

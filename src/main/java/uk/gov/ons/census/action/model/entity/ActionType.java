@@ -36,7 +36,9 @@ public enum ActionType {
   // Ad hoc fulfilment requests
   P_OR_HX(ActionHandler.PRINTER), // Household questionnaires
   P_LP_HLX(ActionHandler.PRINTER), // Household questionnaires large print
-  P_TB_TBX(ActionHandler.PRINTER); // Household translation booklets
+  P_TB_TBX(ActionHandler.PRINTER), // Household translation booklets
+
+  P_OR_IX(ActionHandler.PRINTER);
 
   private final ActionHandler handler;
 

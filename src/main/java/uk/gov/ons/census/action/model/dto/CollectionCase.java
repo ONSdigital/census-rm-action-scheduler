@@ -27,4 +27,5 @@ public class CollectionCase {
   private Boolean receiptReceived;
   private Boolean refusalReceived;
   private Boolean addressInvalid;
+  private Boolean undeliveredAsAddressed;
 }

@@ -1,18 +1,13 @@
 package uk.gov.ons.census.action.messaging;
 
-import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.Assert.assertNotNull;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.io.StringReader;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +38,7 @@ import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @RunWith(SpringJUnit4ClassRunner.class)
-public class ConsumeAndPublishIT {
+public class CaseAndUacReceiverIT {
   private static final int DELAY_ACTION_BY_SECONDS = 5;
 
   @Value("${queueconfig.inbound-queue}")
@@ -112,7 +107,8 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
+    PrintFileDto printFileDto =
+        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
 
     assertThat(printFileDto.getAddressLine1())
         .isEqualTo(
@@ -147,7 +143,8 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    FieldworkFollowup followup = checkExpectedFieldMessageReceived(outputQueue);
+    FieldworkFollowup followup =
+        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, FieldworkFollowup.class);
 
     assertThat(followup.getActionPlan()).isEqualTo(actionPlan.getId().toString());
     assertThat(followup.getCaseId())
@@ -183,7 +180,7 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    checkExpectedMessageNotReceived(outputQueue);
+    rabbitQueueHelper.checkNoMessagesSent(outputQueue);
   }
 
   @Test
@@ -205,7 +202,7 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
 
     // THEN
-    checkExpectedMessageNotReceived(outputQueue);
+    rabbitQueueHelper.checkNoMessagesSent(outputQueue);
 
     actionRule = actionRuleRepository.findById(actionRule.getId()).get();
     assertThat(actionRule.getHasTriggered()).isEqualTo(false);
@@ -219,7 +216,8 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
 
     // THEN
-    PrintFileDto printFileDto = checkExpectedPrintFileDtoMessageReceived(outputQueue);
+    PrintFileDto printFileDto =
+        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
 
     actionRule = actionRuleRepository.findById(actionRule.getId()).get();
 
@@ -261,7 +259,7 @@ public class ConsumeAndPublishIT {
     rabbitQueueHelper.sendMessage(inboundQueue, badCaseCreatedEvent);
 
     // THEN
-    checkExpectedMessageNotReceived(outputQueue);
+    rabbitQueueHelper.checkNoMessagesSent(outputQueue);
   }
 
   private Uac getUac(ResponseManagementEvent caseCreatedEvent) {
@@ -276,32 +274,6 @@ public class ConsumeAndPublishIT {
     actionPlan.setDescription(desc);
     actionPlan.setId(UUID.randomUUID());
     return actionPlan;
-  }
-
-  private void checkExpectedMessageNotReceived(BlockingQueue<String> queue)
-      throws InterruptedException {
-    String actualMessage = queue.poll(10, TimeUnit.SECONDS);
-    assertNull("Received Message, expected none", actualMessage);
-  }
-
-  private PrintFileDto checkExpectedPrintFileDtoMessageReceived(BlockingQueue<String> queue)
-      throws InterruptedException, IOException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    String actualMessage = queue.poll(20, TimeUnit.SECONDS);
-    assertNotNull("Did not receive message before timeout", actualMessage);
-
-    return objectMapper.readValue(actualMessage, PrintFileDto.class);
-  }
-
-  private FieldworkFollowup checkExpectedFieldMessageReceived(BlockingQueue<String> queue)
-      throws InterruptedException, IOException {
-    String actualMessage = queue.poll(20, TimeUnit.SECONDS);
-    assertNotNull("Did not receive message before timeout", actualMessage);
-
-    ObjectMapper objectMapper = new ObjectMapper();
-
-    StringReader reader = new StringReader(actualMessage);
-    return objectMapper.readValue(reader, FieldworkFollowup.class);
   }
 
   private ResponseManagementEvent getResponseManagementEvent(String actionPlanId) {
