@@ -20,16 +20,18 @@ import uk.gov.ons.census.action.model.entity.CaseState;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
+import uk.gov.ons.census.action.service.FulfilmentRequestService;
 
 public class CaseAndUacReceiverTest {
   private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final UacQidLinkRepository uacQidLinkRepository = mock(UacQidLinkRepository.class);
+  private final FulfilmentRequestService fulfilmentRequestService = mock(FulfilmentRequestService.class);
 
   @Test
   public void testCaseCreated() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
-        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository);
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
 
@@ -49,7 +51,7 @@ public class CaseAndUacReceiverTest {
   public void testCaseUpdate() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
-        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository);
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.UAC_UPDATED);
 

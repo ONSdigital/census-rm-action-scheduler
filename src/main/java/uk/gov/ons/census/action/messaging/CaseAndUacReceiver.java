@@ -11,11 +11,13 @@ import uk.gov.ons.census.action.model.dto.CollectionCase;
 import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
+import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.entity.CaseState;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
+import uk.gov.ons.census.action.service.FulfilmentRequestService;
 
 @MessageEndpoint
 public class CaseAndUacReceiver {
@@ -24,18 +26,32 @@ public class CaseAndUacReceiver {
 
   private final CaseRepository caseRepository;
   private final UacQidLinkRepository uacQidLinkRepository;
+  private final FulfilmentRequestService fulfilmentRequestService;
 
   public CaseAndUacReceiver(
-      CaseRepository caseRepository, UacQidLinkRepository uacQidLinkRepository) {
+      CaseRepository caseRepository,
+      UacQidLinkRepository uacQidLinkRepository,
+      FulfilmentRequestService fulfilmentRequestService) {
     this.caseRepository = caseRepository;
     this.uacQidLinkRepository = uacQidLinkRepository;
+    this.fulfilmentRequestService = fulfilmentRequestService;
   }
 
   @Transactional
   @ServiceActivator(inputChannel = "caseCreatedInputChannel")
   public void receiveEvent(ResponseManagementEvent responseManagementEvent) {
     if (responseManagementEvent.getEvent().getType() == EventType.CASE_CREATED) {
-      processCaseCreatedEvent(responseManagementEvent.getPayload().getCollectionCase());
+      Case caze = processCaseCreatedEvent(responseManagementEvent.getPayload().getCollectionCase());
+
+      // We can get sent a fulfilment request along with the case, which we need to process
+      if (responseManagementEvent.getPayload().getFulfilmentRequest() != null) {
+        ActionType actionType =
+            fulfilmentRequestService.determineActionType(
+                responseManagementEvent.getPayload().getFulfilmentRequest().getFulfilmentCode());
+
+        fulfilmentRequestService.processEvent(
+            responseManagementEvent.getPayload().getFulfilmentRequest(), caze, actionType);
+      }
     } else if (responseManagementEvent.getEvent().getType() == EventType.UAC_UPDATED) {
       processUacUpdated(responseManagementEvent.getPayload().getUac());
     } else if (responseManagementEvent.getEvent().getType() == EventType.CASE_UPDATED) {
@@ -47,10 +63,10 @@ public class CaseAndUacReceiver {
     }
   }
 
-  private void processCaseCreatedEvent(CollectionCase collectionCase) {
+  private Case processCaseCreatedEvent(CollectionCase collectionCase) {
     Case newCase = new Case();
     setCaseDetails(collectionCase, newCase);
-    caseRepository.save(newCase);
+    return caseRepository.save(newCase);
   }
 
   private void processCaseUpdatedEvent(CollectionCase collectionCase) {
