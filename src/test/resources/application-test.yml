@@ -5,6 +5,9 @@ spring:
   rabbitmq:
     port: 35672
 
+queueconfig:
+  action-case-queue: action.events
+
 iacservice:
   connection:
     port: 18121
