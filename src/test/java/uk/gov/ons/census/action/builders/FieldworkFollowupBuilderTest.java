@@ -66,7 +66,7 @@ public class FieldworkFollowupBuilderTest {
     ActionPlan actionPlan = easyRandom.nextObject(ActionPlan.class);
     ActionRule actionRule = new ActionRule();
     actionRule.setActionPlan(actionPlan);
-    actionRule.setActionType(ActionType.FF2QE);
+    actionRule.setActionType(ActionType.FIELD);
     return actionRule;
   }
 }

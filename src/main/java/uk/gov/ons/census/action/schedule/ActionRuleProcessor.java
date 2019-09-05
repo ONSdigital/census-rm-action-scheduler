@@ -155,10 +155,13 @@ public class ActionRuleProcessor {
 
   private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     List<Callable<FieldworkFollowup>> fieldworkFollowupBuilders = new LinkedList<>();
+
     cases.forEach(
         caze ->
             fieldworkFollowupBuilders.add(
                 () -> fieldworkFollowupBuilder.buildFieldworkFollowup(caze, triggeredActionRule)));
+
+    log.with("Triggered action rule", triggeredActionRule);
 
     try {
       final String routingKey = getRoutingKey(triggeredActionRule);

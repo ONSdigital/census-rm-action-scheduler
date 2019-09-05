@@ -93,7 +93,7 @@ public class ActionRuleProcessorTest {
   @Test
   public void testExecuteCasesField() {
     // Given
-    ActionRule actionRule = setUpActionRule(ActionType.FF2QE);
+    ActionRule actionRule = setUpActionRule(ActionType.FIELD);
     final int expectedCaseCount = 50;
 
     List<Case> cases = getRandomCases(expectedCaseCount);
