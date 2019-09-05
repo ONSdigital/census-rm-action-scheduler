@@ -16,19 +16,9 @@ import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 @Component
 public class CaseSelectedBuilder {
   public ResponseManagementEvent buildPrintMessage(PrintFileDto printFileDto, UUID actionRuleId) {
-    ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
-    Event event = new Event();
-    responseManagementEvent.setEvent(event);
-    Payload payload = new Payload();
-    responseManagementEvent.setPayload(payload);
+    ResponseManagementEvent responseManagementEvent = buildEventWithoutPayload(EventType.PRINT_CASE_SELECTED);
     PrintCaseSelected printCaseSelected = new PrintCaseSelected();
-    payload.setPrintCaseSelected(printCaseSelected);
-
-    event.setType(EventType.PRINT_CASE_SELECTED);
-    event.setSource("ACTION_SCHEDULER");
-    event.setChannel("RM");
-    event.setDateTime(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now(ZoneId.of("UTC"))));
-    event.setTransactionId(UUID.randomUUID().toString());
+    responseManagementEvent.getPayload().setPrintCaseSelected(printCaseSelected);
 
     printCaseSelected.setActionRuleId(actionRuleId.toString());
     printCaseSelected.setBatchId(printFileDto.getBatchId());
@@ -39,22 +29,28 @@ public class CaseSelectedBuilder {
   }
 
   public ResponseManagementEvent buildFieldMessage(String caseRef, UUID actionRuleId) {
+    ResponseManagementEvent responseManagementEvent = buildEventWithoutPayload(EventType.PRINT_CASE_SELECTED);
+    FieldCaseSelected fieldCaseSelected = new FieldCaseSelected();
+    responseManagementEvent.getPayload().setFieldCaseSelected(fieldCaseSelected);
+
+    fieldCaseSelected.setActionRuleId(actionRuleId.toString());
+    fieldCaseSelected.setCaseRef(Integer.parseInt(caseRef));
+
+    return responseManagementEvent;
+  }
+
+  private ResponseManagementEvent buildEventWithoutPayload(EventType eventType) {
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
     Event event = new Event();
     responseManagementEvent.setEvent(event);
     Payload payload = new Payload();
     responseManagementEvent.setPayload(payload);
-    FieldCaseSelected fieldCaseSelected = new FieldCaseSelected();
-    payload.setFieldCaseSelected(fieldCaseSelected);
 
-    event.setType(EventType.FIELD_CASE_SELECTED);
+    event.setType(eventType);
     event.setSource("ACTION_SCHEDULER");
     event.setChannel("RM");
     event.setDateTime(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now(ZoneId.of("UTC"))));
     event.setTransactionId(UUID.randomUUID().toString());
-
-    fieldCaseSelected.setActionRuleId(actionRuleId.toString());
-    fieldCaseSelected.setCaseRef(Integer.parseInt(caseRef));
 
     return responseManagementEvent;
   }
