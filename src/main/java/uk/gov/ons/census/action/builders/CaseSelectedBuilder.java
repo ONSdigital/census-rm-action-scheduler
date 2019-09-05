@@ -31,7 +31,7 @@ public class CaseSelectedBuilder {
 
   public ResponseManagementEvent buildFieldMessage(String caseRef, UUID actionRuleId) {
     ResponseManagementEvent responseManagementEvent =
-        buildEventWithoutPayload(EventType.PRINT_CASE_SELECTED);
+        buildEventWithoutPayload(EventType.FIELD_CASE_SELECTED);
     FieldCaseSelected fieldCaseSelected = new FieldCaseSelected();
     responseManagementEvent.getPayload().setFieldCaseSelected(fieldCaseSelected);
 
