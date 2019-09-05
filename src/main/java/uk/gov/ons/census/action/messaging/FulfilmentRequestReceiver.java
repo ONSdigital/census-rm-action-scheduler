@@ -2,8 +2,11 @@ package uk.gov.ons.census.action.messaging;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +23,8 @@ import uk.gov.ons.census.action.model.repository.CaseRepository;
 
 @MessageEndpoint
 public class FulfilmentRequestReceiver {
+  private static final Set<String> individualResponseRequestCodes =
+      new HashSet<>(Arrays.asList("P_OR_I1", "P_OR_I2", "P_OR_I2W", "P_OR_I4"));
   private static final Logger log = LoggerFactory.getLogger(FulfilmentRequestReceiver.class);
   private final RabbitTemplate rabbitTemplate;
   private final CaseClient caseClient;
@@ -41,7 +46,6 @@ public class FulfilmentRequestReceiver {
   @Transactional
   @ServiceActivator(inputChannel = "actionFulfilmentInputChannel")
   public void receiveEvent(ResponseManagementEvent event) {
-    Case fulfilmentCase = fetchFulfilmentCase(event);
     String fulfilmentCode = event.getPayload().getFulfilmentRequest().getFulfilmentCode();
 
     Optional<ActionType> actionType = determineActionType(fulfilmentCode);
@@ -49,14 +53,36 @@ public class FulfilmentRequestReceiver {
       return;
     }
 
+    UUID caseId = event.getPayload().getFulfilmentRequest().getCaseId();
+
+    if (individualResponseRequestCodes.contains(fulfilmentCode)) {
+      caseId = event.getPayload().getFulfilmentRequest().getIndividualCaseId();
+
+      // Here be dragons
+
+      try {
+        /*
+        Case processor and action scheduler ingest this message at the same time.
+        While case processor is creating the case we expect this to throw an exception
+        as the case will probably not exist the first time the case is looked for.
+        The sleep will reduce excessive logging.
+         */
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        // only happens on process shutdown"
+        throw new RuntimeException();
+      }
+    }
+
+    Case fulfilmentCase = fetchFulfilmentCase(caseId);
+
     PrintFileDto printFileDto =
         createAndPopulatePrintFileDto(fulfilmentCase, actionType.get(), event);
-    Optional<Integer> questionnaireType =
-        determineQuestionnaireType(event.getPayload().getFulfilmentRequest().getFulfilmentCode());
+
+    Optional<String> questionnaireType = determineQuestionnaireType(fulfilmentCode);
 
     if (questionnaireType.isPresent()) {
-      UacQidDTO uacQid =
-          caseClient.getUacQid(fulfilmentCase.getCaseId(), questionnaireType.get().toString());
+      UacQidDTO uacQid = caseClient.getUacQid(caseId, questionnaireType.get());
       printFileDto.setQid(uacQid.getQid());
       printFileDto.setUac(uacQid.getUac());
     }
@@ -64,8 +90,7 @@ public class FulfilmentRequestReceiver {
     rabbitTemplate.convertAndSend(outboundExchange, outboundPrinterRoutingKey, printFileDto);
   }
 
-  private Case fetchFulfilmentCase(ResponseManagementEvent event) {
-    UUID caseId = event.getPayload().getFulfilmentRequest().getCaseId();
+  private Case fetchFulfilmentCase(UUID caseId) {
     Optional<Case> fulfilmentCase = caseRepository.findByCaseId(caseId);
     if (fulfilmentCase.isEmpty()) {
       log.with("caseId", caseId).error("Cannot find Case for fulfilment request.");
@@ -95,6 +120,8 @@ public class FulfilmentRequestReceiver {
   }
 
   private Optional<ActionType> determineActionType(String fulfilmentCode) {
+
+    // These are currently not added as Enums, as not known.
     switch (fulfilmentCode) {
       case "P_OR_H1":
       case "P_OR_H2":
@@ -145,24 +172,33 @@ public class FulfilmentRequestReceiver {
       case "UACIT2W":
       case "UACIT4":
         return Optional.empty(); // Ignore SMS fulfilments
+      case "P_OR_I1":
+      case "P_OR_I2":
+      case "P_OR_I2W":
+      case "P_OR_I4":
+        return Optional.of(ActionType.P_OR_IX);
       default:
         log.with("fulfilmentCode", fulfilmentCode).warn("Unexpected fulfilment code received");
         return Optional.empty();
     }
   }
 
-  private static final Map<String, Integer> fulfilmentCodeToQuestionnaireType =
-      Map.of(
-          "P_OR_H1", 1,
-          "P_OR_H2", 2,
-          "P_OR_H2W", 3,
-          "P_OR_H4", 4,
-          "P_OR_HC1", 11,
-          "P_OR_HC2", 12,
-          "P_OR_HC2W", 13,
-          "P_OR_HC4", 14);
+  static final Map<String, String> fulfilmentCodeToQuestionnaireType =
+      Map.ofEntries(
+          Map.entry("P_OR_H1", "1"),
+          Map.entry("P_OR_H2", "2"),
+          Map.entry("P_OR_H2W", "3"),
+          Map.entry("P_OR_H4", "4"),
+          Map.entry("P_OR_HC1", "11"),
+          Map.entry("P_OR_HC2", "12"),
+          Map.entry("P_OR_HC2W", "13"),
+          Map.entry("P_OR_HC4", "14"),
+          Map.entry("P_OR_I1", "21"),
+          Map.entry("P_OR_I2", "22"),
+          Map.entry("P_OR_I2W", "23"),
+          Map.entry("P_OR_I4", "24"));
 
-  private Optional<Integer> determineQuestionnaireType(String packCode) {
+  private Optional<String> determineQuestionnaireType(String packCode) {
     return Optional.ofNullable(fulfilmentCodeToQuestionnaireType.get(packCode));
   }
 }
