@@ -83,6 +83,7 @@ public class CaseAndUacReceiver {
     caseDetails.setLongitude(collectionCase.getAddress().getLongitude());
     caseDetails.setUprn(collectionCase.getAddress().getUprn());
     caseDetails.setRegion(collectionCase.getAddress().getRegion());
+    // Nope don't add new stuff here... look at the comment below...
 
     // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
     caseDetails.setActionPlanId(collectionCase.getActionPlanId()); // This is essential
@@ -107,6 +108,8 @@ public class CaseAndUacReceiver {
     caseDetails.setReceiptReceived(collectionCase.getReceiptReceived());
     caseDetails.setRefusalReceived(collectionCase.getRefusalReceived());
     caseDetails.setAddressInvalid(collectionCase.getAddressInvalid());
+    caseDetails.setUndeliveredAsAddressed(collectionCase.getUndeliveredAsAddressed());
+    // Yep. Here is a good place to add new stuff.
   }
 
   private void processUacUpdated(Uac uac) {

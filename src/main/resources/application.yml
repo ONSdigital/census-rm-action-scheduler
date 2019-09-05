@@ -38,13 +38,12 @@ queueconfig:
   inbound-queue: case.action
   action-fulfilment-inbound-queue: action.fulfilment
   events-exchange: events
-  events-fulfilment-request-binding: event.fulfilment.request
   outbound-printer-queue: Action.Printer
   outbound-field-queue: Action.Field
   outbound-exchange: action-outbound-exchange
-  outbound-printer-routing-key: Action.Printer.binding
-  outbound-field-routing-key: Action.Field.binding
   action-case-exchange: action-case-exchange
+  action-case-queue: action.events
+  undelivered-mail-queue: action.undeliveredMailQueue
   consumers: 50
 
 healthcheck:

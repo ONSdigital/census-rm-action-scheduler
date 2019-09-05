@@ -9,4 +9,5 @@ public class Payload {
   private PrintCaseSelected printCaseSelected;
   private FulfilmentRequestDTO fulfilmentRequest;
   private FieldCaseSelected fieldCaseSelected;
+  private FulfilmentInformation fulfilmentInformation;
 }
