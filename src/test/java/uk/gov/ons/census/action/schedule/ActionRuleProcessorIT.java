@@ -322,7 +322,7 @@ public class ActionRuleProcessorIT {
     return randomCase;
   }
 
-  private Case setUpIndividualCase(ActionPlan actionPlan) {
+  private void setUpIndividualCase(ActionPlan actionPlan) {
     Case randomCase = easyRandom.nextObject(Case.class);
     randomCase.setActionPlanId(actionPlan.getId().toString());
     randomCase.setReceiptReceived(false);
@@ -331,6 +331,5 @@ public class ActionRuleProcessorIT {
     randomCase.setTreatmentCode("HH_LF2R1E");
     randomCase.setCaseType("HI");
     caseRepository.saveAndFlush(randomCase);
-    return randomCase;
   }
 }
