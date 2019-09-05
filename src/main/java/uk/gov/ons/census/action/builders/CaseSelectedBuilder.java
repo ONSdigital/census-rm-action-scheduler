@@ -16,7 +16,8 @@ import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 @Component
 public class CaseSelectedBuilder {
   public ResponseManagementEvent buildPrintMessage(PrintFileDto printFileDto, UUID actionRuleId) {
-    ResponseManagementEvent responseManagementEvent = buildEventWithoutPayload(EventType.PRINT_CASE_SELECTED);
+    ResponseManagementEvent responseManagementEvent =
+        buildEventWithoutPayload(EventType.PRINT_CASE_SELECTED);
     PrintCaseSelected printCaseSelected = new PrintCaseSelected();
     responseManagementEvent.getPayload().setPrintCaseSelected(printCaseSelected);
 
@@ -29,7 +30,8 @@ public class CaseSelectedBuilder {
   }
 
   public ResponseManagementEvent buildFieldMessage(String caseRef, UUID actionRuleId) {
-    ResponseManagementEvent responseManagementEvent = buildEventWithoutPayload(EventType.PRINT_CASE_SELECTED);
+    ResponseManagementEvent responseManagementEvent =
+        buildEventWithoutPayload(EventType.PRINT_CASE_SELECTED);
     FieldCaseSelected fieldCaseSelected = new FieldCaseSelected();
     responseManagementEvent.getPayload().setFieldCaseSelected(fieldCaseSelected);
 
