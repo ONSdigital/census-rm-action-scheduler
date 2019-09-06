@@ -212,12 +212,12 @@ public class FulfilmentRequestReceiverIT {
   }
 
   @Test
-  public void testIndividualResponseFulfilmentRequestWithCaseMissingAtFirst()
+  public void testIndividualResponseFulfilmentRequestDoesNothing()
       throws IOException, InterruptedException {
-    caseRepository.deleteAll();
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
     Case fulfillmentCase = easyRandom.nextObject(Case.class);
+    caseRepository.saveAndFlush(fulfillmentCase);
 
     UUID parentCaseId = UUID.randomUUID();
     UUID childCaseId = fulfillmentCase.getCaseId();
@@ -240,15 +240,6 @@ public class FulfilmentRequestReceiverIT {
         eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
 
     rabbitQueueHelper.checkNoMessagesSent(outputQueue);
-
-    caseRepository.saveAndFlush(fulfillmentCase);
-    PrintFileDto actualPrintFileDto =
-        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
-
-    checkAddressFieldsMatch(
-        fulfillmentCase,
-        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
-        actualPrintFileDto);
   }
 
   private void checkAddressFieldsMatch(

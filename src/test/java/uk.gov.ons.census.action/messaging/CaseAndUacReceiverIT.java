@@ -1,5 +1,7 @@
 package uk.gov.ons.census.action.messaging;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.io.IOException;
@@ -15,16 +17,20 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.census.action.model.dto.Contact;
 import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
+import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
+import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -115,6 +121,34 @@ public class CaseAndUacReceiverIT {
             caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
     assertThat(printFileDto.getPackCode())
         .isEqualTo(actionTypeToPackCodeMap.get(actionRule.getActionType().toString()));
+  }
+
+  @Test
+  public void checkReceivedFulfilmentCreatedEventProcessed() throws InterruptedException, IOException {
+    // Given
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+
+    ActionPlan actionPlan = setUpActionPlan("happy", "path");
+
+    ResponseManagementEvent caseCreatedEvent =
+            getResponseManagementEvent(actionPlan.getId().toString());
+    caseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
+
+    FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
+    fulfilmentRequestDTO.setFulfilmentCode("P_OR_I1");
+    fulfilmentRequestDTO.setCaseId(UUID.fromString(caseCreatedEvent.getPayload().getCollectionCase().getId()));
+    caseCreatedEvent.getPayload().setFulfilmentRequest(fulfilmentRequestDTO);
+
+    // WHEN
+    rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
+
+    // THEN
+    PrintFileDto printFileDto =
+            rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
+
+    assertThat(printFileDto.getAddressLine1())
+            .isEqualTo(
+                    caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
   }
 
   @Test
@@ -303,6 +337,8 @@ public class CaseAndUacReceiverIT {
     responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setAddressInvalid(false);
+
+    responseManagementEvent.getPayload().setFulfilmentRequest(null);
 
     return responseManagementEvent;
   }
