@@ -42,7 +42,6 @@ queueconfig:
   outbound-field-queue: Action.Field
   outbound-exchange: action-outbound-exchange
   action-case-exchange: action-case-exchange
-  action-case-queue: action.events
   undelivered-mail-queue: action.undeliveredMailQueue
   consumers: 50
 

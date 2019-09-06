@@ -128,7 +128,8 @@ public class ActionRuleProcessor {
         rabbitTemplate.convertAndSend(outboundExchange, routingKey, printFileDto);
 
         ResponseManagementEvent printCaseSelected =
-            caseSelectedBuilder.buildPrintMessage(printFileDto, triggeredActionRule.getId());
+            caseSelectedBuilder.buildPrintMessage(
+                printFileDto, triggeredActionRule.getId().toString());
 
         rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
