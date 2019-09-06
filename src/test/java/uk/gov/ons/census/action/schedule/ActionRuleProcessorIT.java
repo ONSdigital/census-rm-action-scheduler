@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -212,6 +213,35 @@ public class ActionRuleProcessorIT {
   }
 
   @Test
+  public void testIndividualCaseReminderNotSent() throws InterruptedException {
+    // Given we have an HI case with a valid Treatment Code.
+    BlockingQueue<String> printerQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    ActionPlan actionPlan = setUpActionPlan();
+    setUpIndividualCase(actionPlan);
+    setUpActionRule(ActionType.P_QU_H2, actionPlan);
+
+    // When the action plan triggers
+    String actualMessage = printerQueue.poll(20, TimeUnit.SECONDS);
+
+    // Then
+    assertNull("Received Message for HI case, expected none", actualMessage);
+  }
+
+  private UacQidDTO stubCreateUacQid() throws JsonProcessingException {
+    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
+    String returnJson = objectMapper.writeValueAsString(uacQidDto);
+    String UAC_QID_CREATE_URL = "/uacqid/create/";
+    stubFor(
+        post(urlEqualTo(UAC_QID_CREATE_URL))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpStatus.OK.value())
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(returnJson)));
+    return uacQidDto;
+  }
+
+  @Test
   public void testFieldworkActionRule() throws IOException, InterruptedException {
     // Given
     BlockingQueue<String> fieldQueue = rabbitQueueHelper.listen(outboundFieldQueue);
@@ -240,20 +270,6 @@ public class ActionRuleProcessorIT {
         .isEqualTo(randomCase.getCaseRef());
     assertThat(actualRmEvent.getPayload().getFieldCaseSelected().getActionRuleId())
         .isEqualTo(actionRule.getId().toString());
-  }
-
-  private UacQidDTO stubCreateUacQid() throws JsonProcessingException {
-    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
-    String returnJson = objectMapper.writeValueAsString(uacQidDto);
-    String UAC_QID_CREATE_URL = "/uacqid/create/";
-    stubFor(
-        post(urlEqualTo(UAC_QID_CREATE_URL))
-            .willReturn(
-                aResponse()
-                    .withStatus(HttpStatus.OK.value())
-                    .withHeader("Content-Type", "application/json")
-                    .withBody(returnJson)));
-    return uacQidDto;
   }
 
   private UacQidDTO stubCreateWelshUacQid() throws JsonProcessingException {
@@ -304,5 +320,16 @@ public class ActionRuleProcessorIT {
     randomCase.setTreatmentCode("HH_LF2R1E");
     caseRepository.saveAndFlush(randomCase);
     return randomCase;
+  }
+
+  private void setUpIndividualCase(ActionPlan actionPlan) {
+    Case randomCase = easyRandom.nextObject(Case.class);
+    randomCase.setActionPlanId(actionPlan.getId().toString());
+    randomCase.setReceiptReceived(false);
+    randomCase.setRefusalReceived(false);
+    randomCase.setAddressInvalid(false);
+    randomCase.setTreatmentCode("HH_LF2R1E");
+    randomCase.setCaseType("HI");
+    caseRepository.saveAndFlush(randomCase);
   }
 }
