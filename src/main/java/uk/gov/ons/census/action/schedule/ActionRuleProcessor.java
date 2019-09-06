@@ -39,8 +39,6 @@ import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
 public class ActionRuleProcessor {
   private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
   private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(50);
-  private static final String ROUTING_KEY_PREFIX = "Action.";
-  private static final String ROUTING_KEY_SUFFIX = ".binding";
   private static final String HOUSEHOLD_INDIVIDUAL = "HI";
 
   private final ActionRuleRepository actionRuleRepo;
