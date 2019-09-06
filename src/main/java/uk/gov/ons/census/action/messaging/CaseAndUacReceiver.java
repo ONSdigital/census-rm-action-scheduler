@@ -113,19 +113,11 @@ public class CaseAndUacReceiver {
   }
 
   private void processUacUpdated(Uac uac) {
-    Optional<UacQidLink> uacQidLinkOpt = uacQidLinkRepository.findByQid(uac.getQuestionnaireId());
-
-    UacQidLink uacQidLink;
-    if (uacQidLinkOpt.isEmpty()) {
-      uacQidLink = new UacQidLink();
-      uacQidLink.setId(UUID.randomUUID());
-      uacQidLink.setQid(uac.getQuestionnaireId());
-      uacQidLink.setUac(uac.getUac());
-      uacQidLink.setCaseId(uac.getCaseId());
-    } else {
-      uacQidLink = uacQidLinkOpt.get();
-    }
-
+    UacQidLink uacQidLink = new UacQidLink();
+    uacQidLink.setId(UUID.randomUUID());
+    uacQidLink.setQid(uac.getQuestionnaireId());
+    uacQidLink.setUac(uac.getUac());
+    uacQidLink.setCaseId(uac.getCaseId());
     uacQidLink.setActive(uac.isActive());
     uacQidLinkRepository.save(uacQidLink);
   }
