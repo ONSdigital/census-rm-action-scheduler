@@ -12,7 +12,7 @@ public enum ActionType {
   ICHHQW(ActionHandler.PRINTER), // Census household questionnaire for Wales
   ICHHQN(ActionHandler.PRINTER), // Census household questionnaire for NI
 
-  // generic actionType for use in Fieldwork followup actionplans, tranches
+  // Generic actionType for use in Fieldwork followup action rules, tranches
   FIELD(ActionHandler.FIELD), // Fieldwork follow up F2 questionnaire for England
 
   // Reminder letters
