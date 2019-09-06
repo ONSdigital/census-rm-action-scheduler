@@ -219,7 +219,7 @@ public class ActionRuleProcessorIT {
 
     ActionPlan actionPlan = setUpActionPlan();
     Case randomCase = setUpCase(actionPlan);
-    ActionRule actionRule = setUpActionRule(ActionType.FF2QE, actionPlan);
+    ActionRule actionRule = setUpActionRule(ActionType.FIELD, actionPlan);
 
     // When the action plan triggers
     String actualMessage = fieldQueue.poll(20, TimeUnit.SECONDS);

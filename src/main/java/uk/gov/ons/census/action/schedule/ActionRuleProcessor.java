@@ -145,6 +145,7 @@ public class ActionRuleProcessor {
 
   private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     List<Callable<FieldworkFollowup>> fieldworkFollowupBuilders = new LinkedList<>();
+
     cases.forEach(
         caze ->
             fieldworkFollowupBuilders.add(

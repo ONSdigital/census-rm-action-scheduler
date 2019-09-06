@@ -327,7 +327,7 @@ public class CaseAndUacReceiverIT {
     actionRule.setTriggerDateTime(OffsetDateTime.now().plusSeconds(DELAY_ACTION_BY_SECONDS));
     actionRule.setHasTriggered(false);
     actionRule.setClassifiers(new HashMap<>());
-    actionRule.setActionType(ActionType.FF2QE);
+    actionRule.setActionType(ActionType.FIELD);
     actionRule.setActionPlan(actionPlan);
 
     return actionRule;
