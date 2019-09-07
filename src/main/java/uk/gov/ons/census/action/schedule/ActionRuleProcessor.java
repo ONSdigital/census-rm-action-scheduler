@@ -39,6 +39,7 @@ import uk.gov.ons.census.action.model.repository.CustomCaseRepository;
 public class ActionRuleProcessor {
   private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
   private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(50);
+  private static final String HOUSEHOLD_INDIVIDUAL = "HI";
 
   private final ActionRuleRepository actionRuleRepo;
   private final FieldworkFollowupBuilder fieldworkFollowupBuilder;
@@ -146,6 +147,7 @@ public class ActionRuleProcessor {
 
   private void executeFieldCases(Stream<Case> cases, ActionRule triggeredActionRule) {
     List<Callable<FieldworkFollowup>> fieldworkFollowupBuilders = new LinkedList<>();
+
     cases.forEach(
         caze ->
             fieldworkFollowupBuilders.add(
@@ -185,7 +187,10 @@ public class ActionRuleProcessor {
 
   private Specification<Case> createSpecificationForActionableCases(String actionPlanId) {
     return where(isActionPlanIdEqualTo(actionPlanId))
-        .and(excludeReceiptedCases().and(excludeRefusedCases()).and(excludeAddressInvalidCases()));
+        .and(excludeReceiptedCases())
+        .and(excludeRefusedCases())
+        .and(excludeAddressInvalidCases())
+        .and(excludeHiCases());
   }
 
   private Specification<Case> isActionPlanIdEqualTo(String actionPlanId) {
@@ -206,6 +211,11 @@ public class ActionRuleProcessor {
   private Specification<Case> excludeAddressInvalidCases() {
     return (Specification<Case>)
         (root, query, builder) -> builder.equal(root.get("addressInvalid"), false);
+  }
+
+  private Specification<Case> excludeHiCases() {
+    return (Specification<Case>)
+        (root, query, builder) -> builder.notEqual(root.get("caseType"), HOUSEHOLD_INDIVIDUAL);
   }
 
   private Specification<Case> isClassifierIn(
