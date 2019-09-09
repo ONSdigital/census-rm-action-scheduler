@@ -15,13 +15,13 @@ import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 
 @Component
 public class CaseSelectedBuilder {
-  public ResponseManagementEvent buildPrintMessage(PrintFileDto printFileDto, UUID actionRuleId) {
+  public ResponseManagementEvent buildPrintMessage(PrintFileDto printFileDto, String actionRuleId) {
     ResponseManagementEvent responseManagementEvent =
         buildEventWithoutPayload(EventType.PRINT_CASE_SELECTED);
     PrintCaseSelected printCaseSelected = new PrintCaseSelected();
     responseManagementEvent.getPayload().setPrintCaseSelected(printCaseSelected);
 
-    printCaseSelected.setActionRuleId(actionRuleId.toString());
+    printCaseSelected.setActionRuleId(actionRuleId);
     printCaseSelected.setBatchId(printFileDto.getBatchId());
     printCaseSelected.setCaseRef(printFileDto.getCaseRef());
     printCaseSelected.setPackCode(printFileDto.getPackCode());

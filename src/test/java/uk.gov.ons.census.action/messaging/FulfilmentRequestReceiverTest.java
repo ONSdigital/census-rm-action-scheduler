@@ -1,5 +1,6 @@
 package uk.gov.ons.census.action.messaging;
 
+import static junit.framework.TestCase.assertNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import uk.gov.ons.census.action.builders.CaseSelectedBuilder;
 import uk.gov.ons.census.action.client.CaseClient;
 import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
@@ -37,11 +39,15 @@ public class FulfilmentRequestReceiverTest {
   @Mock private RabbitTemplate rabbitTemplate;
   @Mock private CaseClient caseClient;
   @Mock private CaseRepository caseRepository;
+  @Mock private CaseSelectedBuilder caseSelectedBuilder;
 
   @InjectMocks FulfilmentRequestReceiver underTest;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
+
+  @Value("${queueconfig.action-case-exchange}")
+  private String actionCaseExchange;
 
   private EasyRandom easyRandom = new EasyRandom();
 
@@ -85,6 +91,8 @@ public class FulfilmentRequestReceiverTest {
     event.getPayload().getFulfilmentRequest().setCaseId(fulfilmentCase.getCaseId());
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
     when(caseClient.getUacQid(eq(fulfilmentCase.getCaseId()), eq("1"))).thenReturn(uacQidDTO);
+    when(caseSelectedBuilder.buildPrintMessage(any(), any()))
+        .thenReturn(new ResponseManagementEvent());
 
     // When
     underTest.receiveEvent(event);
@@ -104,6 +112,8 @@ public class FulfilmentRequestReceiverTest {
     event.getPayload().getFulfilmentRequest().setCaseId(fulfilmentCase.getCaseId());
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
     when(caseClient.getUacQid(fulfilmentCase.getCaseId(), "11")).thenReturn(uacQidDTO);
+    when(caseSelectedBuilder.buildPrintMessage(any(), any()))
+        .thenReturn(new ResponseManagementEvent());
 
     // When
     underTest.receiveEvent(event);
@@ -177,6 +187,9 @@ public class FulfilmentRequestReceiverTest {
     when(caseClient.getUacQid(TEST_INDIVIDUAL_CASE_ID, expectedQuestionaireType))
         .thenReturn(uacQidDTO);
 
+    when(caseSelectedBuilder.buildPrintMessage(any(), any()))
+        .thenReturn(new ResponseManagementEvent());
+
     // When
     underTest.receiveEvent(event);
 
@@ -194,6 +207,8 @@ public class FulfilmentRequestReceiverTest {
     ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
     event.getPayload().getFulfilmentRequest().setFulfilmentCode("P_LP_HL1");
     event.getPayload().getFulfilmentRequest().setCaseId(fulfilmentCase.getCaseId());
+    when(caseSelectedBuilder.buildPrintMessage(any(), any()))
+        .thenReturn(new ResponseManagementEvent());
 
     // When
     underTest.receiveEvent(event);
@@ -210,6 +225,8 @@ public class FulfilmentRequestReceiverTest {
     ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
     event.getPayload().getFulfilmentRequest().setFulfilmentCode("P_TB_TBARA1");
     event.getPayload().getFulfilmentRequest().setCaseId(fulfilmentCase.getCaseId());
+    when(caseSelectedBuilder.buildPrintMessage(any(), any()))
+        .thenReturn(new ResponseManagementEvent());
 
     // When
     underTest.receiveEvent(event);
@@ -221,6 +238,14 @@ public class FulfilmentRequestReceiverTest {
 
   private PrintFileDto checkCorrectPackCodeAndAddressAreSent(
       ResponseManagementEvent event, Case fulfilmentCase, ActionType expectedActionType) {
+    ArgumentCaptor<ResponseManagementEvent> rmEventArgumentCaptor =
+        ArgumentCaptor.forClass(ResponseManagementEvent.class);
+
+    verify(rabbitTemplate)
+        .convertAndSend(eq(actionCaseExchange), eq(""), rmEventArgumentCaptor.capture());
+    ResponseManagementEvent actualPrintCaseSelectedEvent = rmEventArgumentCaptor.getValue();
+    assertNotNull(actualPrintCaseSelectedEvent);
+
     ArgumentCaptor<PrintFileDto> printFileDtoArgumentCaptor =
         ArgumentCaptor.forClass(PrintFileDto.class);
     verify(rabbitTemplate)
