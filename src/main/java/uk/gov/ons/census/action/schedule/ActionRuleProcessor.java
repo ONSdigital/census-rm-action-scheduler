@@ -249,6 +249,12 @@ public class ActionRuleProcessor {
           put(ActionType.P_QU_H1.name(), ActionType.P_QU_H1.name());
           put(ActionType.P_QU_H2.name(), ActionType.P_QU_H2.name());
           put(ActionType.P_QU_H4.name(), ActionType.P_QU_H4.name());
+          put(ActionType.P_RD_2RL1_1.name(), ActionType.P_RD_2RL1_1.name());
+          put(ActionType.P_RD_2RL2B_1.name(), ActionType.P_RD_2RL2B_1.name());
+          put(ActionType.P_RD_2RL1_2.name(), ActionType.P_RD_2RL1_2.name());
+          put(ActionType.P_RD_2RL2B_2.name(), ActionType.P_RD_2RL2B_2.name());
+          put(ActionType.P_RD_2RL1_3.name(), ActionType.P_RD_2RL1_3.name());
+          put(ActionType.P_RD_2RL2B_3.name(), ActionType.P_RD_2RL2B_3.name());
         }
       };
 }
