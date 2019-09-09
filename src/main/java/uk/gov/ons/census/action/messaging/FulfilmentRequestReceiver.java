@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.census.action.builders.CaseSelectedBuilder;
 import uk.gov.ons.census.action.client.CaseClient;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
@@ -30,15 +31,23 @@ public class FulfilmentRequestReceiver {
   private final RabbitTemplate rabbitTemplate;
   private final CaseClient caseClient;
   private final CaseRepository caseRepository;
+  private final CaseSelectedBuilder caseSelectedBuilder;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
+  @Value("${queueconfig.action-case-exchange}")
+  private String actionCaseExchange;
+
   public FulfilmentRequestReceiver(
-      RabbitTemplate rabbitTemplate, CaseClient caseClient, CaseRepository caseRepository) {
+      RabbitTemplate rabbitTemplate,
+      CaseClient caseClient,
+      CaseRepository caseRepository,
+      CaseSelectedBuilder caseSelectedBuilder) {
     this.rabbitTemplate = rabbitTemplate;
     this.caseClient = caseClient;
     this.caseRepository = caseRepository;
+    this.caseSelectedBuilder = caseSelectedBuilder;
   }
 
   @Transactional
@@ -84,6 +93,11 @@ public class FulfilmentRequestReceiver {
       printFileDto.setQid(uacQid.getQid());
       printFileDto.setUac(uacQid.getUac());
     }
+
+    ResponseManagementEvent printCaseSelected =
+        caseSelectedBuilder.buildPrintMessage(printFileDto, null);
+
+    rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
     rabbitTemplate.convertAndSend(
         outboundExchange, ActionHandler.PRINTER.getRoutingKey(), printFileDto);
