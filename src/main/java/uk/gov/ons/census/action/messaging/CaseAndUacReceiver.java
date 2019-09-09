@@ -46,8 +46,8 @@ public class CaseAndUacReceiver {
       // We can get sent a fulfilment request along with the case, which we need to process
       if (responseManagementEvent.getPayload().getFulfilmentRequest() != null) {
         ActionType actionType =
-                fulfilmentRequestService.determineActionType(
-                        responseManagementEvent.getPayload().getFulfilmentRequest().getFulfilmentCode());
+            fulfilmentRequestService.determineActionType(
+                responseManagementEvent.getPayload().getFulfilmentRequest().getFulfilmentCode());
 
         fulfilmentRequestService.processEvent(
             responseManagementEvent.getPayload().getFulfilmentRequest(), caze, actionType);

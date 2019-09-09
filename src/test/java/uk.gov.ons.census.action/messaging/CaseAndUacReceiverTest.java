@@ -55,13 +55,14 @@ public class CaseAndUacReceiverTest {
   public void testCaseCreatedWithFulfilmentAttached() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
-            new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
     FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
     fulfilmentRequestDTO.setFulfilmentCode(INDIVIDUAL_PRINT_QUESTIONNAIRE_CODE);
     responseManagementEvent.getPayload().setFulfilmentRequest(fulfilmentRequestDTO);
-    when(fulfilmentRequestService.determineActionType(INDIVIDUAL_PRINT_QUESTIONNAIRE_CODE)).thenReturn(ActionType.P_OR_IX);
+    when(fulfilmentRequestService.determineActionType(INDIVIDUAL_PRINT_QUESTIONNAIRE_CODE))
+        .thenReturn(ActionType.P_OR_IX);
 
     // when
     caseAndUacReceiver.receiveEvent(responseManagementEvent);
@@ -74,14 +75,16 @@ public class CaseAndUacReceiverTest {
 
     assertThat(actualCase, SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
 
-    ArgumentCaptor<FulfilmentRequestDTO> fulfilmentRequestDTOArgumentCaptor
-            = ArgumentCaptor.forClass(FulfilmentRequestDTO.class);
+    ArgumentCaptor<FulfilmentRequestDTO> fulfilmentRequestDTOArgumentCaptor =
+        ArgumentCaptor.forClass(FulfilmentRequestDTO.class);
     ArgumentCaptor<ActionType> actionTypeArgumentCaptor = ArgumentCaptor.forClass(ActionType.class);
     verify(fulfilmentRequestService, times(1))
-            .processEvent( eq(fulfilmentRequestDTO), caseArgumentCaptor.capture(),
-                    eq(ActionType.P_OR_IX));
+        .processEvent(
+            eq(fulfilmentRequestDTO), caseArgumentCaptor.capture(), eq(ActionType.P_OR_IX));
 
-    assertThat(caseArgumentCaptor.getAllValues().get(0), SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
+    assertThat(
+        caseArgumentCaptor.getAllValues().get(0),
+        SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
   }
 
   @Test

@@ -178,41 +178,7 @@ public class FulfilmentRequestReceiverIT {
   }
 
   @Test
-  public void testIndividualResponseFulfilmentRequestWhereIndividualCaseExists()
-      throws IOException, InterruptedException {
-    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
-    Case fulfillmentCase = this.setUpCaseAndSaveInDB();
-    UUID parentCaseId = UUID.randomUUID();
-    UUID childCaseId = fulfillmentCase.getCaseId();
-    ResponseManagementEvent actionFulfilmentEvent =
-        getResponseManagementEvent(parentCaseId, PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND);
-    actionFulfilmentEvent.getPayload().getFulfilmentRequest().setIndividualCaseId(childCaseId);
-
-    String url = "/uacqid/create/";
-    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
-    String returnJson = objectMapper.writeValueAsString(uacQidDto);
-    givenThat(
-        post(urlEqualTo(url))
-            .willReturn(
-                aResponse()
-                    .withStatus(HttpStatus.OK.value())
-                    .withHeader("Content-Type", "application/json")
-                    .withBody(returnJson)));
-
-    rabbitQueueHelper.sendMessage(
-        eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
-
-    PrintFileDto actualPrintFileDto =
-        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
-
-    checkAddressFieldsMatch(
-        fulfillmentCase,
-        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
-        actualPrintFileDto);
-  }
-
-  @Test
-  public void testIndividualResponseFulfilmentRequestDoesNothing()
+  public void testIndividualResponseFulfilmentRequestIsIgnored()
       throws IOException, InterruptedException {
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
