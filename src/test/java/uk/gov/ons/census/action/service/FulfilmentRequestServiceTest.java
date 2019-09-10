@@ -1,19 +1,12 @@
 package uk.gov.ons.census.action.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.ons.census.action.messaging.FulfilmentRequestReceiver;
-import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
-import uk.gov.ons.census.action.model.entity.Case;
-import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.entity.ActionType;
-
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FulfilmentRequestServiceTest {
@@ -30,7 +23,7 @@ public class FulfilmentRequestServiceTest {
     assertThat(underTest.determineActionType("P_TB_TBARA1")).isEqualTo(ActionType.P_TB_TBX);
   }
 
-  //Test actual processing
+  // Test actual processing
 
   //
   //
