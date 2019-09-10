@@ -12,8 +12,8 @@ public enum ActionType {
   ICHHQW(ActionHandler.PRINTER), // Census household questionnaire for Wales
   ICHHQN(ActionHandler.PRINTER), // Census household questionnaire for NI
 
-  // Fieldwork reminders
-  FF2QE(ActionHandler.FIELD), // Fieldwork follow up F2 questionnaire for England
+  // Generic actionType for use in Fieldwork followup action rules, tranches
+  FIELD(ActionHandler.FIELD),
 
   // Reminder letters
   P_RL_1RL1_1(ActionHandler.PRINTER), // 1st Reminder, Letter - for England addresses
@@ -38,7 +38,15 @@ public enum ActionType {
   P_LP_HLX(ActionHandler.PRINTER), // Household questionnaires large print
   P_TB_TBX(ActionHandler.PRINTER), // Household translation booklets
 
-  P_OR_IX(ActionHandler.PRINTER);
+  P_OR_IX(ActionHandler.PRINTER), // Individual Response questionnaire print
+
+  //  response driven interventions
+  P_RD_2RL1_1(ActionHandler.PRINTER), // Response driven reminder group 1 English
+  P_RD_2RL2B_1(ActionHandler.PRINTER), // Response driven reminder group 1 Welsh
+  P_RD_2RL1_2(ActionHandler.PRINTER), // Response driven reminder group 2 English
+  P_RD_2RL2B_2(ActionHandler.PRINTER), // Response driven reminder group 2 Welsh
+  P_RD_2RL1_3(ActionHandler.PRINTER), // Response driven reminder group 3 English
+  P_RD_2RL2B_3(ActionHandler.PRINTER); // Response driven reminder group 3 Welsh
 
   private final ActionHandler handler;
 

@@ -46,7 +46,6 @@ public class FulfilmentRequestReceiverTest {
     underTest.receiveEvent(event);
 
     verifyZeroInteractions(caseRepository);
-    // Then no exception is thrown
   }
 
   @Test
@@ -73,12 +72,15 @@ public class FulfilmentRequestReceiverTest {
     when(fulfilmentRequestService.determineActionType("P_OR_H1")).thenReturn(ActionType.P_OR_HX);
 
     // When
-    underTest.receiveEvent(event);
+      when(fulfilmentRequestService.determineActionType("P_OR_H1")).thenReturn(ActionType.P_OR_HX);
 
-    // Then
-    verify(fulfilmentRequestService, times(1))
-        .processEvent(
-            event.getPayload().getFulfilmentRequest(), fulfilmentCase, ActionType.P_OR_HX);
+      // When
+      underTest.receiveEvent(event);
+
+      // Then
+      verify(fulfilmentRequestService, times(1))
+              .processEvent(
+                      event.getPayload().getFulfilmentRequest(), fulfilmentCase, ActionType.P_OR_HX);
   }
 
   @Test
@@ -129,12 +131,16 @@ public class FulfilmentRequestReceiverTest {
 
     ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
     event.getPayload().getFulfilmentRequest().setFulfilmentCode(fulfilmentCode);
+    event.getPayload().getFulfilmentRequest().setFulfilmentCode("P_TB_TBARA1");
+    event.getPayload().getFulfilmentRequest().setCaseId(fulfilmentCase.getCaseId());
 
     underTest.receiveEvent(event);
 
     verifyZeroInteractions(fulfilmentRequestService);
     verifyZeroInteractions(caseRepository);
+    // Then
   }
+
 
   private Case caseRepositoryReturnsRandomCase() {
     Case caze = easyRandom.nextObject(Case.class);

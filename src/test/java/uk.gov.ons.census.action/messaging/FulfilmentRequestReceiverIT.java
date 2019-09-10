@@ -45,6 +45,9 @@ public class FulfilmentRequestReceiverIT {
   @Value("${queueconfig.outbound-printer-queue}")
   private String outboundPrinterQueue;
 
+  @Value("${queueconfig.action-case-queue}")
+  private String actionCaseQueue;
+
   @Rule public WireMockRule mockCaseApi = new WireMockRule(wireMockConfig().port(8089));
 
   @Autowired private RabbitQueueHelper rabbitQueueHelper;
@@ -60,6 +63,7 @@ public class FulfilmentRequestReceiverIT {
   public void setUp() {
     rabbitQueueHelper.purgeQueue(actionFulfilmentQueue);
     rabbitQueueHelper.purgeQueue(outboundPrinterQueue);
+    rabbitQueueHelper.purgeQueue(actionCaseQueue);
   }
 
   @Test
@@ -67,6 +71,7 @@ public class FulfilmentRequestReceiverIT {
 
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    BlockingQueue<String> caseSelectedQueue = rabbitQueueHelper.listen(actionCaseQueue);
     Case fulfillmentCase = this.setUpCaseAndSaveInDB();
     ResponseManagementEvent actionFulfilmentEvent =
         getResponseManagementEvent(fulfillmentCase.getCaseId(), "P_OR_H1");
@@ -93,6 +98,15 @@ public class FulfilmentRequestReceiverIT {
         actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
         actualPrintFileDto);
     assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
+
+    ResponseManagementEvent actualRmEvent =
+        rabbitQueueHelper.checkExpectedMessageReceived(
+            caseSelectedQueue, ResponseManagementEvent.class);
+    assertThat(actualRmEvent.getEvent().getType()).isEqualTo(EventType.PRINT_CASE_SELECTED);
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getPackCode())
+        .isEqualTo("P_OR_H1");
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
+        .isEqualTo(fulfillmentCase.getCaseRef());
   }
 
   @Test
@@ -100,6 +114,7 @@ public class FulfilmentRequestReceiverIT {
 
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    BlockingQueue<String> caseSelectedQueue = rabbitQueueHelper.listen(actionCaseQueue);
     Case fulfillmentCase = this.setUpCaseAndSaveInDB();
     ResponseManagementEvent actionFulfilmentEvent =
         getResponseManagementEvent(fulfillmentCase.getCaseId(), "P_OR_HC1");
@@ -126,6 +141,15 @@ public class FulfilmentRequestReceiverIT {
         actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
         actualPrintFileDto);
     assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
+
+    ResponseManagementEvent actualRmEvent =
+        rabbitQueueHelper.checkExpectedMessageReceived(
+            caseSelectedQueue, ResponseManagementEvent.class);
+    assertThat(actualRmEvent.getEvent().getType()).isEqualTo(EventType.PRINT_CASE_SELECTED);
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getPackCode())
+        .isEqualTo("P_OR_HC1");
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
+        .isEqualTo(fulfillmentCase.getCaseRef());
   }
 
   @Test
@@ -133,6 +157,7 @@ public class FulfilmentRequestReceiverIT {
 
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    BlockingQueue<String> caseSelectedQueue = rabbitQueueHelper.listen(actionCaseQueue);
     Case fulfillmentCase = this.setUpCaseAndSaveInDB();
     ResponseManagementEvent actionFulfilmentEvent =
         getResponseManagementEvent(fulfillmentCase.getCaseId(), "P_LP_HL1");
@@ -151,6 +176,15 @@ public class FulfilmentRequestReceiverIT {
         actualPrintFileDto);
     assertThat(actualPrintFileDto.getUac()).isNull();
     assertThat(actualPrintFileDto.getQid()).isNull();
+
+    ResponseManagementEvent actualRmEvent =
+        rabbitQueueHelper.checkExpectedMessageReceived(
+            caseSelectedQueue, ResponseManagementEvent.class);
+    assertThat(actualRmEvent.getEvent().getType()).isEqualTo(EventType.PRINT_CASE_SELECTED);
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getPackCode())
+        .isEqualTo("P_LP_HL1");
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
+        .isEqualTo(fulfillmentCase.getCaseRef());
   }
 
   @Test
@@ -158,6 +192,7 @@ public class FulfilmentRequestReceiverIT {
 
     // Given
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    BlockingQueue<String> caseSelectedQueue = rabbitQueueHelper.listen(actionCaseQueue);
     Case fulfillmentCase = this.setUpCaseAndSaveInDB();
     ResponseManagementEvent actionFulfilmentEvent =
         getResponseManagementEvent(fulfillmentCase.getCaseId(), "P_TB_TBARA1");
@@ -175,11 +210,65 @@ public class FulfilmentRequestReceiverIT {
         actualPrintFileDto);
     assertThat(actualPrintFileDto.getUac()).isNull();
     assertThat(actualPrintFileDto.getQid()).isNull();
+
+    ResponseManagementEvent actualRmEvent =
+        rabbitQueueHelper.checkExpectedMessageReceived(
+            caseSelectedQueue, ResponseManagementEvent.class);
+    assertThat(actualRmEvent.getEvent().getType()).isEqualTo(EventType.PRINT_CASE_SELECTED);
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getPackCode())
+        .isEqualTo("P_TB_TBARA1");
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
+        .isEqualTo(fulfillmentCase.getCaseRef());
   }
 
   @Test
   public void testIndividualResponseFulfilmentRequestIsIgnored()
       throws IOException, InterruptedException {
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+    BlockingQueue<String> caseSelectedQueue = rabbitQueueHelper.listen(actionCaseQueue);
+    Case fulfillmentCase = this.setUpCaseAndSaveInDB();
+    UUID parentCaseId = UUID.randomUUID();
+    UUID childCaseId = fulfillmentCase.getCaseId();
+    ResponseManagementEvent actionFulfilmentEvent =
+        getResponseManagementEvent(parentCaseId, PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND);
+    actionFulfilmentEvent.getPayload().getFulfilmentRequest().setIndividualCaseId(childCaseId);
+
+    String url = "/uacqid/create/";
+    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
+    String returnJson = objectMapper.writeValueAsString(uacQidDto);
+    givenThat(
+        post(urlEqualTo(url))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpStatus.OK.value())
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(returnJson)));
+
+    rabbitQueueHelper.sendMessage(
+        eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
+
+    PrintFileDto actualPrintFileDto =
+        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
+
+    checkAddressFieldsMatch(
+        fulfillmentCase,
+        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
+        actualPrintFileDto);
+
+    ResponseManagementEvent actualRmEvent =
+        rabbitQueueHelper.checkExpectedMessageReceived(
+            caseSelectedQueue, ResponseManagementEvent.class);
+    assertThat(actualRmEvent.getEvent().getType()).isEqualTo(EventType.PRINT_CASE_SELECTED);
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getPackCode())
+        .isEqualTo(PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND);
+    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
+        .isEqualTo(fulfillmentCase.getCaseRef());
+  }
+
+  @Test
+  public void testIndividualResponseFulfilmentRequestWithCaseMissingAtFirst()
+      throws IOException, InterruptedException {
+    caseRepository.deleteAll();
     BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
 
     Case fulfillmentCase = easyRandom.nextObject(Case.class);
