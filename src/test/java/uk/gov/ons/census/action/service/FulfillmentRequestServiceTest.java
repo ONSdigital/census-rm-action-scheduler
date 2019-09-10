@@ -1,17 +1,49 @@
 package uk.gov.ons.census.action.service;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.postgresql.hostchooser.HostRequirement.any;
 
+import org.jeasy.random.EasyRandom;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import uk.gov.ons.census.action.builders.CaseSelectedBuilder;
+import uk.gov.ons.census.action.client.CaseClient;
+import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
+import uk.gov.ons.census.action.model.dto.PrintFileDto;
+import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
+import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionType;
+import uk.gov.ons.census.action.model.entity.Case;
+import uk.gov.ons.census.action.model.repository.CaseRepository;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FulfillmentRequestServiceTest {
+  @Mock CaseClient caseClient;
+  @Mock RabbitTemplate rabbitTemplate;
+  @Mock CaseRepository caseRepository;
+  @Mock CaseSelectedBuilder caseSelectedBuilder;
 
   @InjectMocks FulfilmentRequestService underTest;
+
+  @Value("${queueconfig.outbound-exchange}")
+  private String outboundExchange;
+
+  @Value("${queueconfig.action-case-exchange}")
+  private String actionCaseExchange;
+
+  private final EasyRandom easyRandom = new EasyRandom();
 
   @Test
   public void testLargePrintQuestionnaireFulfilmentMappings() {
@@ -24,54 +56,54 @@ public class FulfillmentRequestServiceTest {
   }
 
   @Test
-  public void testReceiveEventIgnoresUnexpectedFulfilmentCode() {
-    // Given
-    caseRepositoryReturnsRandomCase();
-    ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
+  public void testIndividualPrintFulfillmnent() {
+    FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
+    fulfilmentRequestDTO.setFulfilmentCode("P_OR_I1");
 
-    // When
-    underTest.receiveEvent(event);
+    Case caze = easyRandom.nextObject(Case.class);
 
-    verifyZeroInteractions(caseRepository);
-    verifyZeroInteractions(rabbitTemplate);
-    verifyZeroInteractions(caseClient);
-    // Then no exception is thrown
+    UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
+    when(caseClient.getUacQid(caze.getCaseId(), "21")).thenReturn(uacQidDTO);
+    when(caseSelectedBuilder.buildPrintMessage(any(), any()))
+            .thenReturn(new ResponseManagementEvent());
+
+    //    FulfilmentRequestDTO fulfilmentRequest, Case caze, ActionType actionType
+    underTest.processEvent(fulfilmentRequestDTO, caze, ActionType.P_OR_IX);
+
+    checkCorrectPackCodeAndAddressAreSent(fulfilmentRequestDTO, caze, ActionType.P_OR_IX);
   }
-//
-//  @Test
-//  public void testIndividualFulfillmentRequest() {
-//
-//      underTest.processEvent();
-//  }
 
-  // Test actual processing
+  private PrintFileDto checkCorrectPackCodeAndAddressAreSent(
+          FulfilmentRequestDTO fulfilmentRequestDTO, Case fulfilmentCase, ActionType expectedActionType) {
+    ArgumentCaptor<ResponseManagementEvent> responseManagementEventArgumentCaptor =
+            ArgumentCaptor.forClass(ResponseManagementEvent.class);
 
-  //
-  //
-  //    private PrintFileDto checkCorrectPackCodeAndAddressAreSent(
-  //        ResponseManagementEvent event, Case fulfilmentCase, ActionType expectedActionType) {
-  //      ArgumentCaptor<PrintFileDto> printFileDtoArgumentCaptor =
-  //          ArgumentCaptor.forClass(PrintFileDto.class);
-  //      verify(rabbitTemplate)
-  //          .convertAndSend(
-  //              eq(outboundExchange),
-  //              eq("Action.Printer.binding"),
-  //              printFileDtoArgumentCaptor.capture());
-  //      PrintFileDto actualPrintFileDTO = printFileDtoArgumentCaptor.getValue();
-  //      assertEquals(
-  //          event.getPayload().getFulfilmentRequest().getFulfilmentCode(),
-  //          printFileDtoArgumentCaptor.getValue().getPackCode());
-  //      assertEquals(expectedActionType.name(), actualPrintFileDTO.getActionType());
-  //      assertThat(actualPrintFileDTO)
-  //          .isEqualToComparingOnlyGivenFields(
-  //              fulfilmentCase, "addressLine1", "addressLine2", "addressLine3", "postcode",
-  //   "townName");
-  //      assertThat(actualPrintFileDTO)
-  //          .isEqualToComparingOnlyGivenFields(
-  //              event.getPayload().getFulfilmentRequest().getContact(), "title", "forename",
-  //   "surname");
-  //      return actualPrintFileDTO;
-  //    }
-  //
+    verify(rabbitTemplate)
+            .convertAndSend(eq(actionCaseExchange), eq(""), responseManagementEventArgumentCaptor.capture());
+
+    ResponseManagementEvent actualPrintCaseSelectedEvent = responseManagementEventArgumentCaptor.getValue();
+    assertNotNull(actualPrintCaseSelectedEvent);
+
+    ArgumentCaptor<PrintFileDto> printFileDtoArgumentCaptor =
+            ArgumentCaptor.forClass(PrintFileDto.class);
+    verify(rabbitTemplate)
+            .convertAndSend( eq(outboundExchange), eq("Action.Printer.binding"),
+                    printFileDtoArgumentCaptor.capture());
+
+
+    PrintFileDto actualPrintFileDTO = printFileDtoArgumentCaptor.getValue();
+    assertEquals(
+           fulfilmentRequestDTO.getFulfilmentCode(),
+            printFileDtoArgumentCaptor.getValue().getPackCode());
+    assertEquals(expectedActionType.name(), actualPrintFileDTO.getActionType());
+    assertThat(actualPrintFileDTO)
+            .isEqualToComparingOnlyGivenFields(
+                    fulfilmentCase, "addressLine1", "addressLine2", "addressLine3", "postcode", "townName");
+    assertThat(actualPrintFileDTO)
+            .isEqualToComparingOnlyGivenFields(
+                    fulfilmentRequestDTO.getContact(), "title", "forename", "surname");
+
+    return actualPrintFileDTO;
+  }
 
 }

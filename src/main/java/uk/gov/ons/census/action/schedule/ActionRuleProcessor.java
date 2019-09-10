@@ -176,7 +176,7 @@ public class ActionRuleProcessor {
         rabbitTemplate.convertAndSend(actionCaseExchange, "", fieldCaseSelected);
 
         if (messagesSent++ % 1000 == 0) {
-          log.info("Finished sending, sent {} field action messages", messagesSent - 1);
+          log.info("sent {} field action messages", messagesSent - 1);
         }
       }
       log.info("Finished sending, sent {} field action messages", messagesSent);
