@@ -35,8 +35,10 @@ public class FulfilmentRequestService {
   private String actionCaseExchange;
 
   public FulfilmentRequestService(
-      RabbitTemplate rabbitTemplate, CaseClient caseClient,
-      CaseRepository caseRepository, CaseSelectedBuilder caseSelectedBuilder) {
+      RabbitTemplate rabbitTemplate,
+      CaseClient caseClient,
+      CaseRepository caseRepository,
+      CaseSelectedBuilder caseSelectedBuilder) {
     this.rabbitTemplate = rabbitTemplate;
     this.caseClient = caseClient;
     this.caseRepository = caseRepository;
@@ -59,7 +61,7 @@ public class FulfilmentRequestService {
     }
 
     ResponseManagementEvent printCaseSelected =
-            caseSelectedBuilder.buildPrintMessage(printFileDto, null);
+        caseSelectedBuilder.buildPrintMessage(printFileDto, null);
 
     rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 

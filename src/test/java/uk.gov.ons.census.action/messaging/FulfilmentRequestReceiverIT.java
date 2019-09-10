@@ -247,22 +247,8 @@ public class FulfilmentRequestReceiverIT {
     rabbitQueueHelper.sendMessage(
         eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
 
-    PrintFileDto actualPrintFileDto =
-        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
-
-    checkAddressFieldsMatch(
-        fulfillmentCase,
-        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
-        actualPrintFileDto);
-
-    ResponseManagementEvent actualRmEvent =
-        rabbitQueueHelper.checkExpectedMessageReceived(
-            caseSelectedQueue, ResponseManagementEvent.class);
-    assertThat(actualRmEvent.getEvent().getType()).isEqualTo(EventType.PRINT_CASE_SELECTED);
-    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getPackCode())
-        .isEqualTo(PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND);
-    assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
-        .isEqualTo(fulfillmentCase.getCaseRef());
+    rabbitQueueHelper.checkNoMessagesSent(outputQueue);
+    rabbitQueueHelper.checkNoMessagesSent(caseSelectedQueue);
   }
 
   private void checkAddressFieldsMatch(
