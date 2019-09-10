@@ -72,15 +72,15 @@ public class FulfilmentRequestReceiverTest {
     when(fulfilmentRequestService.determineActionType("P_OR_H1")).thenReturn(ActionType.P_OR_HX);
 
     // When
-      when(fulfilmentRequestService.determineActionType("P_OR_H1")).thenReturn(ActionType.P_OR_HX);
+    when(fulfilmentRequestService.determineActionType("P_OR_H1")).thenReturn(ActionType.P_OR_HX);
 
-      // When
-      underTest.receiveEvent(event);
+    // When
+    underTest.receiveEvent(event);
 
-      // Then
-      verify(fulfilmentRequestService, times(1))
-              .processEvent(
-                      event.getPayload().getFulfilmentRequest(), fulfilmentCase, ActionType.P_OR_HX);
+    // Then
+    verify(fulfilmentRequestService, times(1))
+        .processEvent(
+            event.getPayload().getFulfilmentRequest(), fulfilmentCase, ActionType.P_OR_HX);
   }
 
   @Test
@@ -104,35 +104,27 @@ public class FulfilmentRequestReceiverTest {
 
   @Test
   public void testOnRequestIndividualQuestionnaireFulfilmentEngland() {
-    testIndividualResponseRequestIsIgnored(
-        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND, "21", ActionType.P_OR_IX);
+    testIndividualResponseRequestIsIgnored(PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND);
   }
 
   @Test
   public void testOnRequestIndividualQuestionnaireFulfilmentWalesEnglish() {
-    testIndividualResponseRequestIsIgnored(
-        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_ENGLISH, "22", ActionType.P_OR_IX);
+    testIndividualResponseRequestIsIgnored(PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_ENGLISH);
   }
 
   @Test
   public void testOnRequestIndividualQuestionnaireFulfilmentWalesWelsh() {
-    testIndividualResponseRequestIsIgnored(
-        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_WELSH, "23", ActionType.P_OR_IX);
+    testIndividualResponseRequestIsIgnored(PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_WELSH);
   }
 
   @Test
   public void testOnRequestIndividualQuestionnaireFulfilmentNorthernIreland() {
-    testIndividualResponseRequestIsIgnored(
-        PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_NORTHERN_IRELAND, "24", ActionType.P_OR_IX);
+    testIndividualResponseRequestIsIgnored(PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_NORTHERN_IRELAND);
   }
 
-  private void testIndividualResponseRequestIsIgnored(
-      String fulfilmentCode, String expectedQuestionaireType, ActionType expectedActionType) {
-
+  private void testIndividualResponseRequestIsIgnored(String fulfilmentCode) {
     ResponseManagementEvent event = easyRandom.nextObject(ResponseManagementEvent.class);
     event.getPayload().getFulfilmentRequest().setFulfilmentCode(fulfilmentCode);
-    event.getPayload().getFulfilmentRequest().setFulfilmentCode("P_TB_TBARA1");
-    event.getPayload().getFulfilmentRequest().setCaseId(fulfilmentCase.getCaseId());
 
     underTest.receiveEvent(event);
 
@@ -141,6 +133,7 @@ public class FulfilmentRequestReceiverTest {
     // Then
   }
 
+  //  find this test and put it back?
 
   private Case caseRepositoryReturnsRandomCase() {
     Case caze = easyRandom.nextObject(Case.class);

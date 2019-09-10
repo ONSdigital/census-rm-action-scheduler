@@ -265,38 +265,6 @@ public class FulfilmentRequestReceiverIT {
         .isEqualTo(fulfillmentCase.getCaseRef());
   }
 
-  @Test
-  public void testIndividualResponseFulfilmentRequestWithCaseMissingAtFirst()
-      throws IOException, InterruptedException {
-    caseRepository.deleteAll();
-    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
-
-    Case fulfillmentCase = easyRandom.nextObject(Case.class);
-    caseRepository.saveAndFlush(fulfillmentCase);
-
-    UUID parentCaseId = UUID.randomUUID();
-    UUID childCaseId = fulfillmentCase.getCaseId();
-    ResponseManagementEvent actionFulfilmentEvent =
-        getResponseManagementEvent(parentCaseId, PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_ENGLAND);
-    actionFulfilmentEvent.getPayload().getFulfilmentRequest().setIndividualCaseId(childCaseId);
-
-    String url = "/uacqid/create/";
-    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
-    String returnJson = objectMapper.writeValueAsString(uacQidDto);
-    givenThat(
-        post(urlEqualTo(url))
-            .willReturn(
-                aResponse()
-                    .withStatus(HttpStatus.OK.value())
-                    .withHeader("Content-Type", "application/json")
-                    .withBody(returnJson)));
-
-    rabbitQueueHelper.sendMessage(
-        eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
-
-    rabbitQueueHelper.checkNoMessagesSent(outputQueue);
-  }
-
   private void checkAddressFieldsMatch(
       Case expectedCase, Contact expectedContact, PrintFileDto actualPrintFileDto) {
     assertThat(actualPrintFileDto)

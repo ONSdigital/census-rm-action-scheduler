@@ -8,10 +8,12 @@ import java.util.UUID;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.ons.census.action.builders.CaseSelectedBuilder;
 import uk.gov.ons.census.action.client.CaseClient;
 import uk.gov.ons.census.action.messaging.FulfilmentRequestReceiver;
 import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
+import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -24,15 +26,21 @@ public class FulfilmentRequestService {
   private final RabbitTemplate rabbitTemplate;
   private final CaseClient caseClient;
   private final CaseRepository caseRepository;
+  private CaseSelectedBuilder caseSelectedBuilder;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
 
+  @Value("${queueconfig.action-case-exchange}")
+  private String actionCaseExchange;
+
   public FulfilmentRequestService(
-      RabbitTemplate rabbitTemplate, CaseClient caseClient, CaseRepository caseRepository) {
+      RabbitTemplate rabbitTemplate, CaseClient caseClient,
+      CaseRepository caseRepository, CaseSelectedBuilder caseSelectedBuilder) {
     this.rabbitTemplate = rabbitTemplate;
     this.caseClient = caseClient;
     this.caseRepository = caseRepository;
+    this.caseSelectedBuilder = caseSelectedBuilder;
   }
 
   public void processEvent(
@@ -49,6 +57,11 @@ public class FulfilmentRequestService {
       printFileDto.setQid(uacQid.getQid());
       printFileDto.setUac(uacQid.getUac());
     }
+
+    ResponseManagementEvent printCaseSelected =
+            caseSelectedBuilder.buildPrintMessage(printFileDto, null);
+
+    rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
     rabbitTemplate.convertAndSend(
         outboundExchange, ActionHandler.PRINTER.getRoutingKey(), printFileDto);
