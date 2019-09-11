@@ -1,7 +1,12 @@
 package uk.gov.ons.census.action.messaging;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
@@ -10,11 +15,13 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -22,9 +29,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.FieldworkFollowup;
+import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
+import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -49,6 +58,8 @@ public class CaseAndUacReceiverIT {
 
   @Value("${queueconfig.outbound-field-queue}")
   private String outboundFieldQueue;
+
+  @Rule public WireMockRule mockCaseApi = new WireMockRule(wireMockConfig().port(8089));
 
   @Autowired private RabbitQueueHelper rabbitQueueHelper;
   @Autowired private CaseRepository caseRepository;
@@ -115,6 +126,38 @@ public class CaseAndUacReceiverIT {
             caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
     assertThat(printFileDto.getPackCode())
         .isEqualTo(actionTypeToPackCodeMap.get(actionRule.getActionType().toString()));
+  }
+
+  @Test
+  public void checkReceivedFulfilmentCreatedEventProcessed()
+      throws InterruptedException, IOException {
+    // Given
+    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
+
+    ActionPlan actionPlan = setUpActionPlan("happy", "path");
+
+    ResponseManagementEvent caseCreatedEvent =
+        getResponseManagementEvent(actionPlan.getId().toString());
+    caseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
+
+    FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
+    fulfilmentRequestDTO.setFulfilmentCode("P_OR_I1");
+    fulfilmentRequestDTO.setCaseId(
+        UUID.fromString(caseCreatedEvent.getPayload().getCollectionCase().getId()));
+    caseCreatedEvent.getPayload().setFulfilmentRequest(fulfilmentRequestDTO);
+
+    stubCreateUacQid();
+
+    // WHEN
+    rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
+
+    // THEN
+    PrintFileDto printFileDto =
+        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
+
+    assertThat(printFileDto.getAddressLine1())
+        .isEqualTo(
+            caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
   }
 
   @Test
@@ -304,6 +347,8 @@ public class CaseAndUacReceiverIT {
     responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setAddressInvalid(false);
 
+    responseManagementEvent.getPayload().setFulfilmentRequest(null);
+
     return responseManagementEvent;
   }
 
@@ -331,5 +376,23 @@ public class CaseAndUacReceiverIT {
     actionRule.setActionPlan(actionPlan);
 
     return actionRule;
+  }
+
+  private ObjectMapper objectMapper = new ObjectMapper();
+
+  //  http://localhost:8089/uacqid/create/
+
+  private UacQidDTO stubCreateUacQid() throws JsonProcessingException {
+    UacQidDTO uacQidDto = easyRandom.nextObject(UacQidDTO.class);
+    String returnJson = objectMapper.writeValueAsString(uacQidDto);
+    String UAC_QID_CREATE_URL = "/uacqid/create/";
+    stubFor(
+        post(urlEqualTo(UAC_QID_CREATE_URL))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpStatus.OK.value())
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(returnJson)));
+    return uacQidDto;
   }
 }

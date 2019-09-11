@@ -2,9 +2,7 @@ package uk.gov.ons.census.action.messaging;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import java.util.UUID;
 import org.hamcrest.beans.SamePropertyValuesAs;
@@ -13,23 +11,31 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import uk.gov.ons.census.action.model.dto.CollectionCase;
 import uk.gov.ons.census.action.model.dto.EventType;
+import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
+import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.entity.CaseState;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
+import uk.gov.ons.census.action.service.FulfilmentRequestService;
 
 public class CaseAndUacReceiverTest {
+  private static final String INDIVIDUAL_PRINT_QUESTIONNAIRE_CODE = "P_OR_I1";
   private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final UacQidLinkRepository uacQidLinkRepository = mock(UacQidLinkRepository.class);
+  private final FulfilmentRequestService fulfilmentRequestService =
+      mock(FulfilmentRequestService.class);
+
+  private EasyRandom easyRandom = new EasyRandom();
 
   @Test
   public void testCaseCreated() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
-        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository);
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
 
@@ -46,10 +52,43 @@ public class CaseAndUacReceiverTest {
   }
 
   @Test
+  public void testCaseCreatedWithFulfilmentAttached() {
+    // given
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
+    responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
+    FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
+    fulfilmentRequestDTO.setFulfilmentCode(INDIVIDUAL_PRINT_QUESTIONNAIRE_CODE);
+    responseManagementEvent.getPayload().setFulfilmentRequest(fulfilmentRequestDTO);
+    when(fulfilmentRequestService.determineActionType(INDIVIDUAL_PRINT_QUESTIONNAIRE_CODE))
+        .thenReturn(ActionType.P_OR_IX);
+
+    // when
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
+
+    // then
+    ArgumentCaptor<Case> caseArgumentCaptor = ArgumentCaptor.forClass(Case.class);
+    verify(caseRepository, times(1)).save(caseArgumentCaptor.capture());
+    Case actualCase = caseArgumentCaptor.getAllValues().get(0);
+    Case expectedCase = getExpectedCase(responseManagementEvent.getPayload().getCollectionCase());
+
+    assertThat(actualCase, SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
+
+    verify(fulfilmentRequestService, times(1))
+        .processEvent(
+            eq(fulfilmentRequestDTO), caseArgumentCaptor.capture(), eq(ActionType.P_OR_IX));
+
+    assertThat(
+        caseArgumentCaptor.getAllValues().get(0),
+        SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
+  }
+
+  @Test
   public void testCaseUpdate() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
-        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository);
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.UAC_UPDATED);
 
@@ -68,7 +107,6 @@ public class CaseAndUacReceiverTest {
   }
 
   private ResponseManagementEvent getResponseManagementEvent() {
-    EasyRandom easyRandom = new EasyRandom();
     ResponseManagementEvent responseManagementEvent =
         easyRandom.nextObject(ResponseManagementEvent.class);
 
