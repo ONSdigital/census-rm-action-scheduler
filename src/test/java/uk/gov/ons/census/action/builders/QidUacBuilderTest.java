@@ -304,7 +304,6 @@ public class QidUacBuilderTest {
     // Given
     Case linkedCase = easyRandom.nextObject(Case.class);
     linkedCase.setTreatmentCode("HH_LF2R1E");
-    String reminderLetterPackCode = ActionType.P_RL_1RL1_1.name();
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
     when(caseClient.getUacQid(eq(linkedCase.getCaseId()), eq(ENGLISH_QUESTIONNAIRE_TYPE)))
         .thenReturn(uacQidDTO);

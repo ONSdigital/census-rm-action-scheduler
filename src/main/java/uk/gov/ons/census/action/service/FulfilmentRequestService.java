@@ -18,15 +18,13 @@ import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
-import uk.gov.ons.census.action.model.repository.CaseRepository;
 
 @Service
 public class FulfilmentRequestService {
   private static final Logger log = LoggerFactory.getLogger(FulfilmentRequestReceiver.class);
   private final RabbitTemplate rabbitTemplate;
   private final CaseClient caseClient;
-  private final CaseRepository caseRepository;
-  private CaseSelectedBuilder caseSelectedBuilder;
+  private final CaseSelectedBuilder caseSelectedBuilder;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -37,11 +35,9 @@ public class FulfilmentRequestService {
   public FulfilmentRequestService(
       RabbitTemplate rabbitTemplate,
       CaseClient caseClient,
-      CaseRepository caseRepository,
       CaseSelectedBuilder caseSelectedBuilder) {
     this.rabbitTemplate = rabbitTemplate;
     this.caseClient = caseClient;
-    this.caseRepository = caseRepository;
     this.caseSelectedBuilder = caseSelectedBuilder;
   }
 
@@ -53,7 +49,6 @@ public class FulfilmentRequestService {
 
     Optional<String> questionnaireType = determineQuestionnaireType(fulfilmentCode);
 
-    // We need to create a new UAC/QID pair because this is a letter/questionnaire for an individual
     if (questionnaireType.isPresent()) {
       UacQidDTO uacQid = caseClient.getUacQid(caze.getCaseId(), questionnaireType.get());
       printFileDto.setQid(uacQid.getQid());
@@ -152,7 +147,7 @@ public class FulfilmentRequestService {
     return printFileDto;
   }
 
-  static final Map<String, String> fulfilmentCodeToQuestionnaireType =
+  private static final Map<String, String> fulfilmentCodeToQuestionnaireType =
       Map.ofEntries(
           Map.entry("P_OR_H1", "1"),
           Map.entry("P_OR_H2", "2"),

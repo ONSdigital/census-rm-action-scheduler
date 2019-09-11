@@ -23,13 +23,13 @@ import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 import uk.gov.ons.census.action.service.FulfilmentRequestService;
 
 public class CaseAndUacReceiverTest {
-  public static final String INDIVIDUAL_PRINT_QUESTIONNAIRE_CODE = "P_OR_I1";
+  private static final String INDIVIDUAL_PRINT_QUESTIONNAIRE_CODE = "P_OR_I1";
   private final CaseRepository caseRepository = mock(CaseRepository.class);
   private final UacQidLinkRepository uacQidLinkRepository = mock(UacQidLinkRepository.class);
   private final FulfilmentRequestService fulfilmentRequestService =
       mock(FulfilmentRequestService.class);
 
-  EasyRandom easyRandom = new EasyRandom();
+  private EasyRandom easyRandom = new EasyRandom();
 
   @Test
   public void testCaseCreated() {
@@ -75,9 +75,6 @@ public class CaseAndUacReceiverTest {
 
     assertThat(actualCase, SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
 
-    ArgumentCaptor<FulfilmentRequestDTO> fulfilmentRequestDTOArgumentCaptor =
-        ArgumentCaptor.forClass(FulfilmentRequestDTO.class);
-    ArgumentCaptor<ActionType> actionTypeArgumentCaptor = ArgumentCaptor.forClass(ActionType.class);
     verify(fulfilmentRequestService, times(1))
         .processEvent(
             eq(fulfilmentRequestDTO), caseArgumentCaptor.capture(), eq(ActionType.P_OR_IX));

@@ -23,7 +23,6 @@ public class PrintFileDtoBuilderTest {
   private static final String WELSH_QID = "WELSH_QID";
   private static final UUID BATCH_UUID = UUID.randomUUID();
   private static final ActionType expectedActionType = ActionType.ICL1E;
-  private static final String P_IC_ICL1 = "P_IC_ICL1";
 
   private final HashMap<ActionType, String> actionTypeToPackCodeMap =
       new HashMap<>() {

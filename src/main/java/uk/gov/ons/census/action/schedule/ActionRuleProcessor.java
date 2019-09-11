@@ -85,7 +85,7 @@ public class ActionRuleProcessor {
       specification = specification.and(isClassifierIn(classifier.getKey(), classifier.getValue()));
     }
 
-    try (Stream<Case> cases = customCaseRepository.streamAll(specification); ) {
+    try (Stream<Case> cases = customCaseRepository.streamAll(specification)) {
       executeCases(cases, triggeredActionRule);
     }
   }

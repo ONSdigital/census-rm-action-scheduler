@@ -3,7 +3,6 @@ package uk.gov.ons.census.action.messaging;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
-import java.util.UUID;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +22,6 @@ public class FulfilmentRequestReceiverTest {
   private static final String PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_ENGLISH = "P_OR_I2";
   private static final String PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_WALES_WELSH = "P_OR_I2W";
   private static final String PRINT_INDIVIDUAL_QUESTIONNAIRE_REQUEST_NORTHERN_IRELAND = "P_OR_I4";
-  private static UUID TEST_INDIVIDUAL_CASE_ID = UUID.randomUUID();
 
   @Mock private CaseRepository caseRepository;
   @Mock private FulfilmentRequestService fulfilmentRequestService;
