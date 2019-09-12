@@ -15,6 +15,7 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 
 @Configuration
 @EnableScheduling
@@ -91,36 +92,48 @@ public class AppConfig {
   }
 
   @Bean
-  public SimpleMessageListenerContainer container(ConnectionFactory connectionFactory) {
-    SimpleMessageListenerContainer container =
-        new SimpleMessageListenerContainer(connectionFactory);
-    container.setQueueNames(inboundQueue);
-    container.setConcurrentConsumers(consumers);
-    return container;
+  public SimpleMessageListenerContainer container(
+      ConnectionFactory connectionFactory, MessageErrorHandler messageErrorHandler) {
+    return setupListenerContainer(
+        connectionFactory, inboundQueue, messageErrorHandler, ResponseManagementEvent.class);
   }
 
   @Bean
   public SimpleMessageListenerContainer actionFulfilmentContainer(
-      ConnectionFactory connectionFactory) {
-    SimpleMessageListenerContainer container =
-        new SimpleMessageListenerContainer(connectionFactory);
-    container.setQueueNames(actionFulfilmentQueue);
-    container.setConcurrentConsumers(consumers);
-    return container;
+      ConnectionFactory connectionFactory, MessageErrorHandler messageErrorHandler) {
+    return setupListenerContainer(
+        connectionFactory,
+        actionFulfilmentQueue,
+        messageErrorHandler,
+        ResponseManagementEvent.class);
   }
 
   @Bean
   public SimpleMessageListenerContainer undeliveredMailContainer(
-      ConnectionFactory connectionFactory) {
-    SimpleMessageListenerContainer container =
-        new SimpleMessageListenerContainer(connectionFactory);
-    container.setQueueNames(undeliveredMailQueue);
-    container.setConcurrentConsumers(consumers);
-    return container;
+      ConnectionFactory connectionFactory, MessageErrorHandler messageErrorHandler) {
+    return setupListenerContainer(
+        connectionFactory,
+        undeliveredMailQueue,
+        messageErrorHandler,
+        ResponseManagementEvent.class);
   }
 
   @Bean
   public AmqpAdmin amqpAdmin(ConnectionFactory connectionFactory) {
     return new RabbitAdmin(connectionFactory);
+  }
+
+  private SimpleMessageListenerContainer setupListenerContainer(
+      ConnectionFactory connectionFactory,
+      String queueName,
+      MessageErrorHandler messageErrorHandler,
+      Class expectedClass) {
+    SimpleMessageListenerContainer container =
+        new SimpleMessageListenerContainer(connectionFactory);
+    container.setQueueNames(queueName);
+    container.setConcurrentConsumers(consumers);
+    messageErrorHandler.setExpectedType(expectedClass);
+    container.setErrorHandler(messageErrorHandler);
+    return container;
   }
 }
