@@ -1,4 +1,4 @@
-FROM openjdk:11-slim
+FROM openjdk:11-jdk-slim
 
 ARG JAR_FILE=census-rm-action-scheduler*.jar
 COPY target/$JAR_FILE /opt/census-rm-action-scheduler.jar
