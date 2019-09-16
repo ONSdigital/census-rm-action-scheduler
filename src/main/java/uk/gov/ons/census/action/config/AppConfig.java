@@ -1,5 +1,7 @@
 package uk.gov.ons.census.action.config;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -88,7 +90,9 @@ public class AppConfig {
 
   @Bean
   public Jackson2JsonMessageConverter messageConverter() {
-    return new Jackson2JsonMessageConverter();
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    return new Jackson2JsonMessageConverter(objectMapper);
   }
 
   @Bean
