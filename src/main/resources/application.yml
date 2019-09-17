@@ -55,3 +55,6 @@ scheduler:
 caseapi:
   host: caseapi
   port: 8161
+
+messagelogging:
+  logstacktraces: false

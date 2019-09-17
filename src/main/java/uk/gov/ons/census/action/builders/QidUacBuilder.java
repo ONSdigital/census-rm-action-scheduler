@@ -58,7 +58,7 @@ public class QidUacBuilder {
         uacQidLinkRepository.findByCaseId(linkedCase.getCaseId().toString());
 
     if (uacQidLinks == null || uacQidLinks.isEmpty()) {
-      throw new RuntimeException(); // We can't process this case with no UACs
+      throw new RuntimeException("We can't process this case with no UACs");
 
     } else if (!actionType.equals(ActionType.ICHHQW)
         && isStateCorrectForSingleUacQidPair(linkedCase, uacQidLinks)) {
@@ -69,8 +69,7 @@ public class QidUacBuilder {
       return getUacQidTupleWithSecondWelshPair(uacQidLinks);
 
     } else {
-      throw new RuntimeException(); // We can't process this case with the wrong number of UACs for
-      // it's treatment code
+      throw new RuntimeException("Wrong number of UACs for treatment code");
     }
   }
 
@@ -141,12 +140,11 @@ public class QidUacBuilder {
       if (uacQidLink.getQid().startsWith(wantedQuestionnaireType)) {
         return uacQidLink;
       } else if (!uacQidLink.getQid().startsWith(otherAllowableQuestionnaireType)) {
-        // This shouldn't happen - why have we got non-allowable type on this case?
-        throw new RuntimeException();
+        throw new RuntimeException("Non allowable type on case");
       }
     }
 
-    throw new RuntimeException(); // We can't find the one we wanted
+    throw new RuntimeException("Can't find UAC QID for case");
   }
 
   private boolean isInitialContactActionType(ActionType actionType) {
@@ -192,6 +190,6 @@ public class QidUacBuilder {
       throw new IllegalArgumentException();
     }
 
-    throw new RuntimeException(); // This code should be unreachable
+    throw new RuntimeException("Unprocessable treatment code");
   }
 }

@@ -59,7 +59,7 @@ public class CaseAndUacReceiver {
     } else {
       // This code can't be reached because under the class structure the EventType is limited to
       // enums at this point?
-      throw new RuntimeException(); // Unexpected event type - maybe throw away?
+      throw new RuntimeException("Unexpected event type");
     }
   }
 
@@ -76,7 +76,7 @@ public class CaseAndUacReceiver {
 
     if (cazeOpt.isEmpty()) {
       log.error(String.format(CASE_NOT_FOUND_ERROR, caseId));
-      throw new RuntimeException();
+      throw new RuntimeException(String.format(CASE_NOT_FOUND_ERROR, caseId));
     }
 
     Case updatedCase = cazeOpt.get();
