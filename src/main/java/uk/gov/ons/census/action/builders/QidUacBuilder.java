@@ -53,12 +53,13 @@ public class QidUacBuilder {
   }
 
   private UacQidTuple fetchExistingUacQidPairsForAction(Case linkedCase, ActionType actionType) {
+    String caseId = linkedCase.getCaseId().toString();
 
-    List<UacQidLink> uacQidLinks =
-        uacQidLinkRepository.findByCaseId(linkedCase.getCaseId().toString());
+    List<UacQidLink> uacQidLinks = uacQidLinkRepository.findByCaseId(caseId);
 
     if (uacQidLinks == null || uacQidLinks.isEmpty()) {
-      throw new RuntimeException("We can't process this case with no UACs");
+      throw new RuntimeException(
+          String.format("We can't process this case id '%s' with no UACs", caseId));
 
     } else if (!actionType.equals(ActionType.ICHHQW)
         && isStateCorrectForSingleUacQidPair(linkedCase, uacQidLinks)) {
@@ -69,7 +70,8 @@ public class QidUacBuilder {
       return getUacQidTupleWithSecondWelshPair(uacQidLinks);
 
     } else {
-      throw new RuntimeException("Wrong number of UACs for treatment code");
+      throw new RuntimeException(
+          String.format("Wrong number of UACs for treatment code '%s'", actionType));
     }
   }
 
@@ -140,11 +142,13 @@ public class QidUacBuilder {
       if (uacQidLink.getQid().startsWith(wantedQuestionnaireType)) {
         return uacQidLink;
       } else if (!uacQidLink.getQid().startsWith(otherAllowableQuestionnaireType)) {
-        throw new RuntimeException("Non allowable type on case");
+        throw new RuntimeException(
+            String.format("Non allowable type  '%s' on case", uacQidLink.getQid()));
       }
     }
 
-    throw new RuntimeException("Can't find UAC QID for case");
+    throw new RuntimeException(
+        String.format("Can't find UAC QID '%s' for case", otherAllowableQuestionnaireType));
   }
 
   private boolean isInitialContactActionType(ActionType actionType) {
@@ -190,6 +194,6 @@ public class QidUacBuilder {
       throw new IllegalArgumentException();
     }
 
-    throw new RuntimeException("Unprocessable treatment code");
+    throw new RuntimeException(String.format("Unprocessable treatment code '%s'", treatmentCode));
   }
 }
