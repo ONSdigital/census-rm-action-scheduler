@@ -40,7 +40,9 @@ public class CaseAndUacReceiver {
   @Transactional
   @ServiceActivator(inputChannel = "caseCreatedInputChannel")
   public void receiveEvent(ResponseManagementEvent responseManagementEvent) {
-    if (responseManagementEvent.getEvent().getType() == EventType.CASE_CREATED) {
+    EventType eventType = responseManagementEvent.getEvent().getType();
+
+    if (eventType == EventType.CASE_CREATED) {
       Case caze = processCaseCreatedEvent(responseManagementEvent.getPayload().getCollectionCase());
 
       // We can get sent a fulfilment request along with the case, which we need to process
@@ -52,14 +54,14 @@ public class CaseAndUacReceiver {
         fulfilmentRequestService.processEvent(
             responseManagementEvent.getPayload().getFulfilmentRequest(), caze, actionType);
       }
-    } else if (responseManagementEvent.getEvent().getType() == EventType.UAC_UPDATED) {
+    } else if (eventType == EventType.UAC_UPDATED) {
       processUacUpdated(responseManagementEvent.getPayload().getUac());
-    } else if (responseManagementEvent.getEvent().getType() == EventType.CASE_UPDATED) {
+    } else if (eventType == EventType.CASE_UPDATED) {
       processCaseUpdatedEvent(responseManagementEvent.getPayload().getCollectionCase());
     } else {
       // This code can't be reached because under the class structure the EventType is limited to
       // enums at this point?
-      throw new RuntimeException(); // Unexpected event type - maybe throw away?
+      throw new RuntimeException(String.format("Unexpected event type '%s'", eventType));
     }
   }
 
@@ -76,7 +78,7 @@ public class CaseAndUacReceiver {
 
     if (cazeOpt.isEmpty()) {
       log.error(String.format(CASE_NOT_FOUND_ERROR, caseId));
-      throw new RuntimeException();
+      throw new RuntimeException(String.format(CASE_NOT_FOUND_ERROR, caseId));
     }
 
     Case updatedCase = cazeOpt.get();

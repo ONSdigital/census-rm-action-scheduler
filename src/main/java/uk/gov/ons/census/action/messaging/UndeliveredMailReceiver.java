@@ -47,7 +47,7 @@ public class UndeliveredMailReceiver {
     if (!StringUtils.isEmpty(questionnaireId)) {
       Optional<UacQidLink> uacQidLinkOpt = uacQidLinkRepository.findByQid(questionnaireId);
       if (uacQidLinkOpt.isEmpty()) {
-        throw new RuntimeException(); // This should never happen
+        throw new RuntimeException(String.format("Can't find by QID %s", questionnaireId));
       }
 
       caseOpt = caseRepository.findByCaseId(UUID.fromString(uacQidLinkOpt.get().getCaseId()));
@@ -57,7 +57,10 @@ public class UndeliveredMailReceiver {
     }
 
     if (caseOpt.isEmpty()) {
-      throw new RuntimeException(); // This should never happen
+      throw new RuntimeException(
+          String.format(
+              "Can't find by Case Ref %s",
+              event.getPayload().getFulfilmentInformation().getCaseRef()));
     }
 
     Case caze = caseOpt.get();
