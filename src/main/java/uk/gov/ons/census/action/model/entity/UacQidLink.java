@@ -21,4 +21,6 @@ public class UacQidLink {
   @Column private String caseId;
 
   @Column private boolean active;
+
+  @Column private boolean ccsCase;
 }
