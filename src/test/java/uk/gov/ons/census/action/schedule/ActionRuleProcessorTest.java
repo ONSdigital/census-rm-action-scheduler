@@ -70,6 +70,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
+            caseClassifier,
             actionRuleRepo,
             fieldworkFollowupBuilder,
             printFileDtoBuilder,
@@ -112,6 +113,7 @@ public class ActionRuleProcessorTest {
 
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
+            caseClassifier,
             actionRuleRepo,
             fieldworkFollowupBuilder,
             printFileDtoBuilder,
@@ -164,6 +166,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
+            caseClassifier,
             actionRuleRepo,
             fieldworkFollowupBuilder,
             printFileDtoBuilder,
@@ -215,6 +218,7 @@ public class ActionRuleProcessorTest {
     // when
     ActionRuleProcessor actionRuleProcessor =
         new ActionRuleProcessor(
+            caseClassifier,
             actionRuleRepo,
             fieldworkFollowupBuilder,
             printFileDtoBuilder,
