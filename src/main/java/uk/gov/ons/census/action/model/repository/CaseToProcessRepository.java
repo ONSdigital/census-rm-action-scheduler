@@ -12,9 +12,7 @@ import uk.gov.ons.census.action.model.entity.CaseToProcess;
 public interface CaseToProcessRepository extends JpaRepository<CaseToProcess, UUID> {
 
   @Query(
-      value = "SELECT * FROM case_to_process LIMIT :limit FOR UPDATE SKIP LOCKED",
+      value = "SELECT * FROM actionv2.case_to_process LIMIT :limit FOR UPDATE SKIP LOCKED",
       nativeQuery = true)
   Stream<CaseToProcess> findChunkToProcess(@Param("limit") int limit);
-
-  boolean exists();
 }

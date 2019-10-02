@@ -40,6 +40,7 @@ import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.repository.ActionPlanRepository;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
+import uk.gov.ons.census.action.model.repository.CaseToProcessRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @ContextConfiguration
@@ -66,6 +67,7 @@ public class CaseAndUacReceiverIT {
   @Autowired private UacQidLinkRepository uacQidLinkRepository;
   @Autowired private ActionRuleRepository actionRuleRepository;
   @Autowired private ActionPlanRepository actionPlanRepository;
+  @Autowired private CaseToProcessRepository caseToProcessRepository;
   private EasyRandom easyRandom = new EasyRandom();
 
   private final HashMap<String, String> actionTypeToPackCodeMap =
@@ -86,6 +88,7 @@ public class CaseAndUacReceiverIT {
     rabbitQueueHelper.purgeQueue(inboundQueue);
     rabbitQueueHelper.purgeQueue(outboundPrinterQueue);
     uacQidLinkRepository.deleteAllInBatch();
+    caseToProcessRepository.deleteAllInBatch();
     caseRepository.deleteAllInBatch();
     actionRuleRepository.deleteAllInBatch();
     actionPlanRepository.deleteAll();

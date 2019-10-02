@@ -63,7 +63,7 @@ public class CaseToProcessPoller {
               caseToProcessRepository.delete(caseToProcess);
             });
       }
-    } while (caseToProcessRepository.exists()); // Don't go to sleep while there's work to do
+    } while (caseToProcessRepository.count() > 0); // Don't go to sleep while there's work to do
   }
 
   private void process(CaseToProcess caseToProcess) {

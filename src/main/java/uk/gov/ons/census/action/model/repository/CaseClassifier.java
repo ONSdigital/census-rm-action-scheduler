@@ -21,10 +21,10 @@ public class CaseClassifier {
     UUID batchId = UUID.randomUUID();
 
     jdbcTemplate.update(
-        "insert into actionv2.case_to_process (select gen_random_uuid(), "
-            + "?, count(*) OVER (), ?, case_ref from actionv2.cases "
-            + buildWhereClause(actionRule.getActionPlan().getId(), actionRule.getClassifiers())
-            + ")",
+        "insert into actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
+            + "caze_case_ref) select ?, count(*) OVER (), ?, case_ref from "
+            + "actionv2.cases "
+            + buildWhereClause(actionRule.getActionPlan().getId(), actionRule.getClassifiers()),
         batchId,
         actionRule.getId());
   }
