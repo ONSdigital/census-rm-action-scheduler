@@ -52,7 +52,7 @@ public enum ActionType {
 
   ActionType(ActionHandler handler) {
     this.handler = handler;
-    this.packCode = null;
+    this.packCode = this.name();
   }
 
   ActionType(ActionHandler handler, String packCode) {
@@ -65,10 +65,6 @@ public enum ActionType {
   }
 
   public String getPackCode() {
-    if (packCode == null) {
-      return this.name();
-    } else {
-      return packCode;
-    }
+    return packCode;
   }
 }
