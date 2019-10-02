@@ -230,54 +230,6 @@ public class CaseAndUacReceiverIT {
     rabbitQueueHelper.checkNoMessagesSent(outputQueue);
   }
 
-  @Ignore // This test won't work anymore because 'triggered' action rule cases are queued up
-  @Test
-  public void checkCaseWithNoLinkedUACQuidDoesntSendThenWorksWhenUACAdded()
-      throws InterruptedException, IOException {
-    // Given
-    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
-
-    ActionPlan actionPlan = setUpActionPlan("no Quid", "or links");
-    actionPlanRepository.saveAndFlush(actionPlan);
-    ActionRule actionRule = setUpActionRule(actionPlan);
-    actionRuleRepository.saveAndFlush(actionRule);
-
-    ResponseManagementEvent caseCreatedEvent =
-        getResponseManagementEvent(actionPlan.getId().toString());
-    caseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
-
-    // WHEN
-    rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
-
-    // THEN
-    rabbitQueueHelper.checkNoMessagesSent(outputQueue);
-
-    actionRule = actionRuleRepository.findById(actionRule.getId()).get();
-    assertThat(actionRule.getHasTriggered()).isEqualTo(false);
-
-    // Now add the UAC and check that it then runs successfully
-    Uac uac = getUac(caseCreatedEvent);
-    ResponseManagementEvent uacUpdatedEvent =
-        getResponseManagementEvent(actionPlan.getId().toString());
-    uacUpdatedEvent.getEvent().setType(EventType.UAC_UPDATED);
-    uacUpdatedEvent.getPayload().setUac(uac);
-    rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
-
-    // THEN
-    PrintFileDto printFileDto =
-        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
-
-    actionRule = actionRuleRepository.findById(actionRule.getId()).get();
-
-    assertThat(printFileDto.getAddressLine1())
-        .isEqualTo(
-            caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
-    assertThat(printFileDto.getPackCode())
-        .isEqualTo(actionTypeToPackCodeMap.get(actionRule.getActionType().toString()));
-
-    assertThat(actionRule.getHasTriggered()).isEqualTo(true);
-  }
-
   @Test
   public void checkNoMessagesSentWhenTransactionRollback() throws InterruptedException {
     // Given
