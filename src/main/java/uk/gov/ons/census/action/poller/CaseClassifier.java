@@ -21,8 +21,8 @@ public class CaseClassifier {
     UUID batchId = UUID.randomUUID();
 
     jdbcTemplate.update(
-        "insert into actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
-            + "caze_case_ref) select ?, count(*) OVER (), ?, case_ref from "
+        "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
+            + "caze_case_ref) SELECT ?, COUNT(*) OVER (), ?, case_ref FROM "
             + "actionv2.cases "
             + buildWhereClause(actionRule.getActionPlan().getId(), actionRule.getClassifiers()),
         batchId,
@@ -31,11 +31,11 @@ public class CaseClassifier {
 
   private String buildWhereClause(UUID actionPlanId, Map<String, List<String>> classifiers) {
     StringBuilder whereClause = new StringBuilder();
-    whereClause.append(String.format("where action_plan_id='%s'", actionPlanId.toString()));
-    whereClause.append(" and receipt_received='f'");
-    whereClause.append(" and refusal_received='f'");
-    whereClause.append(" and address_invalid='f'");
-    whereClause.append(" and case_type != 'HI'");
+    whereClause.append(String.format("WHERE action_plan_id='%s'", actionPlanId.toString()));
+    whereClause.append(" AND receipt_received='f'");
+    whereClause.append(" AND refusal_received='f'");
+    whereClause.append(" AND address_invalid='f'");
+    whereClause.append(" AND case_type != 'HI'");
 
     for (Map.Entry<String, List<String>> classifier : classifiers.entrySet()) {
       String inClauseValues =
@@ -45,7 +45,7 @@ public class CaseClassifier {
                   .map(value -> ("'" + value + "'"))
                   .collect(Collectors.toList()));
 
-      whereClause.append(String.format(" and %s in (%s)", classifier.getKey(), inClauseValues));
+      whereClause.append(String.format(" AND %s IN (%s)", classifier.getKey(), inClauseValues));
     }
 
     return whereClause.toString();
