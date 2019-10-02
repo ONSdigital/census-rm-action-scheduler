@@ -52,7 +52,7 @@ public class CaseToProcessPoller {
     this.rabbitTemplate = rabbitTemplate;
   }
 
-  @Scheduled(fixedDelayString = "60000")
+  @Scheduled(fixedDelayString = "1000")
   @Transactional
   public void processQueuedCases() {
     do {
