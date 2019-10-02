@@ -51,6 +51,7 @@ healthcheck:
 
 scheduler:
   frequency: 1000 #milliseconds
+  chunksize: 1000
 
 caseapi:
   host: caseapi

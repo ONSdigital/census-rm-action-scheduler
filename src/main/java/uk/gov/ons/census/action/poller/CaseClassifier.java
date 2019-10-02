@@ -1,4 +1,4 @@
-package uk.gov.ons.census.action.model.repository;
+package uk.gov.ons.census.action.poller;
 
 import java.util.List;
 import java.util.Map;
@@ -38,16 +38,14 @@ public class CaseClassifier {
     whereClause.append(" and case_type != 'HI'");
 
     for (Map.Entry<String, List<String>> classifier : classifiers.entrySet()) {
-      whereClause.append(String.format(" and %s in (", classifier.getKey()));
-
-      whereClause.append(
+      String inClauseValues =
           String.join(
               ",",
               classifier.getValue().stream()
                   .map(value -> ("'" + value + "'"))
-                  .collect(Collectors.toList())));
+                  .collect(Collectors.toList()));
 
-      whereClause.append(String.format(")"));
+      whereClause.append(String.format(" and %s in (%s)", classifier.getKey(), inClauseValues));
     }
 
     return whereClause.toString();

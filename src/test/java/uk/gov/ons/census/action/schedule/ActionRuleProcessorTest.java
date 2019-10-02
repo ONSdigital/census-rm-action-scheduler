@@ -17,7 +17,7 @@ import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
-import uk.gov.ons.census.action.model.repository.CaseClassifier;
+import uk.gov.ons.census.action.poller.CaseClassifier;
 
 public class ActionRuleProcessorTest {
   private final ActionRuleRepository actionRuleRepo = mock(ActionRuleRepository.class);

@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
-import uk.gov.ons.census.action.model.repository.CaseClassifier;
+import uk.gov.ons.census.action.poller.CaseClassifier;
 
 @Component
 public class ActionRuleProcessor {
