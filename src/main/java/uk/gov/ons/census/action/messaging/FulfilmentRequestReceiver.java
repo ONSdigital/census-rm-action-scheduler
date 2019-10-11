@@ -57,7 +57,6 @@ public class FulfilmentRequestReceiver {
   private Case fetchFulfilmentCase(UUID caseId) {
     Optional<Case> fulfilmentCase = caseRepository.findByCaseId(caseId);
     if (fulfilmentCase.isEmpty()) {
-      log.with("caseId", caseId).error("Cannot find Case for fulfilment request.");
       throw new RuntimeException(
           String.format("Cannot find case %s for fulfilment request.", caseId));
     }

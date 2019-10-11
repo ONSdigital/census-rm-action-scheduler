@@ -158,8 +158,8 @@ public class QidUacBuilder {
   public static String calculateQuestionnaireType(String treatmentCode) {
     String country = treatmentCode.substring(treatmentCode.length() - 1);
     if (!country.equals("E") && !country.equals("W") && !country.equals("N")) {
-      log.with("treatment_code", treatmentCode).error(UNKNOWN_COUNTRY_ERROR);
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("Unknown Country for treatment code %s", treatmentCode));
     }
 
     if (treatmentCode.startsWith("HH")) {
@@ -190,8 +190,8 @@ public class QidUacBuilder {
           return "34";
       }
     } else {
-      log.with("treatment_code", treatmentCode).error(UNEXPECTED_CASE_TYPE_ERROR);
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("Unexpected Case Type fortreatment code '%s'", treatmentCode));
     }
 
     throw new RuntimeException(String.format("Unprocessable treatment code '%s'", treatmentCode));

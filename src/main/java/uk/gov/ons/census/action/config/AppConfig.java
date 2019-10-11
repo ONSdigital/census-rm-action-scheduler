@@ -17,12 +17,17 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import uk.gov.ons.census.action.client.ExceptionManagerClient;
+import uk.gov.ons.census.action.messaging.MessageErrorHandler;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 
 @Configuration
 @EnableScheduling
 @EnableTransactionManagement
 public class AppConfig {
+  @Value("${messagelogging.logstacktraces}")
+  private boolean logStackTraces;
+
   @Value("${queueconfig.inbound-queue}")
   private String inboundQueue;
 
@@ -97,28 +102,28 @@ public class AppConfig {
 
   @Bean
   public SimpleMessageListenerContainer container(
-      ConnectionFactory connectionFactory, MessageErrorHandler messageErrorHandler) {
+      ConnectionFactory connectionFactory, ExceptionManagerClient exceptionManagerClient) {
     return setupListenerContainer(
-        connectionFactory, inboundQueue, messageErrorHandler, ResponseManagementEvent.class);
+        connectionFactory, inboundQueue, exceptionManagerClient, ResponseManagementEvent.class);
   }
 
   @Bean
   public SimpleMessageListenerContainer actionFulfilmentContainer(
-      ConnectionFactory connectionFactory, MessageErrorHandler messageErrorHandler) {
+      ConnectionFactory connectionFactory, ExceptionManagerClient exceptionManagerClient) {
     return setupListenerContainer(
         connectionFactory,
         actionFulfilmentQueue,
-        messageErrorHandler,
+        exceptionManagerClient,
         ResponseManagementEvent.class);
   }
 
   @Bean
   public SimpleMessageListenerContainer undeliveredMailContainer(
-      ConnectionFactory connectionFactory, MessageErrorHandler messageErrorHandler) {
+      ConnectionFactory connectionFactory, ExceptionManagerClient exceptionManagerClient) {
     return setupListenerContainer(
         connectionFactory,
         undeliveredMailQueue,
-        messageErrorHandler,
+        exceptionManagerClient,
         ResponseManagementEvent.class);
   }
 
@@ -130,13 +135,19 @@ public class AppConfig {
   private SimpleMessageListenerContainer setupListenerContainer(
       ConnectionFactory connectionFactory,
       String queueName,
-      MessageErrorHandler messageErrorHandler,
-      Class expectedClass) {
+      ExceptionManagerClient exceptionManagerClient,
+      Class expectedMessageType) {
     SimpleMessageListenerContainer container =
         new SimpleMessageListenerContainer(connectionFactory);
     container.setQueueNames(queueName);
     container.setConcurrentConsumers(consumers);
-    messageErrorHandler.setExpectedType(expectedClass);
+    MessageErrorHandler messageErrorHandler =
+        new MessageErrorHandler(
+            exceptionManagerClient,
+            expectedMessageType,
+            logStackTraces,
+            "Action Scheduler",
+            queueName);
     container.setErrorHandler(messageErrorHandler);
     container.setChannelTransacted(true);
     return container;
