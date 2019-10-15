@@ -191,7 +191,7 @@ public class QidUacBuilder {
       }
     } else {
       throw new IllegalArgumentException(
-          String.format("Unexpected Case Type fortreatment code '%s'", treatmentCode));
+          String.format("Unexpected Case Type for treatment code '%s'", treatmentCode));
     }
 
     throw new RuntimeException(String.format("Unprocessable treatment code '%s'", treatmentCode));
