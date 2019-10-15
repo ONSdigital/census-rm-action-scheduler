@@ -44,6 +44,10 @@ queueconfig:
   action-case-exchange: action-case-exchange
   undelivered-mail-queue: action.undeliveredMailQueue
   consumers: 50
+  retry-attempts: 3
+  retry-delay: 1000 #milliseconds
+  retry-exchange: delayedRedeliveryExchange
+  quarantine-exchange: quarantineExchange
 
 healthcheck:
   frequency: 1000 #milliseconds
@@ -55,6 +59,12 @@ scheduler:
 caseapi:
   host: caseapi
   port: 8161
+
+exceptionmanager:
+  connection:
+    scheme: http
+    host: localhost
+    port: 8666
 
 messagelogging:
   logstacktraces: false
