@@ -1,7 +1,5 @@
 package uk.gov.ons.census.action.messaging;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -21,7 +19,6 @@ import uk.gov.ons.census.action.service.FulfilmentRequestService;
 
 @MessageEndpoint
 public class CaseAndUacReceiver {
-  private static final Logger log = LoggerFactory.getLogger(CaseAndUacReceiver.class);
   private static final String CASE_NOT_FOUND_ERROR = "Failed to find case by case id '%s'";
 
   private final CaseRepository caseRepository;
@@ -77,7 +74,6 @@ public class CaseAndUacReceiver {
     Optional<Case> cazeOpt = caseRepository.findByCaseId(UUID.fromString(caseId));
 
     if (cazeOpt.isEmpty()) {
-      log.error(String.format(CASE_NOT_FOUND_ERROR, caseId));
       throw new RuntimeException(String.format(CASE_NOT_FOUND_ERROR, caseId));
     }
 
