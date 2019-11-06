@@ -40,6 +40,7 @@ import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.repository.ActionPlanRepository;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
+import uk.gov.ons.census.action.model.repository.CaseToProcessRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 
 @ContextConfiguration
@@ -66,6 +67,7 @@ public class CaseAndUacReceiverIT {
   @Autowired private UacQidLinkRepository uacQidLinkRepository;
   @Autowired private ActionRuleRepository actionRuleRepository;
   @Autowired private ActionPlanRepository actionPlanRepository;
+  @Autowired private CaseToProcessRepository caseToProcessRepository;
   private EasyRandom easyRandom = new EasyRandom();
 
   private final HashMap<String, String> actionTypeToPackCodeMap =
@@ -86,6 +88,7 @@ public class CaseAndUacReceiverIT {
     rabbitQueueHelper.purgeQueue(inboundQueue);
     rabbitQueueHelper.purgeQueue(outboundPrinterQueue);
     uacQidLinkRepository.deleteAllInBatch();
+    caseToProcessRepository.deleteAllInBatch();
     caseRepository.deleteAllInBatch();
     actionRuleRepository.deleteAllInBatch();
     actionPlanRepository.deleteAll();
@@ -224,53 +227,6 @@ public class CaseAndUacReceiverIT {
 
     // THEN
     rabbitQueueHelper.checkNoMessagesSent(outputQueue);
-  }
-
-  @Test
-  public void checkCaseWithNoLinkedUACQuidDoesntSendThenWorksWhenUACAdded()
-      throws InterruptedException, IOException {
-    // Given
-    BlockingQueue<String> outputQueue = rabbitQueueHelper.listen(outboundPrinterQueue);
-
-    ActionPlan actionPlan = setUpActionPlan("no Quid", "or links");
-    actionPlanRepository.saveAndFlush(actionPlan);
-    ActionRule actionRule = setUpActionRule(actionPlan);
-    actionRuleRepository.saveAndFlush(actionRule);
-
-    ResponseManagementEvent caseCreatedEvent =
-        getResponseManagementEvent(actionPlan.getId().toString());
-    caseCreatedEvent.getEvent().setType(EventType.CASE_CREATED);
-
-    // WHEN
-    rabbitQueueHelper.sendMessage(inboundQueue, caseCreatedEvent);
-
-    // THEN
-    rabbitQueueHelper.checkNoMessagesSent(outputQueue);
-
-    actionRule = actionRuleRepository.findById(actionRule.getId()).get();
-    assertThat(actionRule.getHasTriggered()).isEqualTo(false);
-
-    // Now add the UAC and check that it then runs successfully
-    Uac uac = getUac(caseCreatedEvent);
-    ResponseManagementEvent uacUpdatedEvent =
-        getResponseManagementEvent(actionPlan.getId().toString());
-    uacUpdatedEvent.getEvent().setType(EventType.UAC_UPDATED);
-    uacUpdatedEvent.getPayload().setUac(uac);
-    rabbitQueueHelper.sendMessage(inboundQueue, uacUpdatedEvent);
-
-    // THEN
-    PrintFileDto printFileDto =
-        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
-
-    actionRule = actionRuleRepository.findById(actionRule.getId()).get();
-
-    assertThat(printFileDto.getAddressLine1())
-        .isEqualTo(
-            caseCreatedEvent.getPayload().getCollectionCase().getAddress().getAddressLine1());
-    assertThat(printFileDto.getPackCode())
-        .isEqualTo(actionTypeToPackCodeMap.get(actionRule.getActionType().toString()));
-
-    assertThat(actionRule.getHasTriggered()).isEqualTo(true);
   }
 
   @Test

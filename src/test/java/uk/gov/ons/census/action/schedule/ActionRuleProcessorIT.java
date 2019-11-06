@@ -50,6 +50,7 @@ import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.repository.ActionPlanRepository;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
+import uk.gov.ons.census.action.model.repository.CaseToProcessRepository;
 
 @ContextConfiguration
 @SpringBootTest
@@ -73,6 +74,7 @@ public class ActionRuleProcessorIT {
   @Autowired private CaseRepository caseRepository;
   @Autowired private ActionRuleRepository actionRuleRepository;
   @Autowired private ActionPlanRepository actionPlanRepository;
+  @Autowired private CaseToProcessRepository caseToProcessRepository;
 
   private static final EasyRandom easyRandom = new EasyRandom();
 
@@ -92,6 +94,7 @@ public class ActionRuleProcessorIT {
     rabbitQueueHelper.purgeQueue(outboundPrinterQueue);
     rabbitQueueHelper.purgeQueue(outboundFieldQueue);
     rabbitQueueHelper.purgeQueue(actionCaseQueue);
+    caseToProcessRepository.deleteAllInBatch();
     caseRepository.deleteAllInBatch();
     actionRuleRepository.deleteAllInBatch();
     actionPlanRepository.deleteAll();
