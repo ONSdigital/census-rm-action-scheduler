@@ -29,7 +29,7 @@ The Action Scheduler exposes a RESTful API to allow new Action Plans, Action Rul
 
 To test this service locally use:
 
-```shell-scrip
+```shell-script
 mvn clean install
 ```   
 This will run all of the unit tests, then if successful create a docker image for this application 
