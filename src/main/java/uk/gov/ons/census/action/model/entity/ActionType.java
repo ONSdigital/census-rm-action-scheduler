@@ -1,16 +1,15 @@
 package uk.gov.ons.census.action.model.entity;
 
 public enum ActionType {
-
   // Initial contact letters
-  ICL1E(ActionHandler.PRINTER), // Census initial contact letter for England
-  ICL2W(ActionHandler.PRINTER), // Census initial contact letter for Wales
-  ICL4N(ActionHandler.PRINTER), // Census initial contact letter for NI
+  ICL1E(ActionHandler.PRINTER, "P_IC_ICL1"), // Census initial contact letter for England
+  ICL2W(ActionHandler.PRINTER, "P_IC_ICL2B"), // Census initial contact letter for Wales
+  ICL4N(ActionHandler.PRINTER, "P_IC_ICL4"), // Census initial contact letter for NI
 
   // Initial contact questionnaires
-  ICHHQE(ActionHandler.PRINTER), // Census household questionnaire for England
-  ICHHQW(ActionHandler.PRINTER), // Census household questionnaire for Wales
-  ICHHQN(ActionHandler.PRINTER), // Census household questionnaire for NI
+  ICHHQE(ActionHandler.PRINTER, "P_IC_H1"), // Census household questionnaire for England
+  ICHHQW(ActionHandler.PRINTER, "P_IC_H2"), // Census household questionnaire for Wales
+  ICHHQN(ActionHandler.PRINTER, "P_IC_H4"), // Census household questionnaire for NI
 
   // Generic actionType for use in Fieldwork followup action rules, tranches
   FIELD(ActionHandler.FIELD),
@@ -49,12 +48,23 @@ public enum ActionType {
   P_RD_2RL2B_3(ActionHandler.PRINTER); // Response driven reminder group 3 Welsh
 
   private final ActionHandler handler;
+  private final String packCode;
 
   ActionType(ActionHandler handler) {
     this.handler = handler;
+    this.packCode = this.name();
+  }
+
+  ActionType(ActionHandler handler, String packCode) {
+    this.handler = handler;
+    this.packCode = packCode;
   }
 
   public ActionHandler getHandler() {
     return handler;
+  }
+
+  public String getPackCode() {
+    return packCode;
   }
 }
