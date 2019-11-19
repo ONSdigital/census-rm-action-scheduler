@@ -4,14 +4,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.hamcrest.beans.SamePropertyValuesAs;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import uk.gov.ons.census.action.model.dto.CollectionCase;
+import uk.gov.ons.census.action.model.dto.Event;
 import uk.gov.ons.census.action.model.dto.EventType;
 import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
+import uk.gov.ons.census.action.model.dto.Payload;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -104,6 +107,70 @@ public class CaseAndUacReceiverTest {
     assertEquals(actualUacQidLink.getQid(), uac.getQuestionnaireId());
     assertEquals(actualUacQidLink.getUac(), uac.getUac());
     assertEquals(actualUacQidLink.getCaseId(), uac.getCaseId());
+  }
+
+  @Test
+  public void testUacUpdate() {
+    // Given
+    ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
+    Event event = new Event();
+    event.setType(EventType.UAC_UPDATED);
+    Uac uac = new Uac();
+    uac.setQuestionnaireId("Test QID");
+    uac.setUac("Test UAC");
+    uac.setCaseId("Test Case Id");
+    uac.setActive(true);
+    Payload payload = new Payload();
+    payload.setUac(uac);
+    responseManagementEvent.setEvent(event);
+    responseManagementEvent.setPayload(payload);
+    CaseAndUacReceiver underTest =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+
+    // When
+    underTest.receiveEvent(responseManagementEvent);
+
+    // Then
+    verify(uacQidLinkRepository).findByQid(eq("Test QID"));
+    ArgumentCaptor<UacQidLink> uacQidLinkArgumentCaptor = ArgumentCaptor.forClass(UacQidLink.class);
+    verify(uacQidLinkRepository).save(uacQidLinkArgumentCaptor.capture());
+    UacQidLink actualUacQidLink = uacQidLinkArgumentCaptor.getValue();
+    assertEquals("Test Case Id", actualUacQidLink.getCaseId());
+    assertEquals("Test QID", actualUacQidLink.getQid());
+    assertEquals("Test UAC", actualUacQidLink.getUac());
+    assertEquals(true, actualUacQidLink.isActive());
+  }
+
+  @Test
+  public void testUacUpdateExisting() {
+    // Given
+    ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
+    Event event = new Event();
+    event.setType(EventType.UAC_UPDATED);
+    Uac uac = new Uac();
+    uac.setQuestionnaireId("Test QID");
+    uac.setUac("Test UAC");
+    uac.setCaseId("Updated Test Case ID");
+    uac.setActive(false);
+    Payload payload = new Payload();
+    payload.setUac(uac);
+    responseManagementEvent.setEvent(event);
+    responseManagementEvent.setPayload(payload);
+    CaseAndUacReceiver underTest =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    UacQidLink uacQidLink = new UacQidLink();
+    when(uacQidLinkRepository.findByQid(anyString())).thenReturn(Optional.of(uacQidLink));
+
+    // When
+    underTest.receiveEvent(responseManagementEvent);
+
+    // Then
+    verify(uacQidLinkRepository).findByQid(eq("Test QID"));
+    ArgumentCaptor<UacQidLink> uacQidLinkArgumentCaptor = ArgumentCaptor.forClass(UacQidLink.class);
+    verify(uacQidLinkRepository).save(uacQidLinkArgumentCaptor.capture());
+    UacQidLink actualUacQidLink = uacQidLinkArgumentCaptor.getValue();
+    assertEquals("Updated Test Case ID", actualUacQidLink.getCaseId());
+    assertEquals(false, actualUacQidLink.isActive());
   }
 
   private ResponseManagementEvent getResponseManagementEvent() {
