@@ -159,6 +159,8 @@ public class CaseAndUacReceiverTest {
     CaseAndUacReceiver underTest =
         new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
     UacQidLink uacQidLink = new UacQidLink();
+    uacQidLink.setActive(true);
+    uacQidLink.setCaseId("Change me");
     when(uacQidLinkRepository.findByQid(anyString())).thenReturn(Optional.of(uacQidLink));
 
     // When
