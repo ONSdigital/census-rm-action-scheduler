@@ -135,11 +135,11 @@ public class CaseAndUacReceiver {
       uacQidLink.setId(UUID.randomUUID());
       uacQidLink.setQid(uac.getQuestionnaireId());
       uacQidLink.setUac(uac.getUac());
-      uacQidLink.setCaseId(uac.getCaseId());
     } else {
       uacQidLink = uacQidLinkOpt.get();
     }
 
+    uacQidLink.setCaseId(uac.getCaseId());
     uacQidLink.setActive(uac.isActive());
     uacQidLinkRepository.save(uacQidLink);
   }
