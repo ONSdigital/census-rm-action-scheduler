@@ -46,7 +46,6 @@ queueconfig:
   consumers: 50
   retry-attempts: 3
   retry-delay: 1000 #milliseconds
-  retry-exchange: delayedRedeliveryExchange
   quarantine-exchange: quarantineExchange
 
 healthcheck:
@@ -69,3 +68,7 @@ exceptionmanager:
 
 messagelogging:
   logstacktraces: false
+
+logging:
+  level:
+    org.springframework.amqp.rabbit.listener.ConditionalRejectingErrorHandler: ERROR
