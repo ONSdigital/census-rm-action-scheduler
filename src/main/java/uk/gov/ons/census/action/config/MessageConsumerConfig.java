@@ -35,9 +35,6 @@ public class MessageConsumerConfig {
   @Value("${queueconfig.retry-delay}")
   private int retryDelay;
 
-  @Value("${queueconfig.retry-exchange}")
-  private String retryExchange;
-
   @Value("${queueconfig.quarantine-exchange}")
   private String quarantineExchange;
 
@@ -130,7 +127,6 @@ public class MessageConsumerConfig {
             logStackTraces,
             "Action Scheduler",
             queueName,
-            retryExchange,
             quarantineExchange,
             rabbitTemplate);
 
