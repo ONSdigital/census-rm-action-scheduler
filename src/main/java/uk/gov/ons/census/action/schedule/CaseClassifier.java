@@ -1,4 +1,4 @@
-package uk.gov.ons.census.action.poller;
+package uk.gov.ons.census.action.schedule;
 
 import java.util.List;
 import java.util.Map;
