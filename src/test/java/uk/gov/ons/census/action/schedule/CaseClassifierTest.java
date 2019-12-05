@@ -1,4 +1,4 @@
-package uk.gov.ons.census.action.poller;
+package uk.gov.ons.census.action.schedule;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
