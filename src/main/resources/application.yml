@@ -34,6 +34,11 @@ spring:
     port: 6672
     virtualhost: /
 
+  task:
+    scheduling:
+      pool:
+        size: 2
+
 queueconfig:
   inbound-queue: case.action
   action-fulfilment-inbound-queue: action.fulfilment
