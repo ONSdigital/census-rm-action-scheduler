@@ -119,6 +119,7 @@ public class CaseAndUacReceiver {
     caseDetails.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
     caseDetails.setFieldOfficerId(collectionCase.getFieldOfficerId());
     caseDetails.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
+    caseDetails.setCeActualResponses(collectionCase.getCeActualResponses());
     caseDetails.setReceiptReceived(collectionCase.getReceiptReceived());
     caseDetails.setRefusalReceived(collectionCase.getRefusalReceived());
     caseDetails.setAddressInvalid(collectionCase.getAddressInvalid());

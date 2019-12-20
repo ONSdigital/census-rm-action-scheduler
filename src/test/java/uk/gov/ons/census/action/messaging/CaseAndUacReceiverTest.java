@@ -225,6 +225,7 @@ public class CaseAndUacReceiverTest {
     newCase.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
     newCase.setFieldOfficerId(collectionCase.getFieldOfficerId());
     newCase.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
+    newCase.setCeActualResponses(collectionCase.getCeActualResponses());
     newCase.setAddressInvalid(collectionCase.getAddressInvalid());
     return newCase;
   }

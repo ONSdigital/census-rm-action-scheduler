@@ -26,6 +26,7 @@ public class FieldworkFollowup {
   private String fieldOfficerId;
   private String fieldCoordinatorId;
   private String ceExpectedCapacity;
+  private Integer ceActualResponses;
   private String surveyName;
   private Boolean undeliveredAsAddress;
   private Boolean blankQreReturned;
