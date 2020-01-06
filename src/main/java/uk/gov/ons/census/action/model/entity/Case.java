@@ -73,7 +73,9 @@ public class Case {
   @Column(name = "treatment_code")
   private String treatmentCode;
 
-  @Column private String ceExpectedCapacity;
+  @Column private Integer ceExpectedCapacity;
+
+  @Column private Integer ceActualResponses;
 
   @Column private String collectionExerciseId;
 
