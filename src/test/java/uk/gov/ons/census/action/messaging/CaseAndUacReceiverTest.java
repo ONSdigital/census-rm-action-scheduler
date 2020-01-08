@@ -35,6 +35,60 @@ public class CaseAndUacReceiverTest {
   private EasyRandom easyRandom = new EasyRandom();
 
   @Test
+  public void testReceiveEventCaseCreatedIgnoresCCSCase() {
+    // Given
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
+    responseManagementEvent.getPayload().getCollectionCase().setSurvey("CCS");
+    responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
+
+    // When
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
+
+    // Then
+    verifyZeroInteractions(caseRepository);
+    verifyZeroInteractions(uacQidLinkRepository);
+    verifyZeroInteractions(fulfilmentRequestService);
+  }
+
+  @Test
+  public void testReceiveEventCaseUpdatedIgnoresCCSCase() {
+    // Given
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
+    responseManagementEvent.getPayload().getCollectionCase().setSurvey("CCS");
+    responseManagementEvent.getEvent().setType(EventType.CASE_UPDATED);
+
+    // When
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
+
+    // Then
+    verifyZeroInteractions(caseRepository);
+    verifyZeroInteractions(uacQidLinkRepository);
+    verifyZeroInteractions(fulfilmentRequestService);
+  }
+
+  @Test
+  public void testReceiveEventUACUpdatedIgnoresCCSQID() {
+    // Given
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
+    responseManagementEvent.getPayload().getUac().setQuestionnaireId("51");
+    responseManagementEvent.getEvent().setType(EventType.UAC_UPDATED);
+
+    // When
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
+
+    // Then
+    verifyZeroInteractions(caseRepository);
+    verifyZeroInteractions(uacQidLinkRepository);
+    verifyZeroInteractions(fulfilmentRequestService);
+  }
+
+  @Test
   public void testCaseCreated() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
@@ -88,12 +142,13 @@ public class CaseAndUacReceiverTest {
   }
 
   @Test
-  public void testCaseUpdate() {
+  public void testCaseUACUpdate() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
         new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.UAC_UPDATED);
+    responseManagementEvent.getPayload().getUac().setQuestionnaireId("01");
 
     // when
     caseAndUacReceiver.receiveEvent(responseManagementEvent);
@@ -184,6 +239,7 @@ public class CaseAndUacReceiverTest {
         .getPayload()
         .getCollectionCase()
         .setId("d09ac28e-d62f-4cdd-a5f9-e366e05f0fcd");
+    responseManagementEvent.getPayload().getUac().setQuestionnaireId("123");
     responseManagementEvent.getPayload().getCollectionCase().setState("ACTIONABLE");
     responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
