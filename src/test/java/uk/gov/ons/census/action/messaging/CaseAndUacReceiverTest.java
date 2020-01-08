@@ -109,6 +109,28 @@ public class CaseAndUacReceiverTest {
   }
 
   @Test
+  public void testCaseUpdated() {
+    // given
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
+    responseManagementEvent.getEvent().setType(EventType.CASE_UPDATED);
+
+    Case expectedCase = easyRandom.nextObject(Case.class);
+    when(caseRepository.findByCaseId(any())).thenReturn(Optional.of(expectedCase));
+
+    // when
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
+
+    // then
+    ArgumentCaptor<Case> eventArgumentCaptor = ArgumentCaptor.forClass(Case.class);
+    verify(caseRepository, times(1)).save(eventArgumentCaptor.capture());
+    Case actualCase = eventArgumentCaptor.getAllValues().get(0);
+
+    assertThat(actualCase, SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
+  }
+
+  @Test
   public void testCaseCreatedWithFulfilmentAttached() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =

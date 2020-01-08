@@ -27,12 +27,6 @@ public class CaseAndUacReceiver {
   private final UacQidLinkRepository uacQidLinkRepository;
   private final FulfilmentRequestService fulfilmentRequestService;
 
-  private static final Set<String> ccsQuestionnaireTypes = Set.of("04", "05");
-
-  private boolean isQidCSSType(String qid) {
-    return ccsQuestionnaireTypes.contains(qid.substring(0, 2));
-  }
-
   public CaseAndUacReceiver(
       CaseRepository caseRepository,
       UacQidLinkRepository uacQidLinkRepository,
