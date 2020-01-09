@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 import java.util.UUID;
+import org.assertj.core.api.Assertions;
 import org.hamcrest.beans.SamePropertyValuesAs;
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
@@ -250,6 +251,27 @@ public class CaseAndUacReceiverTest {
     UacQidLink actualUacQidLink = uacQidLinkArgumentCaptor.getValue();
     assertEquals("Updated Test Case ID", actualUacQidLink.getCaseId());
     assertEquals(false, actualUacQidLink.isActive());
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testUnknownEventType() {
+    // Given
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
+    responseManagementEvent.getEvent().setType(EventType.PRINT_CASE_SELECTED);
+
+    String expectedErrorMessage =
+        String.format("Unexpected event type '%s'", EventType.PRINT_CASE_SELECTED);
+
+    try {
+      // When
+      caseAndUacReceiver.receiveEvent(responseManagementEvent);
+    } catch (RuntimeException re) {
+      // THEN
+      Assertions.assertThat(re.getMessage()).isEqualTo(expectedErrorMessage);
+      throw re;
+    }
   }
 
   private ResponseManagementEvent getResponseManagementEvent() {
