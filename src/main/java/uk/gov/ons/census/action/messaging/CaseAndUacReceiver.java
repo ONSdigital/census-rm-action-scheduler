@@ -69,9 +69,7 @@ public class CaseAndUacReceiver {
       processCaseUpdatedEvent(responseManagementEvent.getPayload().getCollectionCase());
       return;
     }
-    // This code can't be reached because under the class structure the EventType is limited to
-    // enums at this point?
-
+    
     throw new RuntimeException(String.format("Unexpected event type '%s'", eventType));
   }
 
