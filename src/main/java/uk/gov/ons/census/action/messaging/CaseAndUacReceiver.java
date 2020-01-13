@@ -69,7 +69,7 @@ public class CaseAndUacReceiver {
       processCaseUpdatedEvent(responseManagementEvent.getPayload().getCollectionCase());
       return;
     }
-    
+
     throw new RuntimeException(String.format("Unexpected event type '%s'", eventType));
   }
 
