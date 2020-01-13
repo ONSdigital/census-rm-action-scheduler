@@ -26,6 +26,7 @@ public class QidUacBuilder {
           ActionType.ICL1E,
           ActionType.ICL2W,
           ActionType.ICL4N);
+
   private static final int NUM_OF_UAC_QID_PAIRS_NEEDED_BY_A_WALES_INITIAL_CONTACT_QUESTIONNAIRE = 2;
   private static final int NUM_OF_UAC_QID_PAIRS_NEEDED_FOR_SINGLE_LANGUAGE = 1;
   private static final String WALES_IN_ENGLISH_QUESTIONNAIRE_TYPE = "02";

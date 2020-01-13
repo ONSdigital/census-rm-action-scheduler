@@ -16,6 +16,7 @@ import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
 import uk.gov.ons.census.action.service.FulfilmentRequestService;
+import uk.gov.ons.census.action.utility.QuestionnaireTypeHelper;
 
 @MessageEndpoint
 public class CaseAndUacReceiver {
@@ -37,9 +38,14 @@ public class CaseAndUacReceiver {
   @Transactional
   @ServiceActivator(inputChannel = "caseCreatedInputChannel")
   public void receiveEvent(ResponseManagementEvent responseManagementEvent) {
+
     EventType eventType = responseManagementEvent.getEvent().getType();
 
+    // Action scheduler can ignore CCS cases and just acknowledge the message
+    if (isCCSCase(responseManagementEvent, eventType)) return;
+
     if (eventType == EventType.CASE_CREATED) {
+
       Case caze = processCaseCreatedEvent(responseManagementEvent.getPayload().getCollectionCase());
 
       // We can get sent a fulfilment request along with the case, which we need to process
@@ -51,15 +57,32 @@ public class CaseAndUacReceiver {
         fulfilmentRequestService.processEvent(
             responseManagementEvent.getPayload().getFulfilmentRequest(), caze, actionType);
       }
-    } else if (eventType == EventType.UAC_UPDATED) {
-      processUacUpdated(responseManagementEvent.getPayload().getUac());
-    } else if (eventType == EventType.CASE_UPDATED) {
-      processCaseUpdatedEvent(responseManagementEvent.getPayload().getCollectionCase());
-    } else {
-      // This code can't be reached because under the class structure the EventType is limited to
-      // enums at this point?
-      throw new RuntimeException(String.format("Unexpected event type '%s'", eventType));
+      return;
     }
+
+    if (eventType == EventType.UAC_UPDATED) {
+      processUacUpdated(responseManagementEvent.getPayload().getUac());
+      return;
+    }
+
+    if (eventType == EventType.CASE_UPDATED) {
+      processCaseUpdatedEvent(responseManagementEvent.getPayload().getCollectionCase());
+      return;
+    }
+
+    throw new RuntimeException(String.format("Unexpected event type '%s'", eventType));
+  }
+
+  private boolean isCCSCase(ResponseManagementEvent responseManagementEvent, EventType eventType) {
+
+    if (eventType == EventType.CASE_CREATED || eventType == EventType.CASE_UPDATED) {
+      return responseManagementEvent.getPayload().getCollectionCase().getSurvey().equals("CCS");
+    } else if (eventType == EventType.UAC_UPDATED) {
+      return QuestionnaireTypeHelper.isCCSQuestionnaireType(
+          responseManagementEvent.getPayload().getUac().getQuestionnaireId());
+    }
+
+    return false;
   }
 
   private Case processCaseCreatedEvent(CollectionCase collectionCase) {
