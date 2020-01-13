@@ -28,16 +28,13 @@ public class FieldworkFollowupBuilder {
     followup.setCaseId(caze.getCaseId().toString());
     followup.setCaseRef(Integer.toString(caze.getCaseRef()));
     followup.setAddressType(caze.getAddressType());
-    followup.
-            setAddressLevel(caze.getAddressLevel());
+    followup.setAddressLevel(caze.getAddressLevel());
     followup.setTreatmentCode(caze.getTreatmentCode());
     followup.setFieldOfficerId(caze.getFieldOfficerId());
     followup.setFieldCoordinatorId(caze.getFieldCoordinatorId());
     followup.setCeExpectedCapacity(caze.getCeExpectedCapacity());
     followup.setCeActualResponses(caze.getCeActualResponses());
-    followup.
-
-            setUndeliveredAsAddress(caze.isUndeliveredAsAddressed());
+    followup.setUndeliveredAsAddress(caze.isUndeliveredAsAddressed());
 
     // TODO: set surveyName, undeliveredAsAddress and blankQreReturned from caze
     followup.setSurveyName("CENSUS");
