@@ -1,12 +1,17 @@
 package uk.gov.ons.census.action.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.census.action.builders.CaseSelectedBuilder;
 import uk.gov.ons.census.action.client.CaseClient;
@@ -19,12 +24,15 @@ import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 
+import static uk.gov.ons.census.action.utility.JsonHelper.convertObjectToJson;
+
 @Service
 public class FulfilmentRequestService {
   private static final Logger log = LoggerFactory.getLogger(FulfilmentRequestReceiver.class);
   private final RabbitTemplate rabbitTemplate;
   private final CaseClient caseClient;
   private final CaseSelectedBuilder caseSelectedBuilder;
+  private final JdbcTemplate jdbcTemplate;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -33,16 +41,18 @@ public class FulfilmentRequestService {
   private String actionCaseExchange;
 
   public FulfilmentRequestService(
-      RabbitTemplate rabbitTemplate,
-      CaseClient caseClient,
-      CaseSelectedBuilder caseSelectedBuilder) {
+          RabbitTemplate rabbitTemplate,
+          CaseClient caseClient,
+          CaseSelectedBuilder caseSelectedBuilder,
+          JdbcTemplate jdbcTemplate) {
     this.rabbitTemplate = rabbitTemplate;
     this.caseClient = caseClient;
     this.caseSelectedBuilder = caseSelectedBuilder;
+    this.jdbcTemplate = jdbcTemplate;
   }
 
   public void processEvent(
-      FulfilmentRequestDTO fulfilmentRequest, Case caze, ActionType actionType) {
+          FulfilmentRequestDTO fulfilmentRequest, Case caze, ActionType actionType) {
     String fulfilmentCode = fulfilmentRequest.getFulfilmentCode();
 
     PrintFileDto printFileDto = createAndPopulatePrintFileDto(caze, actionType, fulfilmentRequest);
@@ -56,12 +66,23 @@ public class FulfilmentRequestService {
     }
 
     ResponseManagementEvent printCaseSelected =
-        caseSelectedBuilder.buildPrintMessage(printFileDto, null);
+            caseSelectedBuilder.buildPrintMessage(printFileDto, null);
 
+
+    String printFileString = convertObjectToJson(printFileDto);
+
+    sendFulfilmentsToTable(printFileString, fulfilmentRequest);
     rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
     rabbitTemplate.convertAndSend(
         outboundExchange, ActionHandler.PRINTER.getRoutingKey(), printFileDto);
+  }
+
+
+  public void sendFulfilmentsToTable(String printFileDto,  FulfilmentRequestDTO fulfilmentRequestDTO) {
+    jdbcTemplate.update(
+            "INSERT INTO actionv2.fulfilments_to_send(message_data, fulfilment_code) VALUES(?::json, ?)",
+            printFileDto, fulfilmentRequestDTO.getFulfilmentCode());
   }
 
   public ActionType determineActionType(String fulfilmentCode) {
@@ -129,7 +150,7 @@ public class FulfilmentRequestService {
   }
 
   private PrintFileDto createAndPopulatePrintFileDto(
-      Case fulfilmentCase, ActionType actionType, FulfilmentRequestDTO fulfilmentRequest) {
+          Case fulfilmentCase, ActionType actionType, FulfilmentRequestDTO fulfilmentRequest) {
     PrintFileDto printFileDto = new PrintFileDto();
     printFileDto.setAddressLine1(fulfilmentCase.getAddressLine1());
     printFileDto.setAddressLine2(fulfilmentCase.getAddressLine2());
@@ -148,19 +169,19 @@ public class FulfilmentRequestService {
   }
 
   private static final Map<String, String> fulfilmentCodeToQuestionnaireType =
-      Map.ofEntries(
-          Map.entry("P_OR_H1", "1"),
-          Map.entry("P_OR_H2", "2"),
-          Map.entry("P_OR_H2W", "3"),
-          Map.entry("P_OR_H4", "4"),
-          Map.entry("P_OR_HC1", "11"),
-          Map.entry("P_OR_HC2", "12"),
-          Map.entry("P_OR_HC2W", "13"),
-          Map.entry("P_OR_HC4", "14"),
-          Map.entry("P_OR_I1", "21"),
-          Map.entry("P_OR_I2", "22"),
-          Map.entry("P_OR_I2W", "23"),
-          Map.entry("P_OR_I4", "24"));
+          Map.ofEntries(
+                  Map.entry("P_OR_H1", "1"),
+                  Map.entry("P_OR_H2", "2"),
+                  Map.entry("P_OR_H2W", "3"),
+                  Map.entry("P_OR_H4", "4"),
+                  Map.entry("P_OR_HC1", "11"),
+                  Map.entry("P_OR_HC2", "12"),
+                  Map.entry("P_OR_HC2W", "13"),
+                  Map.entry("P_OR_HC4", "14"),
+                  Map.entry("P_OR_I1", "21"),
+                  Map.entry("P_OR_I2", "22"),
+                  Map.entry("P_OR_I2W", "23"),
+                  Map.entry("P_OR_I4", "24"));
 
   private Optional<String> determineQuestionnaireType(String packCode) {
     return Optional.ofNullable(fulfilmentCodeToQuestionnaireType.get(packCode));

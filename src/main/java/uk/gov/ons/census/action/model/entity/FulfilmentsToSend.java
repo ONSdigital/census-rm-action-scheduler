@@ -22,11 +22,15 @@ import org.hibernate.annotations.TypeDefs;
 @Data
 public class FulfilmentsToSend {
 
+    @Id
+    @Column(columnDefinition = "serial")
+    private long id;
+
     @Column private String fulfilmentCode;
 
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb", nullable = false)
-    private Map<String, List<String>> messageData;
+    private String messageData;
 
     private int quantity;
 
