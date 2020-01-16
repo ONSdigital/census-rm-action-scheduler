@@ -5,8 +5,6 @@ import lombok.Data;
 @Data
 public class FulfilmentToSend {
   private String fulfilment_code;
-//  private String event_payload;
+  //  private String event_payload;
   private Integer count;
-
-
 }

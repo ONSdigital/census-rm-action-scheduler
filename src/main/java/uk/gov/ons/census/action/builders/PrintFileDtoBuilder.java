@@ -35,7 +35,6 @@ public class PrintFileDtoBuilder {
     printFileDto.setAddressLine3(selectedCase.getAddressLine3());
     printFileDto.setTownName(selectedCase.getTownName());
     printFileDto.setPostcode(selectedCase.getPostcode());
-    printFileDto.setBatchId(batchUUID.toString());
     printFileDto.setPackCode(packCode);
     printFileDto.setActionType(actionType.toString());
     printFileDto.setFieldCoordinatorId(selectedCase.getFieldCoordinatorId());

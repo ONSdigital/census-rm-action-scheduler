@@ -10,13 +10,12 @@ public class FulfilmentScheduler {
   private final FulfilmentUpdater fulfilmentUpdater;
   private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
 
-
   public FulfilmentScheduler(FulfilmentUpdater fulfilmentUpdater) {
     this.fulfilmentUpdater = fulfilmentUpdater;
   }
 
-  @Scheduled(fixedDelayString = "60000")
-  public void triggerActionRules() {
+  @Scheduled(fixedDelayString = "120000")
+  public void TriggerFulfilments() {
     try {
       fulfilmentUpdater.addFulfilmentBatchIdAndQuantity();
     } catch (Exception e) {

@@ -91,7 +91,6 @@ public class PrintFileDtoBuilderTest {
     printFileDto.setTownName(caze.getTownName());
     printFileDto.setPostcode(caze.getPostcode());
 
-    printFileDto.setBatchId(BATCH_UUID.toString());
     printFileDto.setPackCode(actionTypeToPackCodeMap.get(expectedActionType));
     printFileDto.setActionType(ActionType.ICHHQW.toString());
     printFileDto.setFieldCoordinatorId(caze.getFieldCoordinatorId());

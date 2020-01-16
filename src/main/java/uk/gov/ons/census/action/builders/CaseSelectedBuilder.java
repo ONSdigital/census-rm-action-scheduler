@@ -22,7 +22,6 @@ public class CaseSelectedBuilder {
     responseManagementEvent.getPayload().setPrintCaseSelected(printCaseSelected);
 
     printCaseSelected.setActionRuleId(actionRuleId);
-    printCaseSelected.setBatchId(printFileDto.getBatchId());
     printCaseSelected.setCaseRef(printFileDto.getCaseRef());
     printCaseSelected.setPackCode(printFileDto.getPackCode());
 
