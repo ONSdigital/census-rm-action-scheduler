@@ -3,8 +3,7 @@ package uk.gov.ons.census.action.model.dto;
 import lombok.Data;
 
 @Data
-public class FulfilmentToSend {
+public class FulfilmentMapperDTO {
   private String fulfilment_code;
-  //  private String event_payload;
   private Integer count;
 }

@@ -3,17 +3,17 @@ package uk.gov.ons.census.action.utility;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
-import uk.gov.ons.census.action.model.dto.FulfilmentToSend;
+import uk.gov.ons.census.action.model.dto.FulfilmentMapperDTO;
 
-public class FulfilmentMapper implements RowMapper<FulfilmentToSend> {
+public class FulfilmentMapper implements RowMapper<FulfilmentMapperDTO> {
 
   @Override
-  public FulfilmentToSend mapRow(ResultSet rs, int rowNum) throws SQLException {
-    FulfilmentToSend fulfilmentToSend = new FulfilmentToSend();
+  public FulfilmentMapperDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+    FulfilmentMapperDTO fulfilmentMapper = new FulfilmentMapperDTO();
 
-    fulfilmentToSend.setFulfilment_code(rs.getString("fulfilment_code"));
-    fulfilmentToSend.setCount(rs.getInt("count"));
+    fulfilmentMapper.setFulfilment_code(rs.getString("fulfilment_code"));
+    fulfilmentMapper.setCount(rs.getInt("count"));
 
-    return fulfilmentToSend;
+    return fulfilmentMapper;
   }
 }
