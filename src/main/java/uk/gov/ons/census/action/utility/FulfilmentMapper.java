@@ -11,7 +11,7 @@ public class FulfilmentMapper implements RowMapper<FulfilmentMapperDTO> {
   public FulfilmentMapperDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
     FulfilmentMapperDTO fulfilmentMapper = new FulfilmentMapperDTO();
 
-    fulfilmentMapper.setFulfilment_code(rs.getString("fulfilment_code"));
+    fulfilmentMapper.setFulfilmentCode(rs.getString("fulfilment_code"));
     fulfilmentMapper.setCount(rs.getInt("count"));
 
     return fulfilmentMapper;

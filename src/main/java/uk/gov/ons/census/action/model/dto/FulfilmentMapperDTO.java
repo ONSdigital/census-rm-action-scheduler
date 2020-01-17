@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class FulfilmentMapperDTO {
-  private String fulfilment_code;
+  private String fulfilmentCode;
   private Integer count;
 }

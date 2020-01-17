@@ -43,22 +43,22 @@ public class FulfilmentUpdaterIT {
 
     String stringPrintFile = convertObjectToJson(printFileDto);
 
-    FulfilmentsToSend fulfilmentsToSend = new FulfilmentsToSend();
+    FulfilmentsToSend fulfilmentsBeforeQuantityAndBatchId = new FulfilmentsToSend();
 
-    fulfilmentsToSend.setFulfilmentCode("P_OR_H1");
-    fulfilmentsToSend.setMessageData(stringPrintFile);
+    fulfilmentsBeforeQuantityAndBatchId.setFulfilmentCode("P_OR_H1");
+    fulfilmentsBeforeQuantityAndBatchId.setMessageData(stringPrintFile);
 
-    fulfilmentsToSendRepository.saveAndFlush(fulfilmentsToSend);
+    fulfilmentsToSendRepository.saveAndFlush(fulfilmentsBeforeQuantityAndBatchId);
 
     // When
     fulfilmentUpdater.addFulfilmentBatchIdAndQuantity();
 
     // Then
 
-    FulfilmentsToSend fulfilmentsToSend1 =
+    FulfilmentsToSend fulfilmentsToSend =
         fulfilmentsToSendRepository.findByFulfilmentCode("P_OR_H1");
-    assertThat(fulfilmentsToSend1.getBatchId()).isNotNull();
-    assertThat(fulfilmentsToSend1.getQuantity()).isNotNull();
-    assertThat(fulfilmentsToSend1.getQuantity()).isEqualTo(1);
+    assertThat(fulfilmentsToSend.getBatchId()).isNotNull();
+    assertThat(fulfilmentsToSend.getQuantity()).isNotNull();
+    assertThat(fulfilmentsToSend.getQuantity()).isEqualTo(1);
   }
 }

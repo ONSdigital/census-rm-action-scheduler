@@ -22,3 +22,6 @@ scheduler:
 caseapi:
   host: localhost
   port: 8089
+
+schedule:
+  time: "*/2 * * * * *"

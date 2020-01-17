@@ -14,12 +14,12 @@ public class FulfilmentScheduler {
     this.fulfilmentUpdater = fulfilmentUpdater;
   }
 
-  @Scheduled(fixedDelayString = "120000")
+  @Scheduled(cron = "${schedule.time}")
   public void TriggerFulfilments() {
     try {
       fulfilmentUpdater.addFulfilmentBatchIdAndQuantity();
     } catch (Exception e) {
-      log.error("Unexpected exception while processing Action Rules", e);
+      log.error("Unexpected exception while processing fulfilments", e);
     }
   }
 }

@@ -32,7 +32,7 @@ public class FulfilmentUpdater {
                   + "where fulfilment_code = ? ",
               fulfilment.getCount(),
               UUID.randomUUID(),
-              fulfilment.getFulfilment_code());
+              fulfilment.getFulfilmentCode());
         });
   }
 }

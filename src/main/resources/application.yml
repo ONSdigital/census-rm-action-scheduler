@@ -66,6 +66,9 @@ exceptionmanager:
     host: localhost
     port: 8666
 
+schedule:
+  time: 0 16 * * * *
+
 messagelogging:
   logstacktraces: false
 
