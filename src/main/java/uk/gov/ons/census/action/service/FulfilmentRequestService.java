@@ -15,6 +15,7 @@ import uk.gov.ons.census.action.client.CaseClient;
 import uk.gov.ons.census.action.messaging.FulfilmentRequestReceiver;
 import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
+import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
@@ -57,6 +58,11 @@ public class FulfilmentRequestService {
       printFileDto.setQid(uacQid.getQid());
       printFileDto.setUac(uacQid.getUac());
     }
+
+    ResponseManagementEvent printCaseSelected =
+        caseSelectedBuilder.buildPrintMessage(printFileDto, null);
+
+    rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
     String printFileString = convertObjectToJson(printFileDto);
 

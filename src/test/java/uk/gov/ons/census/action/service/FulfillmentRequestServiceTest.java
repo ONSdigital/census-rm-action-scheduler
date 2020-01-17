@@ -1,11 +1,9 @@
 package uk.gov.ons.census.action.service;
 
-import static junit.framework.TestCase.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
+import static uk.gov.ons.census.action.utility.JsonHelper.convertJsonToObject;
 
 import org.jeasy.random.EasyRandom;
 import org.junit.Test;
@@ -16,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import uk.gov.ons.census.action.builders.CaseSelectedBuilder;
 import uk.gov.ons.census.action.client.CaseClient;
 import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
@@ -30,6 +29,7 @@ public class FulfillmentRequestServiceTest {
   @Mock CaseClient caseClient;
   @Mock RabbitTemplate rabbitTemplate;
   @Mock CaseSelectedBuilder caseSelectedBuilder;
+  @Mock JdbcTemplate jdbcTemplate;
 
   @InjectMocks FulfilmentRequestService underTest;
 
@@ -52,15 +52,15 @@ public class FulfillmentRequestServiceTest {
   }
 
   @Test
-  public void testIndividualPrintFulfillmnent() {
+  public void testIndividualPrintFulfilment() {
     FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
     fulfilmentRequestDTO.setFulfilmentCode("P_OR_I1");
     Case caze = easyRandom.nextObject(Case.class);
 
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
     when(caseClient.getUacQid(caze.getCaseId(), "21")).thenReturn(uacQidDTO);
-    when(caseSelectedBuilder.buildPrintMessage(any(), any()))
-        .thenReturn(new ResponseManagementEvent());
+    //    when(caseSelectedBuilder.buildPrintMessage(any(), any()))
+    //        .thenReturn(new ResponseManagementEvent());
 
     underTest.processEvent(fulfilmentRequestDTO, caze, ActionType.P_OR_IX);
 
@@ -68,7 +68,7 @@ public class FulfillmentRequestServiceTest {
   }
 
   @Test
-  public void testHouseholdBookletlPrintFulfillmnent() {
+  public void testHouseholdBookletlPrintFulfilment() {
     FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
     fulfilmentRequestDTO.setFulfilmentCode("P_TB_TBARA1");
     Case caze = easyRandom.nextObject(Case.class);
@@ -83,10 +83,11 @@ public class FulfillmentRequestServiceTest {
     verifyZeroInteractions(caseClient);
   }
 
-  private PrintFileDto checkCorrectPackCodeAndAddressAreSent(
+  private void checkCorrectPackCodeAndAddressAreSent(
       FulfilmentRequestDTO fulfilmentRequestDTO,
       Case fulfilmentCase,
       ActionType expectedActionType) {
+
     ArgumentCaptor<ResponseManagementEvent> responseManagementEventArgumentCaptor =
         ArgumentCaptor.forClass(ResponseManagementEvent.class);
 
@@ -94,22 +95,17 @@ public class FulfillmentRequestServiceTest {
         .convertAndSend(
             eq(actionCaseExchange), eq(""), responseManagementEventArgumentCaptor.capture());
 
-    ResponseManagementEvent actualPrintCaseSelectedEvent =
-        responseManagementEventArgumentCaptor.getValue();
-    assertNotNull(actualPrintCaseSelectedEvent);
+    ArgumentCaptor<String> printFileDtoArgumentCaptor = ArgumentCaptor.forClass(String.class);
 
-    ArgumentCaptor<PrintFileDto> printFileDtoArgumentCaptor =
-        ArgumentCaptor.forClass(PrintFileDto.class);
-    verify(rabbitTemplate)
-        .convertAndSend(
-            eq(outboundExchange),
-            eq("Action.Printer.binding"),
-            printFileDtoArgumentCaptor.capture());
-
-    PrintFileDto actualPrintFileDTO = printFileDtoArgumentCaptor.getValue();
-    assertEquals(
-        fulfilmentRequestDTO.getFulfilmentCode(),
-        printFileDtoArgumentCaptor.getValue().getPackCode());
+    verify(jdbcTemplate)
+        .update(
+            eq(
+                "INSERT INTO actionv2.fulfilments_to_send(message_data, fulfilment_code) VALUES(?::json, ?)"),
+            printFileDtoArgumentCaptor.capture(),
+            eq(fulfilmentRequestDTO.getFulfilmentCode()));
+    String printFileString = printFileDtoArgumentCaptor.getValue();
+    PrintFileDto actualPrintFileDTO = convertJsonToObject(printFileString);
+    assertEquals(fulfilmentRequestDTO.getFulfilmentCode(), actualPrintFileDTO.getPackCode());
     assertEquals(expectedActionType.name(), actualPrintFileDTO.getActionType());
     assertThat(actualPrintFileDTO)
         .isEqualToComparingOnlyGivenFields(
@@ -117,7 +113,5 @@ public class FulfillmentRequestServiceTest {
     assertThat(actualPrintFileDTO)
         .isEqualToComparingOnlyGivenFields(
             fulfilmentRequestDTO.getContact(), "title", "forename", "surname");
-
-    return actualPrintFileDTO;
   }
 }
