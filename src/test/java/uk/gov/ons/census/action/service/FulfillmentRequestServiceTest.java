@@ -59,8 +59,8 @@ public class FulfillmentRequestServiceTest {
 
     UacQidDTO uacQidDTO = easyRandom.nextObject(UacQidDTO.class);
     when(caseClient.getUacQid(caze.getCaseId(), "21")).thenReturn(uacQidDTO);
-        when(caseSelectedBuilder.buildPrintMessage(any(), any()))
-            .thenReturn(new ResponseManagementEvent());
+    when(caseSelectedBuilder.buildPrintMessage(any(), any()))
+        .thenReturn(new ResponseManagementEvent());
 
     underTest.processEvent(fulfilmentRequestDTO, caze, ActionType.P_OR_IX);
 
