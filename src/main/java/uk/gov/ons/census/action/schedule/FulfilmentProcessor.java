@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.dto.FulfilmentMapperDTO;
 
 @Component
-public class FulfilmentUpdater {
+public class FulfilmentProcessor {
 
   private JdbcTemplate jdbcTemplate;
 
-  public FulfilmentUpdater(JdbcTemplate jdbcTemplate) {
+  public FulfilmentProcessor(JdbcTemplate jdbcTemplate) {
     this.jdbcTemplate = jdbcTemplate;
   }
 

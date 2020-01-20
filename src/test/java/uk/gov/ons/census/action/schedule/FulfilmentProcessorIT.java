@@ -23,10 +23,10 @@ import uk.gov.ons.census.action.model.repository.FulfilmentsToSendRepository;
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @RunWith(SpringJUnit4ClassRunner.class)
-public class FulfilmentUpdaterIT {
+public class FulfilmentProcessorIT {
 
   @Autowired FulfilmentsToSendRepository fulfilmentsToSendRepository;
-  @Autowired FulfilmentUpdater fulfilmentUpdater;
+  @Autowired FulfilmentProcessor fulfilmentProcessor;
 
   @Before
   @Transactional
@@ -51,7 +51,7 @@ public class FulfilmentUpdaterIT {
     fulfilmentsToSendRepository.saveAndFlush(fulfilmentsBeforeQuantityAndBatchId);
 
     // When
-    fulfilmentUpdater.addFulfilmentBatchIdAndQuantity();
+    fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();
 
     // Then
 

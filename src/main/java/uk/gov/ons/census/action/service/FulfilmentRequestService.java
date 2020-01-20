@@ -66,10 +66,10 @@ public class FulfilmentRequestService {
 
     String printFileString = convertObjectToJson(printFileDto);
 
-    sendFulfilmentsToTable(printFileString, fulfilmentRequest);
+    sendFulfilmentToTable(printFileString, fulfilmentRequest);
   }
 
-  public void sendFulfilmentsToTable(
+  public void sendFulfilmentToTable(
       String printFileDto, FulfilmentRequestDTO fulfilmentRequestDTO) {
     jdbcTemplate.update(
         "INSERT INTO actionv2.fulfilments_to_send(message_data, fulfilment_code) VALUES(?::json, ?)",

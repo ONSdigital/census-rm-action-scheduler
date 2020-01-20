@@ -7,17 +7,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FulfilmentScheduler {
-  private final FulfilmentUpdater fulfilmentUpdater;
+  private final FulfilmentProcessor fulfilmentProcessor;
   private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
 
-  public FulfilmentScheduler(FulfilmentUpdater fulfilmentUpdater) {
-    this.fulfilmentUpdater = fulfilmentUpdater;
+  public FulfilmentScheduler(FulfilmentProcessor fulfilmentProcessor) {
+    this.fulfilmentProcessor = fulfilmentProcessor;
   }
 
   @Scheduled(cron = "${schedule.time}")
   public void TriggerFulfilments() {
     try {
-      fulfilmentUpdater.addFulfilmentBatchIdAndQuantity();
+      fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();
     } catch (Exception e) {
       log.error("Unexpected exception while processing fulfilments", e);
     }
