@@ -3,13 +3,15 @@ package uk.gov.ons.census.action.utility;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
-import uk.gov.ons.census.action.model.dto.FulfilmentMapperDTO;
 
-public class FulfilmentMapper implements RowMapper<FulfilmentMapperDTO> {
+public class FulfilmentMapper
+    implements RowMapper<uk.gov.ons.census.action.model.entity.FulfilmentMapper> {
 
   @Override
-  public FulfilmentMapperDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
-    FulfilmentMapperDTO fulfilmentMapper = new FulfilmentMapperDTO();
+  public uk.gov.ons.census.action.model.entity.FulfilmentMapper mapRow(ResultSet rs, int rowNum)
+      throws SQLException {
+    uk.gov.ons.census.action.model.entity.FulfilmentMapper fulfilmentMapper =
+        new uk.gov.ons.census.action.model.entity.FulfilmentMapper();
 
     fulfilmentMapper.setFulfilmentCode(rs.getString("fulfilment_code"));
     fulfilmentMapper.setCount(rs.getInt("count"));

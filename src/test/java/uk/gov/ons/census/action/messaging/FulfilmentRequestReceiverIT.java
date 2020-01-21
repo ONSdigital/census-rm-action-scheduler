@@ -3,7 +3,6 @@ package uk.gov.ons.census.action.messaging;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.ons.census.action.utility.JsonHelper.convertJsonToObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -27,9 +26,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.*;
 import uk.gov.ons.census.action.model.entity.Case;
-import uk.gov.ons.census.action.model.entity.FulfilmentsToSend;
+import uk.gov.ons.census.action.model.entity.FulfilmentToSend;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
-import uk.gov.ons.census.action.model.repository.FulfilmentsToSendRepository;
+import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @ContextConfiguration
 @SpringBootTest
@@ -58,7 +57,7 @@ public class FulfilmentRequestReceiverIT {
 
   @Autowired private CaseRepository caseRepository;
 
-  @Autowired private FulfilmentsToSendRepository fulfilmentsToSendRepository;
+  @Autowired private FulfilmentToSendRepository fulfilmentToSendRepository;
 
   private EasyRandom easyRandom = new EasyRandom();
 
@@ -70,7 +69,7 @@ public class FulfilmentRequestReceiverIT {
     rabbitQueueHelper.purgeQueue(actionFulfilmentQueue);
     rabbitQueueHelper.purgeQueue(outboundPrinterQueue);
     rabbitQueueHelper.purgeQueue(actionCaseQueue);
-    fulfilmentsToSendRepository.deleteAll();
+    fulfilmentToSendRepository.deleteAll();
   }
 
   @Test
@@ -98,7 +97,7 @@ public class FulfilmentRequestReceiverIT {
         eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
     Thread.sleep(2000);
 
-    List<FulfilmentsToSend> fulfilmentsToSend = fulfilmentsToSendRepository.findAll();
+    List<FulfilmentToSend> fulfilmentToSend = fulfilmentToSendRepository.findAll();
 
     ResponseManagementEvent actualRmEvent =
         rabbitQueueHelper.checkExpectedMessageReceived(
@@ -109,8 +108,7 @@ public class FulfilmentRequestReceiverIT {
     assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
         .isEqualTo(fulfillmentCase.getCaseRef());
 
-    PrintFileDto actualPrintFileDto =
-        convertJsonToObject(fulfilmentsToSend.get(0).getMessageData());
+    PrintFileDto actualPrintFileDto = fulfilmentToSend.get(0).getMessageData();
 
     checkAddressFieldsMatch(
         fulfillmentCase,
@@ -145,7 +143,7 @@ public class FulfilmentRequestReceiverIT {
     Thread.sleep(2000);
 
     // Then
-    List<FulfilmentsToSend> fulfilmentsToSend = fulfilmentsToSendRepository.findAll();
+    List<FulfilmentToSend> fulfilmentToSend = fulfilmentToSendRepository.findAll();
 
     ResponseManagementEvent actualRmEvent =
         rabbitQueueHelper.checkExpectedMessageReceived(
@@ -156,8 +154,7 @@ public class FulfilmentRequestReceiverIT {
     assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
         .isEqualTo(fulfillmentCase.getCaseRef());
 
-    PrintFileDto actualPrintFileDto =
-        convertJsonToObject(fulfilmentsToSend.get(0).getMessageData());
+    PrintFileDto actualPrintFileDto = fulfilmentToSend.get(0).getMessageData();
 
     checkAddressFieldsMatch(
         fulfillmentCase,
@@ -182,10 +179,9 @@ public class FulfilmentRequestReceiverIT {
     Thread.sleep(2000);
 
     // Then
-    List<FulfilmentsToSend> fulfilmentsToSend = fulfilmentsToSendRepository.findAll();
+    List<FulfilmentToSend> fulfilmentToSend = fulfilmentToSendRepository.findAll();
 
-    PrintFileDto actualPrintFileDto =
-        convertJsonToObject(fulfilmentsToSend.get(0).getMessageData());
+    PrintFileDto actualPrintFileDto = fulfilmentToSend.get(0).getMessageData();
 
     checkAddressFieldsMatch(
         fulfillmentCase,
@@ -220,10 +216,9 @@ public class FulfilmentRequestReceiverIT {
     Thread.sleep(2000);
 
     // Then
-    List<FulfilmentsToSend> fulfilmentsToSend = fulfilmentsToSendRepository.findAll();
+    List<FulfilmentToSend> fulfilmentToSend = fulfilmentToSendRepository.findAll();
 
-    PrintFileDto actualPrintFileDto =
-        convertJsonToObject(fulfilmentsToSend.get(0).getMessageData());
+    PrintFileDto actualPrintFileDto = fulfilmentToSend.get(0).getMessageData();
 
     checkAddressFieldsMatch(
         fulfillmentCase,

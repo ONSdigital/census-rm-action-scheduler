@@ -1,14 +1,11 @@
 package uk.gov.ons.census.action.service;
 
-import static uk.gov.ons.census.action.utility.JsonHelper.convertObjectToJson;
-
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.ons.census.action.builders.CaseSelectedBuilder;
 import uk.gov.ons.census.action.client.CaseClient;
@@ -19,6 +16,8 @@ import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
+import uk.gov.ons.census.action.model.entity.FulfilmentToSend;
+import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @Service
 public class FulfilmentRequestService {
@@ -26,7 +25,7 @@ public class FulfilmentRequestService {
   private final RabbitTemplate rabbitTemplate;
   private final CaseClient caseClient;
   private final CaseSelectedBuilder caseSelectedBuilder;
-  private final JdbcTemplate jdbcTemplate;
+  private final FulfilmentToSendRepository fulfilmentToSendRepository;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -38,11 +37,11 @@ public class FulfilmentRequestService {
       RabbitTemplate rabbitTemplate,
       CaseClient caseClient,
       CaseSelectedBuilder caseSelectedBuilder,
-      JdbcTemplate jdbcTemplate) {
+      FulfilmentToSendRepository fulfilmentToSendRepository) {
     this.rabbitTemplate = rabbitTemplate;
     this.caseClient = caseClient;
     this.caseSelectedBuilder = caseSelectedBuilder;
-    this.jdbcTemplate = jdbcTemplate;
+    this.fulfilmentToSendRepository = fulfilmentToSendRepository;
   }
 
   public void processEvent(
@@ -64,17 +63,16 @@ public class FulfilmentRequestService {
 
     rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
-    String printFileString = convertObjectToJson(printFileDto);
-
-    sendFulfilmentToTable(printFileString, fulfilmentRequest);
+    sendFulfilmentToTable(printFileDto, fulfilmentRequest);
   }
 
   public void sendFulfilmentToTable(
-      String printFileDto, FulfilmentRequestDTO fulfilmentRequestDTO) {
-    jdbcTemplate.update(
-        "INSERT INTO actionv2.fulfilments_to_send(message_data, fulfilment_code) VALUES(?::json, ?)",
-        printFileDto,
-        fulfilmentRequestDTO.getFulfilmentCode());
+      PrintFileDto printFileDto, FulfilmentRequestDTO fulfilmentRequestDTO) {
+    FulfilmentToSend fulfilmentToSend = new FulfilmentToSend();
+    fulfilmentToSend.setFulfilmentCode(fulfilmentRequestDTO.getFulfilmentCode());
+    fulfilmentToSend.setMessageData(printFileDto);
+
+    fulfilmentToSendRepository.saveAndFlush(fulfilmentToSend);
   }
 
   public ActionType determineActionType(String fulfilmentCode) {

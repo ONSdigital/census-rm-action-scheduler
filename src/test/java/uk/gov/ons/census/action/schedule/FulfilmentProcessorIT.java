@@ -1,8 +1,8 @@
 package uk.gov.ons.census.action.schedule;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.ons.census.action.utility.JsonHelper.convertObjectToJson;
 
+import java.util.List;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +15,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
-import uk.gov.ons.census.action.model.entity.FulfilmentsToSend;
-import uk.gov.ons.census.action.model.repository.FulfilmentsToSendRepository;
+import uk.gov.ons.census.action.model.entity.FulfilmentToSend;
+import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @ContextConfiguration
 @SpringBootTest
@@ -25,13 +25,13 @@ import uk.gov.ons.census.action.model.repository.FulfilmentsToSendRepository;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FulfilmentProcessorIT {
 
-  @Autowired FulfilmentsToSendRepository fulfilmentsToSendRepository;
+  @Autowired FulfilmentToSendRepository fulfilmentToSendRepository;
   @Autowired FulfilmentProcessor fulfilmentProcessor;
 
   @Before
   @Transactional
   public void setUp() {
-    fulfilmentsToSendRepository.deleteAll();
+    fulfilmentToSendRepository.deleteAll();
   }
 
   @Test
@@ -41,24 +41,21 @@ public class FulfilmentProcessorIT {
     EasyRandom easyRandom = new EasyRandom();
     PrintFileDto printFileDto = easyRandom.nextObject(PrintFileDto.class);
 
-    String stringPrintFile = convertObjectToJson(printFileDto);
-
-    FulfilmentsToSend fulfilmentsBeforeQuantityAndBatchId = new FulfilmentsToSend();
+    FulfilmentToSend fulfilmentsBeforeQuantityAndBatchId = new FulfilmentToSend();
 
     fulfilmentsBeforeQuantityAndBatchId.setFulfilmentCode("P_OR_H1");
-    fulfilmentsBeforeQuantityAndBatchId.setMessageData(stringPrintFile);
+    fulfilmentsBeforeQuantityAndBatchId.setMessageData(printFileDto);
 
-    fulfilmentsToSendRepository.saveAndFlush(fulfilmentsBeforeQuantityAndBatchId);
+    fulfilmentToSendRepository.saveAndFlush(fulfilmentsBeforeQuantityAndBatchId);
 
     // When
     fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();
 
     // Then
 
-    FulfilmentsToSend fulfilmentsToSend =
-        fulfilmentsToSendRepository.findByFulfilmentCode("P_OR_H1");
-    assertThat(fulfilmentsToSend.getBatchId()).isNotNull();
-    assertThat(fulfilmentsToSend.getQuantity()).isNotNull();
-    assertThat(fulfilmentsToSend.getQuantity()).isEqualTo(1);
+    List<FulfilmentToSend> fulfilmentToSend = fulfilmentToSendRepository.findAll();
+    assertThat(fulfilmentToSend.get(0).getBatchId()).isNotNull();
+    assertThat(fulfilmentToSend.get(0).getQuantity()).isNotNull();
+    assertThat(fulfilmentToSend.get(0).getQuantity()).isEqualTo(1);
   }
 }

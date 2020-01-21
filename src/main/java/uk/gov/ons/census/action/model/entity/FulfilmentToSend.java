@@ -2,32 +2,30 @@ package uk.gov.ons.census.action.model.entity;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import uk.gov.ons.census.action.model.dto.PrintFileDto;
 
 @Entity
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
 @Data
-public class FulfilmentsToSend {
+public class FulfilmentToSend {
 
   @Id
   @Column(columnDefinition = "serial")
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
 
   @Column private String fulfilmentCode;
 
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb", nullable = false)
-  private String messageData;
+  private PrintFileDto messageData;
 
-  @Column(nullable = true)
-  private Integer quantity;
+  @Column private Integer quantity;
 
-  @Column(nullable = true)
-  private UUID batchId;
+  @Column private UUID batchId;
 }
