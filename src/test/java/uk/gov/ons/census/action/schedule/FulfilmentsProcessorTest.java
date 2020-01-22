@@ -8,24 +8,24 @@ import java.util.UUID;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import uk.gov.ons.census.action.model.entity.FulfilmentMapper;
+import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 public class FulfilmentsProcessorTest {
   private final JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+  private final FulfilmentToSendRepository fulfilmentToSendRepository =
+      mock(FulfilmentToSendRepository.class);
 
   @Test
   public void TestAddBatchIdAndQuantity() {
-    FulfilmentMapper fulfilmentMapper = new FulfilmentMapper();
-    fulfilmentMapper.setCount(1);
-    fulfilmentMapper.setFulfilmentCode("P_OR_H1");
+    FulfilmentMapper fulfilmentMapper = new FulfilmentMapper("P_OR_H1", 1L);
     List<FulfilmentMapper> fulfilmentsToSend = new ArrayList<>();
     fulfilmentsToSend.add(fulfilmentMapper);
 
-    when(jdbcTemplate.query(
-            any(String.class), any(uk.gov.ons.census.action.utility.FulfilmentMapper.class)))
-        .thenReturn(fulfilmentsToSend);
+    when(fulfilmentToSendRepository.findCountOfFulfilments()).thenReturn(fulfilmentsToSend);
 
     // When
-    FulfilmentProcessor fulfilmentProcessor = new FulfilmentProcessor(jdbcTemplate);
+    FulfilmentProcessor fulfilmentProcessor =
+        new FulfilmentProcessor(jdbcTemplate, fulfilmentToSendRepository);
     fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();
 
     // Then
@@ -43,17 +43,16 @@ public class FulfilmentsProcessorTest {
   public void TestwhenNoFulfilmentsAreInDatabase() {
 
     List<FulfilmentMapper> emptyFulfilmentsList = new ArrayList<>();
-    when(jdbcTemplate.query(
-            any(String.class), any(uk.gov.ons.census.action.utility.FulfilmentMapper.class)))
-        .thenReturn(emptyFulfilmentsList);
+    when(fulfilmentToSendRepository.findCountOfFulfilments()).thenReturn(emptyFulfilmentsList);
+
     // When
-    FulfilmentProcessor fulfilmentProcessor = new FulfilmentProcessor(jdbcTemplate);
+    FulfilmentProcessor fulfilmentProcessor =
+        new FulfilmentProcessor(jdbcTemplate, fulfilmentToSendRepository);
     fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();
     // Then
     String EXPECTED_QUERY =
         "select fulfilment_code, count(*) from actionv2.fulfilment_to_send group by fulfilment_code";
-    verify(jdbcTemplate, times(1))
-        .query(eq(EXPECTED_QUERY), any(uk.gov.ons.census.action.utility.FulfilmentMapper.class));
-    verifyNoMoreInteractions(jdbcTemplate);
+    verify(fulfilmentToSendRepository, times(1)).findCountOfFulfilments();
+    verifyNoMoreInteractions(fulfilmentToSendRepository);
   }
 }

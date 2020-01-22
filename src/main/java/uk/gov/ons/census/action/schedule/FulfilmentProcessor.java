@@ -5,21 +5,22 @@ import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.entity.FulfilmentMapper;
+import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @Component
 public class FulfilmentProcessor {
 
   private JdbcTemplate jdbcTemplate;
+  private FulfilmentToSendRepository fulfilmentToSendRepository;
 
-  public FulfilmentProcessor(JdbcTemplate jdbcTemplate) {
+  public FulfilmentProcessor(
+      JdbcTemplate jdbcTemplate, FulfilmentToSendRepository fulfilmentToSendRepository) {
     this.jdbcTemplate = jdbcTemplate;
+    this.fulfilmentToSendRepository = fulfilmentToSendRepository;
   }
 
   public void addFulfilmentBatchIdAndQuantity() {
-    String query =
-        "select fulfilment_code, count(*) from actionv2.fulfilment_to_send group by fulfilment_code";
-    List<FulfilmentMapper> fulfilmentsToSend =
-        jdbcTemplate.query(query, new uk.gov.ons.census.action.utility.FulfilmentMapper());
+    List<FulfilmentMapper> fulfilmentsToSend = fulfilmentToSendRepository.findCountOfFulfilments();
 
     fulfilmentsToSend.forEach(
         (fulfilment) -> {
