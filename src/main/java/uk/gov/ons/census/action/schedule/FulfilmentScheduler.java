@@ -14,7 +14,7 @@ public class FulfilmentScheduler {
     this.fulfilmentProcessor = fulfilmentProcessor;
   }
 
-  @Scheduled(cron = "${schedule.time}")
+  @Scheduled(cron = "${fulfilment.batch.scheduled.time}")
   public void TriggerFulfilments() {
     try {
       fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();

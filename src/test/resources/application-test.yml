@@ -23,5 +23,7 @@ caseapi:
   host: localhost
   port: 8089
 
-schedule:
-  time: "*/2 * * * * *"
+fulfilment:
+  batch:
+    scheduled:
+      time: "*/2 * * * * *"

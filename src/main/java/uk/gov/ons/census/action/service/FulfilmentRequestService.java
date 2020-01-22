@@ -46,17 +46,8 @@ public class FulfilmentRequestService {
 
   public void processEvent(
       FulfilmentRequestDTO fulfilmentRequest, Case caze, ActionType actionType) {
-    String fulfilmentCode = fulfilmentRequest.getFulfilmentCode();
 
     PrintFileDto printFileDto = createAndPopulatePrintFileDto(caze, actionType, fulfilmentRequest);
-
-    Optional<String> questionnaireType = determineQuestionnaireType(fulfilmentCode);
-
-    if (questionnaireType.isPresent()) {
-      UacQidDTO uacQid = caseClient.getUacQid(caze.getCaseId(), questionnaireType.get());
-      printFileDto.setQid(uacQid.getQid());
-      printFileDto.setUac(uacQid.getUac());
-    }
 
     ResponseManagementEvent printCaseSelected =
         caseSelectedBuilder.buildPrintMessage(printFileDto, null);
@@ -154,6 +145,15 @@ public class FulfilmentRequestService {
     printFileDto.setPackCode(fulfilmentRequest.getFulfilmentCode());
     printFileDto.setActionType(actionType.name());
     printFileDto.setCaseRef(fulfilmentCase.getCaseRef());
+
+    Optional<String> questionnaireType =
+        determineQuestionnaireType(fulfilmentRequest.getFulfilmentCode());
+
+    if (questionnaireType.isPresent()) {
+      UacQidDTO uacQid = caseClient.getUacQid(fulfilmentCase.getCaseId(), questionnaireType.get());
+      printFileDto.setQid(uacQid.getQid());
+      printFileDto.setUac(uacQid.getUac());
+    }
     return printFileDto;
   }
 

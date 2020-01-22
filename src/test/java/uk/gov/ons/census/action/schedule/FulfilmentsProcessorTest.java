@@ -7,10 +7,9 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import uk.gov.ons.census.action.model.entity.FulfilmentMapper;
 
-public class FulfilmentsUpdatedTest {
+public class FulfilmentsProcessorTest {
   private final JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
   @Test
@@ -30,22 +29,31 @@ public class FulfilmentsUpdatedTest {
     fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();
 
     // Then
-    verify(jdbcTemplate)
+    String EXPECTED_UPDATE_QUERY =
+        "UPDATE actionv2.fulfilment_to_send SET quantity = ?, batch_id = ? where fulfilment_code = ? ";
+    verify(jdbcTemplate, times(1))
         .update(
-            any(String.class),
+            eq(EXPECTED_UPDATE_QUERY),
             eq(fulfilmentMapper.getCount()),
             any(UUID.class),
             eq(fulfilmentMapper.getFulfilmentCode()));
   }
 
   @Test
-  public void TestNoFulfilmentsInDatabase() {
+  public void TestwhenNoFulfilmentsAreInDatabase() {
 
+    List<FulfilmentMapper> emptyFulfilmentsList = new ArrayList<>();
+    when(jdbcTemplate.query(
+            any(String.class), any(uk.gov.ons.census.action.utility.FulfilmentMapper.class)))
+        .thenReturn(emptyFulfilmentsList);
     // When
     FulfilmentProcessor fulfilmentProcessor = new FulfilmentProcessor(jdbcTemplate);
     fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();
-
     // Then
-    verify(jdbcTemplate, never()).update((PreparedStatementCreator) any(), any());
+    String EXPECTED_QUERY =
+        "select fulfilment_code, count(*) from actionv2.fulfilment_to_send group by fulfilment_code";
+    verify(jdbcTemplate, times(1))
+        .query(eq(EXPECTED_QUERY), any(uk.gov.ons.census.action.utility.FulfilmentMapper.class));
+    verifyNoMoreInteractions(jdbcTemplate);
   }
 }
