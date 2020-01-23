@@ -73,11 +73,11 @@ public class FulfilmentProcessorIT {
 
   private void createMultipleFulfilments(String fulfilment_code, Integer quantity) {
     for (int i = 0; i < quantity; i++) {
-      loopThroughHashMap(fulfilment_code);
+      saveFulfilmentToTable(fulfilment_code);
     }
   }
 
-  private void loopThroughHashMap(String fulfilment_code) {
+  private void saveFulfilmentToTable(String fulfilment_code) {
     EasyRandom easyRandom = new EasyRandom();
     PrintFileDto printFileDto = easyRandom.nextObject(PrintFileDto.class);
     FulfilmentToSend fulfilmentsBeforeQuantityAndBatchId = new FulfilmentToSend();
