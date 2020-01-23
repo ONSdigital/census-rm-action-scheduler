@@ -20,6 +20,7 @@ public class FulfilmentScheduler {
       fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();
     } catch (Exception e) {
       log.error("Unexpected exception while processing fulfilments", e);
+      throw e;
     }
   }
 }
