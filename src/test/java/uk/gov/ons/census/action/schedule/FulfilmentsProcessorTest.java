@@ -20,11 +20,10 @@ public class FulfilmentsProcessorTest {
 
   @Test
   public void TestAddBatchIdAndQuantity() {
-    FulfilmentCodeCount fulfilmentCodeCount = new FulfilmentCodeCount("P_OR_H1", 1L);
-    List<FulfilmentCodeCount> fulfilmentsToSend = new ArrayList<>();
-    fulfilmentsToSend.add(fulfilmentCodeCount);
 
-    when(fulfilmentToSendRepository.findCountOfFulfilments()).thenReturn(fulfilmentsToSend);
+    List<FulfilmentCodeCount> fulfilmentCodeCounts = createListOfFulfilments();
+
+    when(fulfilmentToSendRepository.findCountOfFulfilments()).thenReturn(fulfilmentCodeCounts);
 
     // When
     FulfilmentProcessor fulfilmentProcessor =
@@ -32,13 +31,26 @@ public class FulfilmentsProcessorTest {
     fulfilmentProcessor.addFulfilmentBatchIdAndQuantity();
 
     // Then
+    fulfilmentCodeCounts.forEach(
+        fulfilmentCodeCount -> {
+          verify(jdbcTemplate, times(2))
+              .update(
+                  eq(EXPECTED_UPDATE_QUERY),
+                  eq(fulfilmentCodeCount.getCount()),
+                  any(UUID.class),
+                  eq(fulfilmentCodeCount.getFulfilmentCode()));
+        });
+  }
 
-    verify(jdbcTemplate, times(1))
-        .update(
-            eq(EXPECTED_UPDATE_QUERY),
-            eq(fulfilmentCodeCount.getCount()),
-            any(UUID.class),
-            eq(fulfilmentCodeCount.getFulfilmentCode()));
+  private List<FulfilmentCodeCount> createListOfFulfilments() {
+    List<FulfilmentCodeCount> fulfilmentsToSend = new ArrayList<>();
+
+    for (int i = 0; i < 2; i++) {
+      FulfilmentCodeCount fulfilmentCodeCount = new FulfilmentCodeCount("P_OR_H1", 2L);
+      fulfilmentsToSend.add(fulfilmentCodeCount);
+    }
+
+    return fulfilmentsToSend;
   }
 
   @Test
