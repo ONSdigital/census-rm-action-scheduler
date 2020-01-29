@@ -66,6 +66,11 @@ exceptionmanager:
     host: localhost
     port: 8666
 
+fulfilment:
+  batch:
+    scheduled:
+      time: "0 0 16 ? * *"
+
 messagelogging:
   logstacktraces: false
 

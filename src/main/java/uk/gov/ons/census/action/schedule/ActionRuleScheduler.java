@@ -20,6 +20,7 @@ public class ActionRuleScheduler {
       actionRuleTriggerer.triggerActionRules();
     } catch (Exception e) {
       log.error("Unexpected exception while processing Action Rules", e);
+      throw e;
     }
   }
 }

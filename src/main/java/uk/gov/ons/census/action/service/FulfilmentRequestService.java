@@ -4,7 +4,6 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,9 +14,10 @@ import uk.gov.ons.census.action.model.dto.FulfilmentRequestDTO;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
 import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.UacQidDTO;
-import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
+import uk.gov.ons.census.action.model.entity.FulfilmentToSend;
+import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @Service
 public class FulfilmentRequestService {
@@ -25,6 +25,7 @@ public class FulfilmentRequestService {
   private final RabbitTemplate rabbitTemplate;
   private final CaseClient caseClient;
   private final CaseSelectedBuilder caseSelectedBuilder;
+  private final FulfilmentToSendRepository fulfilmentToSendRepository;
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -35,33 +36,34 @@ public class FulfilmentRequestService {
   public FulfilmentRequestService(
       RabbitTemplate rabbitTemplate,
       CaseClient caseClient,
-      CaseSelectedBuilder caseSelectedBuilder) {
+      CaseSelectedBuilder caseSelectedBuilder,
+      FulfilmentToSendRepository fulfilmentToSendRepository) {
     this.rabbitTemplate = rabbitTemplate;
     this.caseClient = caseClient;
     this.caseSelectedBuilder = caseSelectedBuilder;
+    this.fulfilmentToSendRepository = fulfilmentToSendRepository;
   }
 
   public void processEvent(
       FulfilmentRequestDTO fulfilmentRequest, Case caze, ActionType actionType) {
-    String fulfilmentCode = fulfilmentRequest.getFulfilmentCode();
 
     PrintFileDto printFileDto = createAndPopulatePrintFileDto(caze, actionType, fulfilmentRequest);
-
-    Optional<String> questionnaireType = determineQuestionnaireType(fulfilmentCode);
-
-    if (questionnaireType.isPresent()) {
-      UacQidDTO uacQid = caseClient.getUacQid(caze.getCaseId(), questionnaireType.get());
-      printFileDto.setQid(uacQid.getQid());
-      printFileDto.setUac(uacQid.getUac());
-    }
 
     ResponseManagementEvent printCaseSelected =
         caseSelectedBuilder.buildPrintMessage(printFileDto, null);
 
     rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
-    rabbitTemplate.convertAndSend(
-        outboundExchange, ActionHandler.PRINTER.getRoutingKey(), printFileDto);
+    sendFulfilmentToTable(printFileDto, fulfilmentRequest);
+  }
+
+  public void sendFulfilmentToTable(
+      PrintFileDto printFileDto, FulfilmentRequestDTO fulfilmentRequestDTO) {
+    FulfilmentToSend fulfilmentToSend = new FulfilmentToSend();
+    fulfilmentToSend.setFulfilmentCode(fulfilmentRequestDTO.getFulfilmentCode());
+    fulfilmentToSend.setMessageData(printFileDto);
+
+    fulfilmentToSendRepository.saveAndFlush(fulfilmentToSend);
   }
 
   public ActionType determineActionType(String fulfilmentCode) {
@@ -141,11 +143,18 @@ public class FulfilmentRequestService {
     printFileDto.setTitle(fulfilmentRequest.getContact().getTitle());
     printFileDto.setForename(fulfilmentRequest.getContact().getForename());
     printFileDto.setSurname(fulfilmentRequest.getContact().getSurname());
-    printFileDto.setBatchId(UUID.randomUUID().toString());
-    printFileDto.setBatchQuantity(1);
     printFileDto.setPackCode(fulfilmentRequest.getFulfilmentCode());
     printFileDto.setActionType(actionType.name());
     printFileDto.setCaseRef(fulfilmentCase.getCaseRef());
+
+    Optional<String> questionnaireType =
+        determineQuestionnaireType(fulfilmentRequest.getFulfilmentCode());
+
+    if (questionnaireType.isPresent()) {
+      UacQidDTO uacQid = caseClient.getUacQid(fulfilmentCase.getCaseId(), questionnaireType.get());
+      printFileDto.setQid(uacQid.getQid());
+      printFileDto.setUac(uacQid.getUac());
+    }
     return printFileDto;
   }
 

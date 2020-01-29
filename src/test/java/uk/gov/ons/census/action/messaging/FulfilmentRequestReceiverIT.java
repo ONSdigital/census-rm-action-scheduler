@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import org.jeasy.random.EasyRandom;
@@ -25,7 +26,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.ons.census.action.model.dto.*;
 import uk.gov.ons.census.action.model.entity.Case;
+import uk.gov.ons.census.action.model.entity.FulfilmentToSend;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
+import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @ContextConfiguration
 @SpringBootTest
@@ -54,6 +57,8 @@ public class FulfilmentRequestReceiverIT {
 
   @Autowired private CaseRepository caseRepository;
 
+  @Autowired private FulfilmentToSendRepository fulfilmentToSendRepository;
+
   private EasyRandom easyRandom = new EasyRandom();
 
   private ObjectMapper objectMapper = new ObjectMapper();
@@ -64,6 +69,7 @@ public class FulfilmentRequestReceiverIT {
     rabbitQueueHelper.purgeQueue(actionFulfilmentQueue);
     rabbitQueueHelper.purgeQueue(outboundPrinterQueue);
     rabbitQueueHelper.purgeQueue(actionCaseQueue);
+    fulfilmentToSendRepository.deleteAll();
   }
 
   @Test
@@ -89,15 +95,9 @@ public class FulfilmentRequestReceiverIT {
     // When
     rabbitQueueHelper.sendMessage(
         eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
+    Thread.sleep(2000);
 
-    // Then
-    PrintFileDto actualPrintFileDto =
-        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
-    checkAddressFieldsMatch(
-        fulfillmentCase,
-        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
-        actualPrintFileDto);
-    assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
+    List<FulfilmentToSend> fulfilmentToSend = fulfilmentToSendRepository.findAll();
 
     ResponseManagementEvent actualRmEvent =
         rabbitQueueHelper.checkExpectedMessageReceived(
@@ -107,6 +107,14 @@ public class FulfilmentRequestReceiverIT {
         .isEqualTo("P_OR_H1");
     assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
         .isEqualTo(fulfillmentCase.getCaseRef());
+
+    PrintFileDto actualPrintFileDto = fulfilmentToSend.get(0).getMessageData();
+
+    checkAddressFieldsMatch(
+        fulfillmentCase,
+        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
+        actualPrintFileDto);
+    assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
   }
 
   @Test
@@ -132,15 +140,10 @@ public class FulfilmentRequestReceiverIT {
     // When
     rabbitQueueHelper.sendMessage(
         eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
+    Thread.sleep(2000);
 
     // Then
-    PrintFileDto actualPrintFileDto =
-        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
-    checkAddressFieldsMatch(
-        fulfillmentCase,
-        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
-        actualPrintFileDto);
-    assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
+    List<FulfilmentToSend> fulfilmentToSend = fulfilmentToSendRepository.findAll();
 
     ResponseManagementEvent actualRmEvent =
         rabbitQueueHelper.checkExpectedMessageReceived(
@@ -150,6 +153,14 @@ public class FulfilmentRequestReceiverIT {
         .isEqualTo("P_OR_HC1");
     assertThat(actualRmEvent.getPayload().getPrintCaseSelected().getCaseRef())
         .isEqualTo(fulfillmentCase.getCaseRef());
+
+    PrintFileDto actualPrintFileDto = fulfilmentToSend.get(0).getMessageData();
+
+    checkAddressFieldsMatch(
+        fulfillmentCase,
+        actionFulfilmentEvent.getPayload().getFulfilmentRequest().getContact(),
+        actualPrintFileDto);
+    assertThat(actualPrintFileDto).isEqualToComparingOnlyGivenFields(uacQidDto, "uac", "qid");
   }
 
   @Test
@@ -165,10 +176,12 @@ public class FulfilmentRequestReceiverIT {
     // When
     rabbitQueueHelper.sendMessage(
         eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
+    Thread.sleep(2000);
 
     // Then
-    PrintFileDto actualPrintFileDto =
-        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
+    List<FulfilmentToSend> fulfilmentToSend = fulfilmentToSendRepository.findAll();
+
+    PrintFileDto actualPrintFileDto = fulfilmentToSend.get(0).getMessageData();
 
     checkAddressFieldsMatch(
         fulfillmentCase,
@@ -200,9 +213,12 @@ public class FulfilmentRequestReceiverIT {
     // When
     rabbitQueueHelper.sendMessage(
         eventsExchange, EVENTS_FULFILMENT_REQUEST_BINDING, actionFulfilmentEvent);
+    Thread.sleep(2000);
 
-    PrintFileDto actualPrintFileDto =
-        rabbitQueueHelper.checkExpectedMessageReceived(outputQueue, PrintFileDto.class);
+    // Then
+    List<FulfilmentToSend> fulfilmentToSend = fulfilmentToSendRepository.findAll();
+
+    PrintFileDto actualPrintFileDto = fulfilmentToSend.get(0).getMessageData();
 
     checkAddressFieldsMatch(
         fulfillmentCase,

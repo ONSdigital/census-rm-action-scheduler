@@ -7,5 +7,4 @@ public class PrintCaseSelected {
   private int caseRef;
   private String packCode;
   private String actionRuleId;
-  private String batchId;
 }
