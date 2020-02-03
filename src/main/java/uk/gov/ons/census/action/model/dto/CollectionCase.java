@@ -10,7 +10,6 @@ public class CollectionCase {
   private String survey;
   private String collectionExerciseId;
   private Address address;
-  private String state;
   private String actionableFrom;
   // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
   private String actionPlanId;

@@ -20,7 +20,6 @@ import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
-import uk.gov.ons.census.action.model.entity.CaseState;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
@@ -284,7 +283,6 @@ public class CaseAndUacReceiverTest {
         .getCollectionCase()
         .setId("d09ac28e-d62f-4cdd-a5f9-e366e05f0fcd");
     responseManagementEvent.getPayload().getUac().setQuestionnaireId("123");
-    responseManagementEvent.getPayload().getCollectionCase().setState("ACTIONABLE");
     responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
     return responseManagementEvent;
@@ -297,7 +295,6 @@ public class CaseAndUacReceiverTest {
     newCase.setCaseType(collectionCase.getCaseType());
     newCase.setActionPlanId(collectionCase.getActionPlanId());
     newCase.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
-    newCase.setState(CaseState.valueOf(collectionCase.getState()));
     newCase.setTreatmentCode(collectionCase.getTreatmentCode());
     newCase.setAddressLine1(collectionCase.getAddress().getAddressLine1());
     newCase.setAddressLine2(collectionCase.getAddress().getAddressLine2());

@@ -11,7 +11,6 @@ import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
-import uk.gov.ons.census.action.model.entity.CaseState;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
@@ -108,7 +107,6 @@ public class CaseAndUacReceiver {
   private void setCaseDetails(CollectionCase collectionCase, Case caseDetails) {
     caseDetails.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
     caseDetails.setCaseId(UUID.fromString(collectionCase.getId()));
-    caseDetails.setState(CaseState.valueOf(collectionCase.getState()));
     caseDetails.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
     caseDetails.setAddressLine1(collectionCase.getAddress().getAddressLine1());
     caseDetails.setAddressLine2(collectionCase.getAddress().getAddressLine2());
