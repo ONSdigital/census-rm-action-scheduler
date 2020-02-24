@@ -30,5 +30,5 @@ public class FieldworkFollowup {
   private String surveyName;
   private Boolean undeliveredAsAddress;
   private Boolean blankQreReturned;
-  private boolean handDelivery;
+  private Boolean handDelivery;
 }
