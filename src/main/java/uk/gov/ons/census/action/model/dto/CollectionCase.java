@@ -28,4 +28,5 @@ public class CollectionCase {
   private Boolean refusalReceived;
   private Boolean addressInvalid;
   private Boolean undeliveredAsAddressed;
+  private boolean handDelivery;
 }
