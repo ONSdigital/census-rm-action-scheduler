@@ -324,6 +324,7 @@ public class CaseAndUacReceiverTest {
     newCase.setCeExpectedCapacity(collectionCase.getCeExpectedCapacity());
     newCase.setCeActualResponses(collectionCase.getCeActualResponses());
     newCase.setAddressInvalid(collectionCase.getAddressInvalid());
+    newCase.setHandDelivery(collectionCase.isHandDelivery());
     return newCase;
   }
 }
