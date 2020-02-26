@@ -95,7 +95,7 @@ public class FulfilmentRequestService {
       case "P_TB_TBITA1":
       case "P_TB_TBKUR1":
       case "P_TB_TBLIT1":
-      case "T_PB_TBLIT4":
+      case "P_TB_TBLIT4":
       case "P_TB_TBMAN1":
       case "P_TB_TBMAN4":
       case "P_TB_TBPOL1":
