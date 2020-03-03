@@ -277,7 +277,7 @@ public class CaseAndUacReceiverTest {
     ResponseManagementEvent responseManagementEvent =
         easyRandom.nextObject(ResponseManagementEvent.class);
 
-    responseManagementEvent.getPayload().getCollectionCase().setCaseRef("123");
+    responseManagementEvent.getPayload().getCollectionCase().setCaseRef("1234567890");
     responseManagementEvent
         .getPayload()
         .getCollectionCase()
@@ -290,7 +290,7 @@ public class CaseAndUacReceiverTest {
 
   private Case getExpectedCase(CollectionCase collectionCase) {
     Case newCase = new Case();
-    newCase.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
+    newCase.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
     newCase.setCaseId(UUID.fromString(collectionCase.getId()));
     newCase.setCaseType(collectionCase.getCaseType());
     newCase.setActionPlanId(collectionCase.getActionPlanId());
