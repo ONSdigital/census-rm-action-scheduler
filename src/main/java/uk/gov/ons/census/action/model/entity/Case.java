@@ -10,14 +10,15 @@ import lombok.Data;
     name = "cases",
     indexes = {
       @Index(name = "receipt_received_idx", columnList = "receipt_received"),
-      @Index(name = "case_id_idx", columnList = "case_id", unique = true),
-      @Index(name = "treatment_code_idx", columnList = "treatment_code")
+      @Index(name = "cases_case_id_idx", columnList = "case_id"),
+      @Index(name = "treatment_code_idx", columnList = "treatment_code"),
+      @Index(name = "lsoa_idx", columnList = "lsoa")
     })
 public class Case {
 
   @Id private int caseRef;
 
-  @Column(name = "case_id")
+  @Column(name = "case_id", nullable = false)
   private UUID caseId;
 
   @Column private String caseType;
@@ -54,7 +55,8 @@ public class Case {
 
   @Column private String oa;
 
-  @Column private String lsoa;
+  @Column(name = "lsoa")
+  private String lsoa;
 
   @Column private String msoa;
 
