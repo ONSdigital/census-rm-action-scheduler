@@ -1,9 +1,10 @@
 package uk.gov.ons.census.action.messaging;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
@@ -109,6 +110,26 @@ public class CaseAndUacReceiverTest {
   }
 
   @Test
+  public void testCECaseCreated() {
+    // given
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    ResponseManagementEvent responseManagementEvent = getCEResponseManagementEvent();
+    responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
+
+    // when
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
+
+    // then
+    ArgumentCaptor<Case> eventArgumentCaptor = ArgumentCaptor.forClass(Case.class);
+    verify(caseRepository, times(1)).save(eventArgumentCaptor.capture());
+    Case actualCase = eventArgumentCaptor.getAllValues().get(0);
+    Case expectedCase = getExpectedCase(responseManagementEvent.getPayload().getCollectionCase());
+
+    assertThat(actualCase, SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
+  }
+
+  @Test
   public void testCaseUpdated() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
@@ -128,6 +149,34 @@ public class CaseAndUacReceiverTest {
     Case actualCase = eventArgumentCaptor.getAllValues().get(0);
 
     assertThat(actualCase, SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
+  }
+
+  @Test
+  public void testCECaseUpdated() {
+    // given
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    ResponseManagementEvent responseManagementEvent = getCEResponseManagementEvent();
+    responseManagementEvent.getEvent().setType(EventType.CASE_UPDATED);
+
+    Case expectedCase = easyRandom.nextObject(Case.class);
+    expectedCase.setMetadata(null);
+
+    when(caseRepository.findByCaseId(any())).thenReturn(Optional.of(expectedCase));
+
+    // when
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
+
+    // then
+    ArgumentCaptor<Case> eventArgumentCaptor = ArgumentCaptor.forClass(Case.class);
+    verify(caseRepository, times(1)).save(eventArgumentCaptor.capture());
+    Case actualCase = eventArgumentCaptor.getAllValues().get(0);
+
+    // This test is pretty useless because it's comparing the sane object with itself
+    assertThat(actualCase, SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
+
+    assertNotNull(actualCase.getMetadata());
+    assertEquals("TRUE", actualCase.getMetadata().get("secureEstablishment"));
   }
 
   @Test
@@ -288,6 +337,24 @@ public class CaseAndUacReceiverTest {
     return responseManagementEvent;
   }
 
+  private ResponseManagementEvent getCEResponseManagementEvent() {
+    ResponseManagementEvent responseManagementEvent =
+        easyRandom.nextObject(ResponseManagementEvent.class);
+
+    responseManagementEvent.getPayload().getCollectionCase().setCaseRef("123");
+    responseManagementEvent
+        .getPayload()
+        .getCollectionCase()
+        .setId("d09ac28e-d62f-4cdd-a5f9-e366e05f0fcd");
+    responseManagementEvent.getPayload().getUac().setQuestionnaireId("123");
+    responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
+    responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
+    Map<String, String> metadata = new HashMap<>();
+    metadata.put("secureEstablishment", "TRUE");
+    responseManagementEvent.getPayload().getCollectionCase().setMetadata(metadata);
+    return responseManagementEvent;
+  }
+
   private Case getExpectedCase(CollectionCase collectionCase) {
     Case newCase = new Case();
     newCase.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
@@ -325,6 +392,7 @@ public class CaseAndUacReceiverTest {
     newCase.setCeActualResponses(collectionCase.getCeActualResponses());
     newCase.setAddressInvalid(collectionCase.getAddressInvalid());
     newCase.setHandDelivery(collectionCase.isHandDelivery());
+    newCase.setMetadata(collectionCase.getMetadata());
     return newCase;
   }
 }

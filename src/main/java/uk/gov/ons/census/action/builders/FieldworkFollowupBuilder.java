@@ -36,6 +36,7 @@ public class FieldworkFollowupBuilder {
     followup.setCeActualResponses(caze.getCeActualResponses());
     followup.setUndeliveredAsAddress(caze.isUndeliveredAsAddressed());
     followup.setHandDelivery(caze.isHandDelivery());
+    followup.setMetadata(caze.getMetadata());
 
     // TODO: set surveyName, undeliveredAsAddress and blankQreReturned from caze
     followup.setSurveyName("CENSUS");

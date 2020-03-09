@@ -1,5 +1,6 @@
 package uk.gov.ons.census.action.model.dto;
 
+import java.util.Map;
 import lombok.Data;
 
 @Data
@@ -29,4 +30,5 @@ public class CollectionCase {
   private Boolean addressInvalid;
   private Boolean undeliveredAsAddressed;
   private boolean handDelivery;
+  private Map<String, String> metadata;
 }
