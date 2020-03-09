@@ -26,7 +26,7 @@ public class FieldworkFollowupBuilder {
     followup.setActionPlan(actionPlan);
     followup.setActionType(actionType);
     followup.setCaseId(caze.getCaseId().toString());
-    followup.setCaseRef(Integer.toString(caze.getCaseRef()));
+    followup.setCaseRef(Long.toString(caze.getCaseRef()));
     followup.setAddressType(caze.getAddressType());
     followup.setAddressLevel(caze.getAddressLevel());
     followup.setTreatmentCode(caze.getTreatmentCode());
