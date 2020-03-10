@@ -100,7 +100,7 @@ public class UndeliveredMailReceiverIT {
     responseManagementEvent
         .getPayload()
         .getFulfilmentInformation()
-        .setCaseRef(Integer.toString(caze.getCaseRef()));
+        .setCaseRef(Long.toString(caze.getCaseRef()));
 
     // When
     rabbitQueueHelper.sendMessage(
@@ -123,7 +123,7 @@ public class UndeliveredMailReceiverIT {
 
   private void checkTheThings(FieldworkFollowup actual, Case expected) {
     assertThat(actual.getCaseId()).isEqualTo(expected.getCaseId().toString());
-    assertThat(actual.getCaseRef()).isEqualTo(Integer.toString(expected.getCaseRef()));
+    assertThat(actual.getCaseRef()).isEqualTo(Long.toString(expected.getCaseRef()));
     assertThat(actual.getActionPlan()).isEqualTo("dummy");
     assertThat(actual.getActionType()).isEqualTo("dummy");
     assertThat(actual.getAddressLine1()).isEqualTo(expected.getAddressLine1());

@@ -105,7 +105,7 @@ public class CaseAndUacReceiver {
   }
 
   private void setCaseDetails(CollectionCase collectionCase, Case caseDetails) {
-    caseDetails.setCaseRef(Integer.parseInt(collectionCase.getCaseRef()));
+    caseDetails.setCaseRef(Long.parseLong(collectionCase.getCaseRef()));
     caseDetails.setCaseId(UUID.fromString(collectionCase.getId()));
     caseDetails.setCollectionExerciseId(collectionCase.getCollectionExerciseId());
     caseDetails.setAddressLine1(collectionCase.getAddress().getAddressLine1());

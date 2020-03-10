@@ -52,7 +52,7 @@ public class UndeliveredMailReceiver {
 
       caseOpt = caseRepository.findByCaseId(UUID.fromString(uacQidLinkOpt.get().getCaseId()));
     } else {
-      int caseRef = Integer.parseInt(event.getPayload().getFulfilmentInformation().getCaseRef());
+      long caseRef = Long.parseLong(event.getPayload().getFulfilmentInformation().getCaseRef());
       caseOpt = caseRepository.findById(caseRef);
     }
 
