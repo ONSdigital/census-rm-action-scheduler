@@ -84,21 +84,21 @@ public class UndeliveredMailReceiverTest {
     FieldworkFollowup fieldworkFollowup = new FieldworkFollowup();
 
     // Given
-    when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
+    when(caseRepository.findById((eq(1234567890L)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(eq(caze), eq("dummy"), eq("dummy")))
         .thenReturn(fieldworkFollowup);
 
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
     responseManagementEvent.setPayload(new Payload());
     responseManagementEvent.getPayload().setFulfilmentInformation(new FulfilmentInformation());
-    responseManagementEvent.getPayload().getFulfilmentInformation().setCaseRef("123");
+    responseManagementEvent.getPayload().getFulfilmentInformation().setCaseRef("1234567890");
 
     // When
     underTest.receiveMessage(responseManagementEvent);
 
     // Then
     verify(uacQidLinkRepository, never()).findByQid(any());
-    verify(caseRepository).findById(eq(123));
+    verify(caseRepository).findById(eq(1234567890L));
     verify(fieldworkFollowupBuilder).buildFieldworkFollowup(eq(caze), eq("dummy"), eq("dummy"));
 
     ArgumentCaptor<FieldworkFollowup> ffArgCaptor =
@@ -124,14 +124,14 @@ public class UndeliveredMailReceiverTest {
     FieldworkFollowup fieldworkFollowup = new FieldworkFollowup();
 
     // Given
-    when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
+    when(caseRepository.findById((eq(1230987654L)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(eq(caze), eq("dummy"), eq("dummy")))
         .thenReturn(fieldworkFollowup);
 
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
     responseManagementEvent.setPayload(new Payload());
     responseManagementEvent.getPayload().setFulfilmentInformation(new FulfilmentInformation());
-    responseManagementEvent.getPayload().getFulfilmentInformation().setCaseRef("123");
+    responseManagementEvent.getPayload().getFulfilmentInformation().setCaseRef("1230987654");
 
     // When
     underTest.receiveMessage(responseManagementEvent);
@@ -158,14 +158,14 @@ public class UndeliveredMailReceiverTest {
     FieldworkFollowup fieldworkFollowup = new FieldworkFollowup();
 
     // Given
-    when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
+    when(caseRepository.findById((eq(9876543210L)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(eq(caze), eq("dummy"), eq("dummy")))
         .thenReturn(fieldworkFollowup);
 
     ResponseManagementEvent responseManagementEvent = new ResponseManagementEvent();
     responseManagementEvent.setPayload(new Payload());
     responseManagementEvent.getPayload().setFulfilmentInformation(new FulfilmentInformation());
-    responseManagementEvent.getPayload().getFulfilmentInformation().setCaseRef("123");
+    responseManagementEvent.getPayload().getFulfilmentInformation().setCaseRef("9876543210");
 
     // When
     underTest.receiveMessage(responseManagementEvent);
@@ -192,7 +192,7 @@ public class UndeliveredMailReceiverTest {
     FieldworkFollowup fieldworkFollowup = new FieldworkFollowup();
 
     // Given
-    when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
+    when(caseRepository.findById((eq(123L)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(eq(caze), eq("dummy"), eq("dummy")))
         .thenReturn(fieldworkFollowup);
 
@@ -226,7 +226,7 @@ public class UndeliveredMailReceiverTest {
     FieldworkFollowup fieldworkFollowup = new FieldworkFollowup();
 
     // Given
-    when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
+    when(caseRepository.findById((eq(123L)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(eq(caze), eq("dummy"), eq("dummy")))
         .thenReturn(fieldworkFollowup);
 
@@ -258,7 +258,7 @@ public class UndeliveredMailReceiverTest {
     FieldworkFollowup fieldworkFollowup = new FieldworkFollowup();
 
     // Given
-    when(caseRepository.findById((eq(123)))).thenReturn(Optional.of(caze));
+    when(caseRepository.findById((eq(123L)))).thenReturn(Optional.of(caze));
     when(fieldworkFollowupBuilder.buildFieldworkFollowup(eq(caze), eq("dummy"), eq("dummy")))
         .thenReturn(fieldworkFollowup);
 
