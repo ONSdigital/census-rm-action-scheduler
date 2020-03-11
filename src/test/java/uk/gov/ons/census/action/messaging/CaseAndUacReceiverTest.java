@@ -3,8 +3,6 @@ package uk.gov.ons.census.action.messaging;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
@@ -21,6 +19,7 @@ import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 import uk.gov.ons.census.action.model.dto.Uac;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
+import uk.gov.ons.census.action.model.entity.CaseMetadata;
 import uk.gov.ons.census.action.model.entity.UacQidLink;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.UacQidLinkRepository;
@@ -176,7 +175,7 @@ public class CaseAndUacReceiverTest {
     assertThat(actualCase, SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
 
     assertNotNull(actualCase.getMetadata());
-    assertEquals("TRUE", actualCase.getMetadata().get("secureEstablishment"));
+    assertEquals(Boolean.TRUE, actualCase.getMetadata().getSecureEstablishment());
   }
 
   @Test
@@ -349,8 +348,8 @@ public class CaseAndUacReceiverTest {
     responseManagementEvent.getPayload().getUac().setQuestionnaireId("123");
     responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
-    Map<String, String> metadata = new HashMap<>();
-    metadata.put("secureEstablishment", "TRUE");
+    CaseMetadata metadata = new CaseMetadata();
+    metadata.setSecureEstablishment(true);
     responseManagementEvent.getPayload().getCollectionCase().setMetadata(metadata);
     return responseManagementEvent;
   }
