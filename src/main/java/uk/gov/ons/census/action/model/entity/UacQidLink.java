@@ -10,15 +10,21 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(indexes = {@Index(columnList = "caseId", unique = false)})
+@Table(
+    indexes = {
+      @Index(name = "uacqid_case_id_idx", columnList = "case_id"),
+      @Index(name = "qid_idx", columnList = "qid")
+    })
 public class UacQidLink {
   @Id private UUID id;
 
-  @Column private String qid;
+  @Column(name = "qid")
+  private String qid;
 
   @Column private String uac;
 
-  @Column private String caseId;
+  @Column(name = "case_id")
+  private String caseId;
 
   @Column private boolean active;
 }
