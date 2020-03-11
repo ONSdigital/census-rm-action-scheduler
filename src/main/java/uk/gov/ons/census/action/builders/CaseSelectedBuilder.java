@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.dto.Event;
 import uk.gov.ons.census.action.model.dto.EventType;
-import uk.gov.ons.census.action.model.dto.FieldCaseSelected;
 import uk.gov.ons.census.action.model.dto.Payload;
 import uk.gov.ons.census.action.model.dto.PrintCaseSelected;
 import uk.gov.ons.census.action.model.dto.PrintFileDto;
@@ -24,18 +23,6 @@ public class CaseSelectedBuilder {
     printCaseSelected.setActionRuleId(actionRuleId);
     printCaseSelected.setCaseRef(printFileDto.getCaseRef());
     printCaseSelected.setPackCode(printFileDto.getPackCode());
-
-    return responseManagementEvent;
-  }
-
-  public ResponseManagementEvent buildFieldMessage(String caseRef, UUID actionRuleId) {
-    ResponseManagementEvent responseManagementEvent =
-        buildEventWithoutPayload(EventType.FIELD_CASE_SELECTED);
-    FieldCaseSelected fieldCaseSelected = new FieldCaseSelected();
-    responseManagementEvent.getPayload().setFieldCaseSelected(fieldCaseSelected);
-
-    fieldCaseSelected.setActionRuleId(actionRuleId.toString());
-    fieldCaseSelected.setCaseRef(Integer.parseInt(caseRef));
 
     return responseManagementEvent;
   }
