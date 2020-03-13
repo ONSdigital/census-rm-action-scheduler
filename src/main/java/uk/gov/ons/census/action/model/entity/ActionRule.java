@@ -29,7 +29,8 @@ public class ActionRule {
   @Enumerated(EnumType.STRING)
   private ActionType actionType;
 
-  @Column private OffsetDateTime triggerDateTime;
+  @Column(columnDefinition = "timestamp with time zone")
+  private OffsetDateTime triggerDateTime;
 
   @Column private Boolean hasTriggered;
 
