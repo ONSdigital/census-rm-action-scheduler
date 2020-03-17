@@ -146,6 +146,7 @@ public class CaseAndUacReceiver {
     caseDetails.setAddressInvalid(collectionCase.getAddressInvalid());
     caseDetails.setUndeliveredAsAddressed(collectionCase.getUndeliveredAsAddressed());
     caseDetails.setHandDelivery(collectionCase.isHandDelivery());
+    caseDetails.setMetadata(collectionCase.getMetadata());
     // Yep. Here is a good place to add new stuff.
   }
 

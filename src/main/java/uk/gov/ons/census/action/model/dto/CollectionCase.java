@@ -1,6 +1,7 @@
 package uk.gov.ons.census.action.model.dto;
 
 import lombok.Data;
+import uk.gov.ons.census.action.model.entity.CaseMetadata;
 
 @Data
 public class CollectionCase {
@@ -29,4 +30,5 @@ public class CollectionCase {
   private Boolean addressInvalid;
   private Boolean undeliveredAsAddressed;
   private boolean handDelivery;
+  private CaseMetadata metadata;
 }

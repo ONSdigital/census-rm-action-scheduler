@@ -1,11 +1,16 @@
 package uk.gov.ons.census.action.model.entity;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.util.UUID;
 import javax.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 @Data
 @Entity
+@TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
 @Table(
     name = "cases",
     indexes = {
@@ -97,4 +102,8 @@ public class Case {
 
   @Column(columnDefinition = "BOOLEAN DEFAULT false")
   private boolean handDelivery;
+
+  @Type(type = "jsonb")
+  @Column(columnDefinition = "jsonb")
+  private CaseMetadata metadata;
 }

@@ -1,6 +1,7 @@
 package uk.gov.ons.census.action.model.dto;
 
 import lombok.Data;
+import uk.gov.ons.census.action.model.entity.CaseMetadata;
 
 @Data
 public class FieldworkFollowup {
@@ -31,4 +32,5 @@ public class FieldworkFollowup {
   private Boolean undeliveredAsAddress;
   private Boolean blankQreReturned;
   private Boolean handDelivery;
+  private CaseMetadata metadata;
 }

@@ -64,6 +64,7 @@ public class FieldworkFollowupBuilderTest {
             "blankQreReturned",
             "caseId",
             "caseRef");
+    assertThat(actualResult.getMetadata()).isEqualTo(caze.getMetadata());
   }
 
   private ActionRule generateRandomActionRule(EasyRandom easyRandom) {
