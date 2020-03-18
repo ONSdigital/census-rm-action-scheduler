@@ -68,16 +68,6 @@
       }
     },
     {
-      "name": "action.undeliveredMailQueue",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-dead-letter-exchange": "delayedRedeliveryExchange",
-        "x-dead-letter-routing-key": "action.undeliveredMailQueue"
-      }
-    },
-    {
       "name": "Action.Field",
       "vhost": "/",
       "durable": true,
@@ -177,14 +167,6 @@
       "destination": "action.fulfilment",
       "destination_type": "queue",
       "routing_key": "event.fulfilment.request",
-      "arguments": {}
-    },
-    {
-      "source": "events",
-      "vhost": "/",
-      "destination": "action.undeliveredMailQueue",
-      "destination_type": "queue",
-      "routing_key": "event.fulfilment.undelivered",
       "arguments": {}
     },
     {

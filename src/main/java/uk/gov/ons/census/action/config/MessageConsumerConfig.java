@@ -44,9 +44,6 @@ public class MessageConsumerConfig {
   @Value("${queueconfig.action-fulfilment-inbound-queue}")
   private String actionFulfilmentQueue;
 
-  @Value("${queueconfig.undelivered-mail-queue}")
-  private String undeliveredMailQueue;
-
   public MessageConsumerConfig(
       ExceptionManagerClient exceptionManagerClient,
       RabbitTemplate rabbitTemplate,
@@ -63,11 +60,6 @@ public class MessageConsumerConfig {
 
   @Bean
   public MessageChannel actionFulfilmentInputChannel() {
-    return new DirectChannel();
-  }
-
-  @Bean
-  public MessageChannel undeliveredMailInputChannel() {
     return new DirectChannel();
   }
 
@@ -91,16 +83,6 @@ public class MessageConsumerConfig {
   }
 
   @Bean
-  public AmqpInboundChannelAdapter undeliveredMailInbound(
-      @Qualifier("undeliveredMailContainer")
-          SimpleMessageListenerContainer actionFulfilmentContainer,
-      @Qualifier("undeliveredMailInputChannel") MessageChannel channel) {
-    AmqpInboundChannelAdapter adapter = new AmqpInboundChannelAdapter(actionFulfilmentContainer);
-    adapter.setOutputChannel(channel);
-    return adapter;
-  }
-
-  @Bean
   public SimpleMessageListenerContainer container() {
     return setupListenerContainer(inboundQueue, ResponseManagementEvent.class);
   }
@@ -108,11 +90,6 @@ public class MessageConsumerConfig {
   @Bean
   public SimpleMessageListenerContainer actionFulfilmentContainer() {
     return setupListenerContainer(actionFulfilmentQueue, ResponseManagementEvent.class);
-  }
-
-  @Bean
-  public SimpleMessageListenerContainer undeliveredMailContainer() {
-    return setupListenerContainer(undeliveredMailQueue, ResponseManagementEvent.class);
   }
 
   private SimpleMessageListenerContainer setupListenerContainer(
