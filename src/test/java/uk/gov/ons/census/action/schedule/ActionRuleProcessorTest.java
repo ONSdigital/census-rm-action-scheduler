@@ -1,7 +1,9 @@
 package uk.gov.ons.census.action.schedule;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
