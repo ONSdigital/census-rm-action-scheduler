@@ -30,5 +30,6 @@ public class CollectionCase {
   private Boolean addressInvalid;
   private Boolean undeliveredAsAddressed;
   private boolean handDelivery;
+  private boolean skellingtonCase;
   private CaseMetadata metadata;
 }
