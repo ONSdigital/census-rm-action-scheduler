@@ -39,10 +39,8 @@ queueconfig:
   action-fulfilment-inbound-queue: action.fulfilment
   events-exchange: events
   outbound-printer-queue: Action.Printer
-  outbound-field-queue: Action.Field
   outbound-exchange: action-outbound-exchange
   action-case-exchange: action-case-exchange
-  undelivered-mail-queue: action.undeliveredMailQueue
   consumers: 50
   retry-attempts: 3
   retry-delay: 1000 #milliseconds
