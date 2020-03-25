@@ -115,7 +115,7 @@ public class CaseAndUacReceiverTest {
         new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
-    responseManagementEvent.getPayload().getCollectionCase().setSkellingtonCase(true);
+    responseManagementEvent.getPayload().getCollectionCase().setSkellington(true);
 
     // when
     caseAndUacReceiver.receiveEvent(responseManagementEvent);
@@ -413,7 +413,7 @@ public class CaseAndUacReceiverTest {
     newCase.setAddressInvalid(collectionCase.getAddressInvalid());
     newCase.setHandDelivery(collectionCase.isHandDelivery());
     newCase.setMetadata(collectionCase.getMetadata());
-    newCase.setSkellingtonCase(collectionCase.isSkellingtonCase());
+    newCase.setSkellington(collectionCase.isSkellington());
     return newCase;
   }
 }

@@ -104,7 +104,7 @@ public class Case {
   private boolean handDelivery;
 
   @Column(columnDefinition = "BOOLEAN DEFAULT false")
-  private boolean skellingtonCase;
+  private boolean skellington;
 
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb")

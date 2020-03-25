@@ -147,7 +147,7 @@ public class CaseAndUacReceiver {
     caseDetails.setUndeliveredAsAddressed(collectionCase.getUndeliveredAsAddressed());
     caseDetails.setHandDelivery(collectionCase.isHandDelivery());
     caseDetails.setMetadata(collectionCase.getMetadata());
-    caseDetails.setSkellingtonCase(collectionCase.isSkellingtonCase());
+    caseDetails.setSkellington(collectionCase.isSkellington());
     // Yep. Here is a good place to add new stuff.
   }
 
