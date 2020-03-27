@@ -109,13 +109,13 @@ public class CaseAndUacReceiverTest {
   }
 
   @Test
-  public void testSkellingtonCreated() {
+  public void testSkeletonCreated() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
         new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
     ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
     responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
-    responseManagementEvent.getPayload().getCollectionCase().setSkellington(true);
+    responseManagementEvent.getPayload().getCollectionCase().setSkeleton(true);
 
     // when
     caseAndUacReceiver.receiveEvent(responseManagementEvent);
@@ -413,7 +413,7 @@ public class CaseAndUacReceiverTest {
     newCase.setAddressInvalid(collectionCase.getAddressInvalid());
     newCase.setHandDelivery(collectionCase.isHandDelivery());
     newCase.setMetadata(collectionCase.getMetadata());
-    newCase.setSkellington(collectionCase.isSkellington());
+    newCase.setSkeleton(collectionCase.isSkeleton());
     return newCase;
   }
 }
