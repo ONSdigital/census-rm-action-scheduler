@@ -109,6 +109,27 @@ public class CaseAndUacReceiverTest {
   }
 
   @Test
+  public void testSkeletonCreated() {
+    // given
+    CaseAndUacReceiver caseAndUacReceiver =
+        new CaseAndUacReceiver(caseRepository, uacQidLinkRepository, fulfilmentRequestService);
+    ResponseManagementEvent responseManagementEvent = getResponseManagementEvent();
+    responseManagementEvent.getEvent().setType(EventType.CASE_CREATED);
+    responseManagementEvent.getPayload().getCollectionCase().setSkeleton(true);
+
+    // when
+    caseAndUacReceiver.receiveEvent(responseManagementEvent);
+
+    // then
+    ArgumentCaptor<Case> eventArgumentCaptor = ArgumentCaptor.forClass(Case.class);
+    verify(caseRepository, times(1)).save(eventArgumentCaptor.capture());
+    Case actualCase = eventArgumentCaptor.getAllValues().get(0);
+    Case expectedCase = getExpectedCase(responseManagementEvent.getPayload().getCollectionCase());
+
+    assertThat(actualCase, SamePropertyValuesAs.samePropertyValuesAs(expectedCase));
+  }
+
+  @Test
   public void testCECaseCreated() {
     // given
     CaseAndUacReceiver caseAndUacReceiver =
@@ -392,6 +413,7 @@ public class CaseAndUacReceiverTest {
     newCase.setAddressInvalid(collectionCase.getAddressInvalid());
     newCase.setHandDelivery(collectionCase.isHandDelivery());
     newCase.setMetadata(collectionCase.getMetadata());
+    newCase.setSkeleton(collectionCase.isSkeleton());
     return newCase;
   }
 }
