@@ -28,9 +28,7 @@ public class Case {
 
   @Column private String caseType;
 
-  @Column private String arid;
-
-  @Column private String estabArid;
+  @Column private String estabUprn;
 
   @Column private String uprn;
 

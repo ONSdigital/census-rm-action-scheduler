@@ -12,7 +12,6 @@ public class FieldworkFollowup {
   private String postcode;
   private String estabType;
   private String organisationName;
-  private String arid;
   private String uprn;
   private String oa;
   private String latitude;
