@@ -413,6 +413,7 @@ public class CaseAndUacReceiverTest {
     newCase.setHandDelivery(collectionCase.isHandDelivery());
     newCase.setMetadata(collectionCase.getMetadata());
     newCase.setSkeleton(collectionCase.isSkeleton());
+    newCase.setPrintBatch(collectionCase.getPrintBatch());
     return newCase;
   }
 }

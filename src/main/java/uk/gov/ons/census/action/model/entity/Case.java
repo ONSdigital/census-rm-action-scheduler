@@ -107,4 +107,6 @@ public class Case {
   @Type(type = "jsonb")
   @Column(columnDefinition = "jsonb")
   private CaseMetadata metadata;
+
+  @Column private String printBatch;
 }
