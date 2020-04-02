@@ -97,9 +97,6 @@ public class Case {
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
   private boolean addressInvalid;
 
-  @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-  private boolean undeliveredAsAddressed;
-
   @Column(columnDefinition = "BOOLEAN DEFAULT false")
   private boolean handDelivery;
 

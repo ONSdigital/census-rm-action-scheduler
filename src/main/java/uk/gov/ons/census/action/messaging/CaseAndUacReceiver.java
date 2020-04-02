@@ -144,7 +144,6 @@ public class CaseAndUacReceiver {
     caseDetails.setReceiptReceived(collectionCase.getReceiptReceived());
     caseDetails.setRefusalReceived(collectionCase.getRefusalReceived());
     caseDetails.setAddressInvalid(collectionCase.getAddressInvalid());
-    caseDetails.setUndeliveredAsAddressed(collectionCase.getUndeliveredAsAddressed());
     caseDetails.setHandDelivery(collectionCase.isHandDelivery());
     caseDetails.setMetadata(collectionCase.getMetadata());
     caseDetails.setSkeleton(collectionCase.isSkeleton());
