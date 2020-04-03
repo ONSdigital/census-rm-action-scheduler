@@ -17,10 +17,8 @@ public class FieldworkFollowupBuilder {
     followup.setPostcode(caze.getPostcode());
     followup.setEstabType(caze.getEstabType());
     followup.setOrganisationName(caze.getOrganisationName());
-    followup.setArid(caze.getArid());
     followup.setUprn(caze.getUprn());
     followup.setOa(caze.getOa());
-    followup.setArid(caze.getArid());
     followup.setLatitude(caze.getLatitude());
     followup.setLongitude(caze.getLongitude());
     followup.setActionPlan(actionPlan);

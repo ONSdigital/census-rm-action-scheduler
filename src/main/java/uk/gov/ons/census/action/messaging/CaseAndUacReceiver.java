@@ -113,7 +113,6 @@ public class CaseAndUacReceiver {
     caseDetails.setAddressLine3(collectionCase.getAddress().getAddressLine3());
     caseDetails.setTownName(collectionCase.getAddress().getTownName());
     caseDetails.setPostcode(collectionCase.getAddress().getPostcode());
-    caseDetails.setArid(collectionCase.getAddress().getArid());
     caseDetails.setLatitude(collectionCase.getAddress().getLatitude());
     caseDetails.setLongitude(collectionCase.getAddress().getLongitude());
     caseDetails.setUprn(collectionCase.getAddress().getUprn());
@@ -128,7 +127,7 @@ public class CaseAndUacReceiver {
     caseDetails.setCaseType(collectionCase.getCaseType());
     caseDetails.setAddressType(collectionCase.getAddress().getAddressType());
     caseDetails.setUprn(collectionCase.getAddress().getUprn());
-    caseDetails.setEstabArid(collectionCase.getAddress().getEstabArid());
+    caseDetails.setEstabUprn(collectionCase.getAddress().getEstabUprn());
     caseDetails.setEstabType(collectionCase.getAddress().getEstabType());
     caseDetails.setOrganisationName(collectionCase.getAddress().getOrganisationName());
     caseDetails.setOa(collectionCase.getOa());
@@ -147,6 +146,7 @@ public class CaseAndUacReceiver {
     caseDetails.setHandDelivery(collectionCase.isHandDelivery());
     caseDetails.setMetadata(collectionCase.getMetadata());
     caseDetails.setSkeleton(collectionCase.isSkeleton());
+    caseDetails.setPrintBatch(collectionCase.getPrintBatch());
     // Yep. Here is a good place to add new stuff.
   }
 

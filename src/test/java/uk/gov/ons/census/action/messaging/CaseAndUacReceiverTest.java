@@ -388,7 +388,6 @@ public class CaseAndUacReceiverTest {
     newCase.setAddressLine3(collectionCase.getAddress().getAddressLine3());
     newCase.setTownName(collectionCase.getAddress().getTownName());
     newCase.setPostcode(collectionCase.getAddress().getPostcode());
-    newCase.setArid(collectionCase.getAddress().getArid());
     newCase.setLatitude(collectionCase.getAddress().getLatitude());
     newCase.setLongitude(collectionCase.getAddress().getLongitude());
     newCase.setUprn(collectionCase.getAddress().getUprn());
@@ -403,7 +402,7 @@ public class CaseAndUacReceiverTest {
     newCase.setAbpCode(collectionCase.getAddress().getApbCode());
     newCase.setAddressType(collectionCase.getAddress().getAddressType());
     newCase.setUprn(collectionCase.getAddress().getUprn());
-    newCase.setEstabArid(collectionCase.getAddress().getEstabArid());
+    newCase.setEstabUprn(collectionCase.getAddress().getEstabUprn());
     newCase.setEstabType(collectionCase.getAddress().getEstabType());
     newCase.setOrganisationName(collectionCase.getAddress().getOrganisationName());
     newCase.setFieldCoordinatorId(collectionCase.getFieldCoordinatorId());
@@ -414,6 +413,7 @@ public class CaseAndUacReceiverTest {
     newCase.setHandDelivery(collectionCase.isHandDelivery());
     newCase.setMetadata(collectionCase.getMetadata());
     newCase.setSkeleton(collectionCase.isSkeleton());
+    newCase.setPrintBatch(collectionCase.getPrintBatch());
     return newCase;
   }
 }
