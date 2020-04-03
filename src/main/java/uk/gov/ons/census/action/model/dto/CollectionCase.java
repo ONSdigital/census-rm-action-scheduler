@@ -28,7 +28,6 @@ public class CollectionCase {
   private Boolean receiptReceived;
   private Boolean refusalReceived;
   private Boolean addressInvalid;
-  private Boolean undeliveredAsAddressed;
   private boolean handDelivery;
   private boolean skeleton;
   private CaseMetadata metadata;

@@ -32,7 +32,6 @@ public class FieldworkFollowupBuilder {
     followup.setFieldCoordinatorId(caze.getFieldCoordinatorId());
     followup.setCeExpectedCapacity(caze.getCeExpectedCapacity());
     followup.setCeActualResponses(caze.getCeActualResponses());
-    followup.setUndeliveredAsAddress(caze.isUndeliveredAsAddressed());
     followup.setHandDelivery(caze.isHandDelivery());
     followup.setMetadata(caze.getMetadata());
 
