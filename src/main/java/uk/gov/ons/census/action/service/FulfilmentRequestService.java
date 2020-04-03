@@ -2,8 +2,17 @@ package uk.gov.ons.census.action.service;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -47,6 +56,8 @@ public class FulfilmentRequestService {
   public void processEvent(
       FulfilmentRequestDTO fulfilmentRequest, Case caze, ActionType actionType) {
 
+    checkMandatoryField(fulfilmentRequest, caze);
+
     PrintFileDto printFileDto = createAndPopulatePrintFileDto(caze, actionType, fulfilmentRequest);
 
     ResponseManagementEvent printCaseSelected =
@@ -55,6 +66,45 @@ public class FulfilmentRequestService {
     rabbitTemplate.convertAndSend(actionCaseExchange, "", printCaseSelected);
 
     sendFulfilmentToTable(printFileDto, fulfilmentRequest);
+  }
+
+  // TODO check list of codes
+  private static final Set<String> paperQuestionnaireFulfilmentCodes =
+      Set.of(
+          "P_OR_H1",
+          "P_OR_H2",
+          "P_OR_H2W",
+          "P_OR_H4",
+          "P_OR_HC1",
+          "P_OR_HC2",
+          "P_OR_HC2W",
+          "P_OR_HC4");
+
+  private void checkMandatoryField(FulfilmentRequestDTO fulfilmentRequest, Case caze) {
+    Map<String, Object> mandatoryValues = new HashMap<>();
+    mandatoryValues.put("addressLine1", caze.getAddressLine1());
+    mandatoryValues.put("postcode", caze.getPostcode());
+    mandatoryValues.put("townName", caze.getTownName());
+
+    if (isPaperQuestionnaireFulfilment(fulfilmentRequest) && caze.isHandDelivery()) {
+      // Non PQ fulfilments which are hand delivered need a field officer and coordinator
+      mandatoryValues.put("fieldCoordinatorId", caze.getFieldCoordinatorId());
+      mandatoryValues.put("fieldOfficerId", caze.getFieldOfficerId());
+    }
+    List<String> missingFields =
+        mandatoryValues.keySet().stream()
+            .filter(key -> mandatoryValues.get(key) == null)
+            .collect(Collectors.toList());
+    if (!missingFields.isEmpty()) {
+      throw new RuntimeException(
+          String.format(
+              "Received fulfilment request for case which is missing mandatory values: %s, fulfilmentCode: %s, caseId: %s",
+              missingFields.toString(), fulfilmentRequest.getFulfilmentCode(), caze.getCaseId()));
+    }
+  }
+
+  private boolean isPaperQuestionnaireFulfilment(FulfilmentRequestDTO fulfilmentRequest) {
+    return paperQuestionnaireFulfilmentCodes.contains(fulfilmentRequest.getFulfilmentCode());
   }
 
   public void sendFulfilmentToTable(
