@@ -30,6 +30,20 @@ public class FulfilmentRequestService {
   private final CaseClient caseClient;
   private final CaseSelectedBuilder caseSelectedBuilder;
   private final FulfilmentToSendRepository fulfilmentToSendRepository;
+  private static final Set<String> paperQuestionnaireFulfilmentCodes =
+      Set.of(
+          "P_OR_H1",
+          "P_OR_H2",
+          "P_OR_H2W",
+          "P_OR_H4",
+          "P_OR_HC1",
+          "P_OR_HC2",
+          "P_OR_HC2W",
+          "P_OR_HC4",
+          "P_OR_I1",
+          "P_OR_I2",
+          "P_OR_I2W",
+          "P_OR_I4");
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -63,19 +77,11 @@ public class FulfilmentRequestService {
     sendFulfilmentToTable(printFileDto, fulfilmentRequest);
   }
 
-  // TODO check list of codes
-  private static final Set<String> paperQuestionnaireFulfilmentCodes =
-      Set.of(
-          "P_OR_H1",
-          "P_OR_H2",
-          "P_OR_H2W",
-          "P_OR_H4",
-          "P_OR_HC1",
-          "P_OR_HC2",
-          "P_OR_HC2W",
-          "P_OR_HC4");
-
-  private void checkMandatoryFields(FulfilmentRequestDTO fulfilmentRequest, Case caze) {
+  private static void checkMandatoryFields(FulfilmentRequestDTO fulfilmentRequest, Case caze) {
+    /*
+    Throws a RuntimeException if the case does not have the minimum data according to the mandatory fields listed here
+    https://collaborate2.ons.gov.uk/confluence/display/SDC/Handle+New+Address+Reported+Events
+     */
     Map<String, Object> mandatoryValues = new HashMap<>();
     mandatoryValues.put("addressLine1", caze.getAddressLine1());
     mandatoryValues.put("postcode", caze.getPostcode());
@@ -101,7 +107,7 @@ public class FulfilmentRequestService {
     }
   }
 
-  private boolean isPaperQuestionnaireFulfilment(FulfilmentRequestDTO fulfilmentRequest) {
+  private static boolean isPaperQuestionnaireFulfilment(FulfilmentRequestDTO fulfilmentRequest) {
     return paperQuestionnaireFulfilmentCodes.contains(fulfilmentRequest.getFulfilmentCode());
   }
 
