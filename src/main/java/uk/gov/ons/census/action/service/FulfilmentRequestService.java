@@ -2,17 +2,12 @@ package uk.gov.ons.census.action.service;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -56,7 +51,7 @@ public class FulfilmentRequestService {
   public void processEvent(
       FulfilmentRequestDTO fulfilmentRequest, Case caze, ActionType actionType) {
 
-    checkMandatoryField(fulfilmentRequest, caze);
+    checkMandatoryFields(fulfilmentRequest, caze);
 
     PrintFileDto printFileDto = createAndPopulatePrintFileDto(caze, actionType, fulfilmentRequest);
 
@@ -80,7 +75,7 @@ public class FulfilmentRequestService {
           "P_OR_HC2W",
           "P_OR_HC4");
 
-  private void checkMandatoryField(FulfilmentRequestDTO fulfilmentRequest, Case caze) {
+  private void checkMandatoryFields(FulfilmentRequestDTO fulfilmentRequest, Case caze) {
     Map<String, Object> mandatoryValues = new HashMap<>();
     mandatoryValues.put("addressLine1", caze.getAddressLine1());
     mandatoryValues.put("postcode", caze.getPostcode());
@@ -91,10 +86,13 @@ public class FulfilmentRequestService {
       mandatoryValues.put("fieldCoordinatorId", caze.getFieldCoordinatorId());
       mandatoryValues.put("fieldOfficerId", caze.getFieldOfficerId());
     }
-    List<String> missingFields =
-        mandatoryValues.keySet().stream()
-            .filter(key -> mandatoryValues.get(key) == null)
-            .collect(Collectors.toList());
+
+    List<String> missingFields = new ArrayList<>();
+    for (Map.Entry<String, Object> entry : mandatoryValues.entrySet()) {
+      if (entry.getValue() == null) {
+        missingFields.add(entry.getKey());
+      }
+    }
     if (!missingFields.isEmpty()) {
       throw new RuntimeException(
           String.format(
