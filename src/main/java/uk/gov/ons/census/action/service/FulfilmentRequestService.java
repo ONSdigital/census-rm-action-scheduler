@@ -87,7 +87,7 @@ public class FulfilmentRequestService {
     mandatoryValues.put("postcode", caze.getPostcode());
     mandatoryValues.put("townName", caze.getTownName());
 
-    if (isPaperQuestionnaireFulfilment(fulfilmentRequest) && caze.isHandDelivery()) {
+    if (!isPaperQuestionnaireFulfilment(fulfilmentRequest) && caze.isHandDelivery()) {
       // Non PQ fulfilments which are hand delivered need a field officer and coordinator
       mandatoryValues.put("fieldCoordinatorId", caze.getFieldCoordinatorId());
       mandatoryValues.put("fieldOfficerId", caze.getFieldOfficerId());

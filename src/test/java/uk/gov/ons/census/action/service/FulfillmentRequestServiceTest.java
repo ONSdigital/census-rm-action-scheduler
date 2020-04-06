@@ -86,16 +86,16 @@ public class FulfillmentRequestServiceTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void testQmFulfilmentForHandDeliverCaseMissingFieldIdsIsRejected() {
+  public void testPpoFulfilmentForHandDeliverCaseMissingFieldIdsIsRejected() {
     FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
-    fulfilmentRequestDTO.setFulfilmentCode("P_OR_H1");
+    fulfilmentRequestDTO.setFulfilmentCode("P_TB_TBCAN1");
     Case caze = easyRandom.nextObject(Case.class);
     caze.setHandDelivery(true);
     caze.setFieldCoordinatorId(null);
     caze.setFieldOfficerId(null);
 
     try {
-      underTest.processEvent(fulfilmentRequestDTO, caze, ActionType.P_OR_HX);
+      underTest.processEvent(fulfilmentRequestDTO, caze, ActionType.P_TB_TBX);
     } catch (RuntimeException runtimeException) {
       assertThat(runtimeException.getMessage()).contains("fieldOfficerId");
       assertThat(runtimeException.getMessage()).contains("fieldCoordinatorId");
