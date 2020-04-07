@@ -85,6 +85,45 @@ public class FulfillmentRequestServiceTest {
     verifyZeroInteractions(caseClient);
   }
 
+  @Test(expected = RuntimeException.class)
+  public void testPpoFulfilmentForHandDeliverCaseMissingFieldIdsIsRejected() {
+    FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
+    fulfilmentRequestDTO.setFulfilmentCode("P_TB_TBCAN1");
+    Case caze = easyRandom.nextObject(Case.class);
+    caze.setHandDelivery(true);
+    caze.setFieldCoordinatorId(null);
+    caze.setFieldOfficerId(null);
+
+    try {
+      underTest.processEvent(fulfilmentRequestDTO, caze, ActionType.P_TB_TBX);
+    } catch (RuntimeException runtimeException) {
+      assertThat(runtimeException.getMessage()).contains("fieldOfficerId");
+      assertThat(runtimeException.getMessage()).contains("fieldCoordinatorId");
+      assertThat(runtimeException.getMessage()).contains(caze.getCaseId().toString());
+      assertThat(runtimeException.getMessage()).contains(fulfilmentRequestDTO.getFulfilmentCode());
+      throw runtimeException;
+    }
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCaseMissingMandatoryAddressFieldsIsRejected() {
+    FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
+    fulfilmentRequestDTO.setFulfilmentCode("P_OR_H1");
+    Case caze = easyRandom.nextObject(Case.class);
+    caze.setAddressLine1(null);
+    caze.setPostcode(null);
+
+    try {
+      underTest.processEvent(fulfilmentRequestDTO, caze, ActionType.P_OR_HX);
+    } catch (RuntimeException runtimeException) {
+      assertThat(runtimeException.getMessage()).contains("addressLine1");
+      assertThat(runtimeException.getMessage()).contains("postcode");
+      assertThat(runtimeException.getMessage()).contains(caze.getCaseId().toString());
+      assertThat(runtimeException.getMessage()).contains(fulfilmentRequestDTO.getFulfilmentCode());
+      throw runtimeException;
+    }
+  }
+
   private void checkCorrectPackCodeAndAddressAreSent(
       FulfilmentRequestDTO fulfilmentRequestDTO,
       Case fulfilmentCase,
