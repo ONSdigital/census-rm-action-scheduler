@@ -15,6 +15,10 @@ public enum ActionType {
   CE1_IC01(ActionHandler.PRINTER, "D_CE1A_ICLCR1"),
   CE1_IC02(ActionHandler.PRINTER, "D_CE1A_ICLCR2B"),
 
+  // Individual addressed initial contact letters for CE Units
+  CE_IC03_1(ActionHandler.PRINTER, "D_ICA_ICLR1"),
+  CE_IC04_1(ActionHandler.PRINTER, "D_ICA_ICLR2B"),
+
   // Generic actionType for use in Fieldwork followup action rules, tranches
   FIELD(ActionHandler.FIELD),
 
