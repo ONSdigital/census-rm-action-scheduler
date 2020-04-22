@@ -24,4 +24,6 @@ public class CaseToProcess {
 
   private UUID batchId;
   private int batchQuantity;
+
+  @Column private Integer ceExpectedCapacity;
 }
