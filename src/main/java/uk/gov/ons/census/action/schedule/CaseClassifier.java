@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.entity.ActionRule;
+import uk.gov.ons.census.action.model.entity.ActionType;
 
 @Component
 public class CaseClassifier {
@@ -20,8 +21,8 @@ public class CaseClassifier {
   public void enqueueCasesForActionRule(ActionRule actionRule) {
     UUID batchId = UUID.randomUUID();
 
-    if (actionRule.getActionType().toString().equals("CE_IC03")
-        | actionRule.getActionType().toString().equals("CE_IC04")) {
+    if (actionRule.getActionType() == ActionType.CE_IC03
+        || actionRule.getActionType() == ActionType.CE_IC04) {
 
       jdbcTemplate.update(
           "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
