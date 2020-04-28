@@ -70,9 +70,8 @@ public class CaseClassifierTest {
     // Then
     StringBuilder expectedSql = new StringBuilder();
     expectedSql.append("INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, ");
-    expectedSql.append(
-        "action_rule_id, caze_case_ref, ce_expected_capacity) SELECT ?, SUM(ce_expected_capacity) OVER(),"
-            + " ?, case_ref, ce_expected_capacity ");
+    expectedSql.append("action_rule_id, caze_case_ref, ce_expected_capacity) SELECT ?, ");
+    expectedSql.append("SUM(ce_expected_capacity) OVER(), ?, case_ref, ce_expected_capacity ");
     expectedSql.append("FROM actionv2.cases WHERE action_plan_id='");
     expectedSql.append(actionPlan.getId().toString());
     expectedSql.append("' AND receipt_received='f' AND refusal_received='f' AND ");

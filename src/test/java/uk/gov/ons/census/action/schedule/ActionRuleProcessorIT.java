@@ -125,6 +125,7 @@ public class ActionRuleProcessorIT {
     ActionPlan actionPlan = setUpActionPlan();
     setUpCeEstabCase(actionPlan, 23);
     setUpCeEstabCase(actionPlan, 77);
+    setUpCeEstabCase(actionPlan, null);
     setUpActionRule(ActionType.CE_IC03, actionPlan);
 
     // When
@@ -132,7 +133,7 @@ public class ActionRuleProcessorIT {
 
     // Then
     List<CaseToProcess> queuedCases = caseToProcessRepository.findAll();
-    assertThat(queuedCases.size()).isEqualTo(2);
+    assertThat(queuedCases.size()).isEqualTo(3);
     assertThat(queuedCases.get(0).getBatchQuantity()).isEqualTo(100);
   }
 
@@ -182,7 +183,7 @@ public class ActionRuleProcessorIT {
     caseRepository.saveAndFlush(randomCase);
   }
 
-  private void setUpCeEstabCase(ActionPlan actionPlan, int ceExpectedCapacity) {
+  private void setUpCeEstabCase(ActionPlan actionPlan, Integer ceExpectedCapacity) {
     Case randomCase = easyRandom.nextObject(Case.class);
     randomCase.setActionPlanId(actionPlan.getId().toString());
     randomCase.setReceiptReceived(false);
