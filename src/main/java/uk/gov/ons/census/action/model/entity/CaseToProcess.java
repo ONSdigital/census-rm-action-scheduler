@@ -24,7 +24,7 @@ public class CaseToProcess {
 
   @Column private UUID batchId;
 
-  @Column (nullable = false)
+  @Column(nullable = false)
   private int batchQuantity;
 
   @Column private Integer ceExpectedCapacity;
