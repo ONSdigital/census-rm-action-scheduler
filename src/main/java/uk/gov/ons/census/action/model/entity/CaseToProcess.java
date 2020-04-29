@@ -23,7 +23,9 @@ public class CaseToProcess {
   @ManyToOne private ActionRule actionRule;
 
   @Column private UUID batchId;
-  @Column private int batchQuantity;
+
+  @Column (nullable = false)
+  private int batchQuantity;
 
   @Column private Integer ceExpectedCapacity;
 }
