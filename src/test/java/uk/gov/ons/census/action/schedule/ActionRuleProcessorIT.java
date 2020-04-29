@@ -119,6 +119,24 @@ public class ActionRuleProcessorIT {
     assertThat(queuedCases.size()).isEqualTo(0);
   }
 
+  @Test
+  public void testCeEstabCase() throws InterruptedException {
+    // Given we have an HI case with a valid Treatment Code.
+    ActionPlan actionPlan = setUpActionPlan();
+    setUpCeEstabCase(actionPlan, 23);
+    setUpCeEstabCase(actionPlan, 77);
+    setUpCeEstabCase(actionPlan, null);
+    setUpActionRule(ActionType.CE_IC03, actionPlan);
+
+    // When
+    Thread.sleep(2000);
+
+    // Then
+    List<CaseToProcess> queuedCases = caseToProcessRepository.findAll();
+    assertThat(queuedCases.size()).isEqualTo(3);
+    assertThat(queuedCases.get(0).getBatchQuantity()).isEqualTo(100);
+  }
+
   private ActionPlan setUpActionPlan() {
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
@@ -162,6 +180,18 @@ public class ActionRuleProcessorIT {
     randomCase.setAddressInvalid(false);
     randomCase.setTreatmentCode("HH_LF2R1E");
     randomCase.setCaseType("HI");
+    caseRepository.saveAndFlush(randomCase);
+  }
+
+  private void setUpCeEstabCase(ActionPlan actionPlan, Integer ceExpectedCapacity) {
+    Case randomCase = easyRandom.nextObject(Case.class);
+    randomCase.setActionPlanId(actionPlan.getId().toString());
+    randomCase.setReceiptReceived(false);
+    randomCase.setRefusalReceived(false);
+    randomCase.setAddressInvalid(false);
+    randomCase.setTreatmentCode("CE_LDIEE");
+    randomCase.setCaseType("CE");
+    randomCase.setCeExpectedCapacity(ceExpectedCapacity);
     caseRepository.saveAndFlush(randomCase);
   }
 }

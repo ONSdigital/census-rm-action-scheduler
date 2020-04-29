@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.entity.ActionRule;
+import uk.gov.ons.census.action.model.entity.ActionType;
 
 @Component
 public class CaseClassifier {
@@ -20,13 +21,26 @@ public class CaseClassifier {
   public void enqueueCasesForActionRule(ActionRule actionRule) {
     UUID batchId = UUID.randomUUID();
 
-    jdbcTemplate.update(
-        "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
-            + "caze_case_ref) SELECT ?, COUNT(*) OVER (), ?, case_ref FROM "
-            + "actionv2.cases "
-            + buildWhereClause(actionRule.getActionPlan().getId(), actionRule.getClassifiers()),
-        batchId,
-        actionRule.getId());
+    if (actionRule.getActionType() == ActionType.CE_IC03
+        || actionRule.getActionType() == ActionType.CE_IC04) {
+
+      jdbcTemplate.update(
+          "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
+              + "caze_case_ref, ce_expected_capacity) SELECT ?, SUM(ce_expected_capacity) OVER(), ?, "
+              + "case_ref, ce_expected_capacity FROM actionv2.cases "
+              + buildWhereClause(actionRule.getActionPlan().getId(), actionRule.getClassifiers())
+              + " GROUP BY case_ref",
+          batchId,
+          actionRule.getId());
+    } else {
+      jdbcTemplate.update(
+          "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
+              + "caze_case_ref) SELECT ?, COUNT(*) OVER (), ?, case_ref FROM "
+              + "actionv2.cases "
+              + buildWhereClause(actionRule.getActionPlan().getId(), actionRule.getClassifiers()),
+          batchId,
+          actionRule.getId());
+    }
   }
 
   private String buildWhereClause(UUID actionPlanId, Map<String, List<String>> classifiers) {
