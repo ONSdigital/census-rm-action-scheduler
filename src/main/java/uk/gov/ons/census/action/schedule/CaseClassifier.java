@@ -2,6 +2,7 @@ package uk.gov.ons.census.action.schedule;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +12,13 @@ import uk.gov.ons.census.action.model.entity.ActionType;
 
 @Component
 public class CaseClassifier {
+  private static final Set<ActionType> ceIndividualActionTypes =
+      Set.of(
+          ActionType.CE_IC03,
+          ActionType.CE_IC04,
+          ActionType.CE_IC05,
+          ActionType.CE_IC06,
+          ActionType.CE_IC08);
 
   private final JdbcTemplate jdbcTemplate;
 
@@ -21,9 +29,7 @@ public class CaseClassifier {
   public void enqueueCasesForActionRule(ActionRule actionRule) {
     UUID batchId = UUID.randomUUID();
 
-    if (actionRule.getActionType() == ActionType.CE_IC03
-        || actionRule.getActionType() == ActionType.CE_IC04) {
-
+    if (isCeIndividualActionType(actionRule.getActionType())) {
       jdbcTemplate.update(
           "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
               + "caze_case_ref, ce_expected_capacity) SELECT ?, SUM(ce_expected_capacity) OVER(), ?, "
@@ -63,5 +69,9 @@ public class CaseClassifier {
     }
 
     return whereClause.toString();
+  }
+
+  private static boolean isCeIndividualActionType(ActionType actionType) {
+    return ceIndividualActionTypes.contains(actionType);
   }
 }
