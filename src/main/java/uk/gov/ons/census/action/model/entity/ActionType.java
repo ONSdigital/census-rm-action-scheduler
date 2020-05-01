@@ -10,6 +10,7 @@ public enum ActionType {
   ICHHQE(ActionHandler.PRINTER, "P_IC_H1"), // Census household questionnaire for England
   ICHHQW(ActionHandler.PRINTER, "P_IC_H2"), // Census household questionnaire for Wales
   ICHHQN(ActionHandler.PRINTER, "P_IC_H4"), // Census household questionnaire for NI
+  CE_IC08(ActionHandler.PRINTER, "D_FDCE_I4"), // Individual CE Estab questionnaire for NI
 
   // CE1 for initial contact
   CE1_IC01(ActionHandler.PRINTER, "D_CE1A_ICLCR1"),
@@ -18,6 +19,8 @@ public enum ActionType {
   // Individual addressed initial contact letters for CE Estabs
   CE_IC03(ActionHandler.PRINTER, "D_ICA_ICLR1"),
   CE_IC04(ActionHandler.PRINTER, "D_ICA_ICLR2B"),
+  CE_IC05(ActionHandler.PRINTER, "D_CE4A_ICLR4"),
+  CE_IC06(ActionHandler.PRINTER, "D_CE4A_ICLS4"),
 
   // Individual addressed initial contact letters for CE Units
   CE_IC03_1(ActionHandler.PRINTER, "D_ICA_ICLR1"),
