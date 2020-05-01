@@ -26,6 +26,10 @@ public enum ActionType {
   CE_IC03_1(ActionHandler.PRINTER, "D_ICA_ICLR1"),
   CE_IC04_1(ActionHandler.PRINTER, "D_ICA_ICLR2B"),
 
+  // Individual addressed initial contact letters for SPGs
+  SPG_IC11(ActionHandler.PRINTER, "P_ICCE_ICL1"),
+  SPG_IC12(ActionHandler.PRINTER, "P_ICCE_ICL2B"),
+
   // Generic actionType for use in Fieldwork followup action rules, tranches
   FIELD(ActionHandler.FIELD),
 
