@@ -18,7 +18,9 @@ public class CaseClassifier {
           ActionType.CE_IC04,
           ActionType.CE_IC05,
           ActionType.CE_IC06,
-          ActionType.CE_IC08);
+          ActionType.CE_IC08,
+          ActionType.CE_IC09,
+          ActionType.CE_IC10);
 
   private final JdbcTemplate jdbcTemplate;
 

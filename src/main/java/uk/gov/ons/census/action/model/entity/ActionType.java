@@ -11,6 +11,8 @@ public enum ActionType {
   ICHHQW(ActionHandler.PRINTER, "P_IC_H2"), // Census household questionnaire for Wales
   ICHHQN(ActionHandler.PRINTER, "P_IC_H4"), // Census household questionnaire for NI
   CE_IC08(ActionHandler.PRINTER, "D_FDCE_I4"), // Individual CE Estab questionnaire for NI
+  CE_IC09(ActionHandler.PRINTER, "D_FDCE_I1"), // Individual CE Estab questionnaire for England
+  CE_IC10(ActionHandler.PRINTER, "D_FDCE_I2"), // Individual CE Estab questionnaire for Wales
 
   // CE1 for initial contact
   CE1_IC01(ActionHandler.PRINTER, "D_CE1A_ICLCR1"),
