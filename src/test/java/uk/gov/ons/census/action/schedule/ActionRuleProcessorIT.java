@@ -137,6 +137,25 @@ public class ActionRuleProcessorIT {
     assertThat(queuedCases.get(0).getBatchQuantity()).isEqualTo(100);
   }
 
+  @Test
+  public void testCaseDoesNotProcessWhenFlagPresent() throws InterruptedException {
+    // Given
+    ActionPlan actionPlan = setUpActionPlan();
+    setUpCaseWithFlag(actionPlan, "receipt");
+    setUpCaseWithFlag(actionPlan, "refusal");
+    setUpCaseWithFlag(actionPlan, "invalid");
+    setUpCaseWithFlag(actionPlan, "skeleton");
+    setUpCase(actionPlan);
+    setUpActionRule(ActionType.P_QU_H1, actionPlan);
+
+    // When
+    Thread.sleep(2000);
+
+    // Then
+    List<CaseToProcess> queuedCases = caseToProcessRepository.findAll();
+    assertThat(queuedCases.size()).isEqualTo(1);
+  }
+
   private ActionPlan setUpActionPlan() {
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
@@ -167,6 +186,7 @@ public class ActionRuleProcessorIT {
     randomCase.setReceiptReceived(false);
     randomCase.setRefusalReceived(false);
     randomCase.setAddressInvalid(false);
+    randomCase.setSkeleton(false);
     randomCase.setTreatmentCode("HH_LF2R1E");
     caseRepository.saveAndFlush(randomCase);
     return randomCase;
@@ -178,6 +198,7 @@ public class ActionRuleProcessorIT {
     randomCase.setReceiptReceived(false);
     randomCase.setRefusalReceived(false);
     randomCase.setAddressInvalid(false);
+    randomCase.setSkeleton(false);
     randomCase.setTreatmentCode("HH_LF2R1E");
     randomCase.setCaseType("HI");
     caseRepository.saveAndFlush(randomCase);
@@ -189,9 +210,36 @@ public class ActionRuleProcessorIT {
     randomCase.setReceiptReceived(false);
     randomCase.setRefusalReceived(false);
     randomCase.setAddressInvalid(false);
+    randomCase.setSkeleton(false);
     randomCase.setTreatmentCode("CE_LDIEE");
     randomCase.setCaseType("CE");
     randomCase.setCeExpectedCapacity(ceExpectedCapacity);
     caseRepository.saveAndFlush(randomCase);
+  }
+
+  private Case setUpCaseWithFlag(ActionPlan actionPlan, String flag) {
+    Case randomCase = easyRandom.nextObject(Case.class);
+    randomCase.setActionPlanId(actionPlan.getId().toString());
+    randomCase.setReceiptReceived(false);
+    randomCase.setRefusalReceived(false);
+    randomCase.setAddressInvalid(false);
+    randomCase.setSkeleton(false);
+    switch (flag) {
+      case "receipt":
+        randomCase.setReceiptReceived(true);
+        break;
+      case "refusal":
+        randomCase.setRefusalReceived(true);
+        break;
+      case "invalid":
+        randomCase.setAddressInvalid(true);
+        break;
+      case "skeleton":
+        randomCase.setSkeleton(true);
+        break;
+    }
+    randomCase.setTreatmentCode("HH_LF2R1E");
+    caseRepository.saveAndFlush(randomCase);
+    return randomCase;
   }
 }
