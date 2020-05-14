@@ -42,7 +42,8 @@ public class CaseClassifierTest {
     expectedSql.append("FROM actionv2.cases WHERE action_plan_id='");
     expectedSql.append(actionPlan.getId().toString());
     expectedSql.append("' AND receipt_received='f' AND refusal_received='f' AND ");
-    expectedSql.append("address_invalid='f' AND case_type != 'HI' AND treatment_code IN ");
+    expectedSql.append("address_invalid='f' AND case_type != 'HI' ");
+    expectedSql.append("AND skeleton='f' AND treatment_code IN ");
     expectedSql.append("('abc','xyz')");
     verify(jdbcTemplate)
         .update(eq(expectedSql.toString()), any(UUID.class), eq(actionRule.getId()));
@@ -75,7 +76,8 @@ public class CaseClassifierTest {
     expectedSql.append("FROM actionv2.cases WHERE action_plan_id='");
     expectedSql.append(actionPlan.getId().toString());
     expectedSql.append("' AND receipt_received='f' AND refusal_received='f' AND ");
-    expectedSql.append("address_invalid='f' AND case_type != 'HI' AND treatment_code IN ");
+    expectedSql.append("address_invalid='f' AND case_type != 'HI' ");
+    expectedSql.append("AND skeleton='f' AND treatment_code IN ");
     expectedSql.append("('abc','xyz') GROUP BY case_ref");
     verify(jdbcTemplate)
         .update(eq(expectedSql.toString()), any(UUID.class), eq(actionRule.getId()));

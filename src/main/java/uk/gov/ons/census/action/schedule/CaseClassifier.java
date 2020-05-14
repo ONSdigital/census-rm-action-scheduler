@@ -58,6 +58,7 @@ public class CaseClassifier {
     whereClause.append(" AND refusal_received='f'");
     whereClause.append(" AND address_invalid='f'");
     whereClause.append(" AND case_type != 'HI'");
+    whereClause.append(" AND skeleton='f'");
 
     for (Map.Entry<String, List<String>> classifier : classifiers.entrySet()) {
       String inClauseValues =
