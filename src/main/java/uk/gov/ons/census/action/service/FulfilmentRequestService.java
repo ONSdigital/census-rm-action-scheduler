@@ -43,10 +43,7 @@ public class FulfilmentRequestService {
           "P_OR_I1",
           "P_OR_I2",
           "P_OR_I2W",
-          "P_OR_I4",
-          "P_UAC_UACHHP1",
-          "P_UAC_UACHHP2B",
-          "P_UAC_UACHHP4");
+          "P_OR_I4");
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -135,10 +132,11 @@ public class FulfilmentRequestService {
       case "P_OR_HC2":
       case "P_OR_HC2W":
       case "P_OR_HC4":
+        return ActionType.P_OR_HX;
       case "P_UAC_UACHHP1":
       case "P_UAC_UACHHP2B":
       case "P_UAC_UACHHP4":
-        return ActionType.P_OR_HX;
+        return ActionType.P_UAC_HX;
       case "P_LP_HL1":
       case "P_LP_HL2":
       case "P_LP_HL2W":
