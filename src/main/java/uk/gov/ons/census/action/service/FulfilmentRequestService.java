@@ -43,7 +43,10 @@ public class FulfilmentRequestService {
           "P_OR_I1",
           "P_OR_I2",
           "P_OR_I2W",
-          "P_OR_I4");
+          "P_OR_I4",
+          "P_UAC_UACHHP1",
+          "P_UAC_UACHHP2B",
+          "P_UAC_UACHHP4");
 
   @Value("${queueconfig.outbound-exchange}")
   private String outboundExchange;
@@ -132,6 +135,9 @@ public class FulfilmentRequestService {
       case "P_OR_HC2":
       case "P_OR_HC2W":
       case "P_OR_HC4":
+      case "P_UAC_UACHHP1":
+      case "P_UAC_UACHHP2B":
+      case "P_UAC_UACHHP4":
         return ActionType.P_OR_HX;
       case "P_LP_HL1":
       case "P_LP_HL2":
@@ -215,8 +221,11 @@ public class FulfilmentRequestService {
   private static final Map<String, String> fulfilmentCodeToQuestionnaireType =
       Map.ofEntries(
           Map.entry("P_OR_H1", "1"),
+          Map.entry("P_UAC_UACHHP1", "1"),
           Map.entry("P_OR_H2", "2"),
+          Map.entry("P_UAC_UACHHP2B", "2"),
           Map.entry("P_OR_H2W", "3"),
+          Map.entry("P_UAC_UACHHP4", "4"),
           Map.entry("P_OR_H4", "4"),
           Map.entry("P_OR_HC1", "11"),
           Map.entry("P_OR_HC2", "12"),
