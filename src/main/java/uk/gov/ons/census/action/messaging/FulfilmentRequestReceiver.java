@@ -20,7 +20,15 @@ import uk.gov.ons.census.action.service.FulfilmentRequestService;
 public class FulfilmentRequestReceiver {
   private static final Logger log = LoggerFactory.getLogger(FulfilmentRequestReceiver.class);
   private static final Set<String> individualResponseRequestCodes =
-      new HashSet<>(Arrays.asList("P_OR_I1", "P_OR_I2", "P_OR_I2W", "P_OR_I4"));
+      new HashSet<>(
+          Arrays.asList(
+              "P_OR_I1",
+              "P_OR_I2",
+              "P_OR_I2W",
+              "P_OR_I4",
+              "P_UAC_UACIP1",
+              "P_UAC_UACIP2B",
+              "P_UAC_UACIP4"));
   private final CaseRepository caseRepository;
   private final FulfilmentRequestService fulfilmentRequestService;
 
