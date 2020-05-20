@@ -54,6 +54,11 @@ public class FulfillmentRequestServiceTest {
   }
 
   @Test
+  public void testInformationLeafletFulfilmentMappings() {
+    assertThat(underTest.determineActionType("P_ER_ILER1")).isEqualTo(ActionType.P_ER_IL);
+  }
+
+  @Test
   public void testIndividualPrintFulfilment() {
     FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
     fulfilmentRequestDTO.setFulfilmentCode("P_OR_I1");
