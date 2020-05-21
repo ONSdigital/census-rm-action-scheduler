@@ -66,6 +66,8 @@ public enum ActionType {
 
   P_OR_IX(ActionHandler.PRINTER), // Individual Response questionnaire print
 
+  P_UAC_IX(ActionHandler.PRINTER), // Individual response UAC print
+
   P_ER_IL(ActionHandler.PRINTER), // Information leaflet
 
   //  response driven interventions

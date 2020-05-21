@@ -187,6 +187,10 @@ public class FulfilmentRequestService {
       case "P_OR_I2W":
       case "P_OR_I4":
         return ActionType.P_OR_IX;
+      case "P_UAC_UACIP1":
+      case "P_UAC_UACIP2B":
+      case "P_UAC_UACIP4":
+        return ActionType.P_UAC_IX;
       default:
         log.with("fulfilmentCode", fulfilmentCode).warn("Unexpected fulfilment code received");
         return null;
@@ -235,7 +239,10 @@ public class FulfilmentRequestService {
           Map.entry("P_OR_I1", "21"),
           Map.entry("P_OR_I2", "22"),
           Map.entry("P_OR_I2W", "23"),
-          Map.entry("P_OR_I4", "24"));
+          Map.entry("P_OR_I4", "24"),
+          Map.entry("P_UAC_UACIP1", "21"),
+          Map.entry("P_UAC_UACIP2B", "22"),
+          Map.entry("P_UAC_UACIP4", "24"));
 
   private Optional<String> determineQuestionnaireType(String packCode) {
     return Optional.ofNullable(fulfilmentCodeToQuestionnaireType.get(packCode));
