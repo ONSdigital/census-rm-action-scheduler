@@ -54,6 +54,11 @@ public class FulfillmentRequestServiceTest {
   }
 
   @Test
+  public void testHouseholdUniqueAccessCodesViaPaper() {
+    assertThat(underTest.determineActionType("P_UAC_UACHHP1")).isEqualTo(ActionType.P_UAC_HX);
+  }
+
+  @Test
   public void testIndividualPrintFulfilment() {
     FulfilmentRequestDTO fulfilmentRequestDTO = easyRandom.nextObject(FulfilmentRequestDTO.class);
     fulfilmentRequestDTO.setFulfilmentCode("P_OR_I1");
