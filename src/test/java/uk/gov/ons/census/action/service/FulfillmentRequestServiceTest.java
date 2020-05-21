@@ -54,6 +54,11 @@ public class FulfillmentRequestServiceTest {
   }
 
   @Test
+  public void testInformationLeafletFulfilmentMappings() {
+    assertThat(underTest.determineActionType("P_ER_ILER1")).isEqualTo(ActionType.P_ER_IL);
+  }
+
+  @Test
   public void testHouseholdUniqueAccessCodesViaPaper() {
     assertThat(underTest.determineActionType("P_UAC_UACHHP1")).isEqualTo(ActionType.P_UAC_HX);
   }
