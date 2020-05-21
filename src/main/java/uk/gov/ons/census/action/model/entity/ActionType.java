@@ -62,9 +62,13 @@ public enum ActionType {
   P_LP_HLX(ActionHandler.PRINTER), // Household questionnaires large print
   P_TB_TBX(ActionHandler.PRINTER), // Household translation booklets
 
+  P_UAC_HX(ActionHandler.PRINTER), // Household Unique Access Codes via paper
+
   P_OR_IX(ActionHandler.PRINTER), // Individual Response questionnaire print
 
   P_UAC_IX(ActionHandler.PRINTER), // Individual response UAC print
+
+  P_ER_IL(ActionHandler.PRINTER), // Information leaflet
 
   //  response driven interventions
   P_RD_2RL1_1(ActionHandler.PRINTER), // Response driven reminder group 1 English
