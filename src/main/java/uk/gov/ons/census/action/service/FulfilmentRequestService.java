@@ -133,6 +133,10 @@ public class FulfilmentRequestService {
       case "P_OR_HC2W":
       case "P_OR_HC4":
         return ActionType.P_OR_HX;
+      case "P_UAC_UACHHP1":
+      case "P_UAC_UACHHP2B":
+      case "P_UAC_UACHHP4":
+        return ActionType.P_UAC_HX;
       case "P_LP_HL1":
       case "P_LP_HL2":
       case "P_LP_HL2W":
@@ -218,8 +222,11 @@ public class FulfilmentRequestService {
   private static final Map<String, String> fulfilmentCodeToQuestionnaireType =
       Map.ofEntries(
           Map.entry("P_OR_H1", "1"),
+          Map.entry("P_UAC_UACHHP1", "1"),
           Map.entry("P_OR_H2", "2"),
+          Map.entry("P_UAC_UACHHP2B", "2"),
           Map.entry("P_OR_H2W", "3"),
+          Map.entry("P_UAC_UACHHP4", "4"),
           Map.entry("P_OR_H4", "4"),
           Map.entry("P_OR_HC1", "11"),
           Map.entry("P_OR_HC2", "12"),
