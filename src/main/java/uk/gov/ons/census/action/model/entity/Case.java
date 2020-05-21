@@ -89,8 +89,7 @@ public class Case {
   @Column(name = "receipt_received", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
   private boolean receiptReceived;
 
-  @Column(name = "refusal_received", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-  private boolean refusalReceived;
+  @Column private String refusalReceived;
 
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
   private boolean addressInvalid;
