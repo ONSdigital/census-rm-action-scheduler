@@ -145,29 +145,89 @@ public class FulfilmentRequestService {
       case "P_ER_ILER1":
       case "P_ER_ILER2B":
         return ActionType.P_ER_IL;
+      case "P_TB_TBALB1":
+      case "P_TB_TBAMH1":
       case "P_TB_TBARA1":
+      case "P_TB_TBARA2":
+      case "P_TB_TBARA4":
+      case "P_TB_TBARM1":
       case "P_TB_TBBEN1":
+      case "P_TB_TBBEN2":
+      case "P_TB_TBBOS1":
+      case "P_TB_TBBUL1":
+      case "P_TB_TBBUL2":
+      case "P_TB_TBBUL4":
+      case "P_TB_TBBUR1":
       case "P_TB_TBCAN1":
+      case "P_TB_TBCAN2":
       case "P_TB_TBCAN4":
+      case "P_TB_TBCZE1":
+      case "P_TB_TBCZE4":
+      case "P_TB_TBFAR1":
+      case "P_TB_TBFAR2":
       case "P_TB_TBFRE1":
+      case "P_TB_TBGER1":
+      case "P_TB_TBGRE1":
+      case "P_TB_TBGRE2":
       case "P_TB_TBGUJ1":
-      case "P_TB_TBGUR1":
+      case "P_TB_TBPAN1":
+      case "P_TB_TBPAN2":
+      case "P_TB_TBHEB1":
+      case "P_TB_TBHIN1":
+      case "P_TB_TBHUN1":
+      case "P_TB_TBHUN4":
       case "P_TB_TBIRI4":
       case "P_TB_TBITA1":
+      case "P_TB_TBITA2":
+      case "P_TB_TBJAP1":
+      case "P_TB_TBKOR1":
       case "P_TB_TBKUR1":
+      case "P_TB_TBKUR2":
+      case "P_TB_TBLAT1":
+      case "P_TB_TBLAT2":
+      case "P_TB_TBLAT4":
+      case "P_TB_TBLIN1":
       case "P_TB_TBLIT1":
       case "P_TB_TBLIT4":
+      case "P_TB_TBMAL1":
+      case "P_TB_TBMAL2":
       case "P_TB_TBMAN1":
+      case "P_TB_TBMAN2":
       case "P_TB_TBMAN4":
+      case "P_TB_TBNEP1":
+      case "P_TB_TBPAS1":
+      case "P_TB_TBPAS2":
       case "P_TB_TBPOL1":
+      case "P_TB_TBPOL2":
       case "P_TB_TBPOL4":
       case "P_TB_TBPOR1":
+      case "P_TB_TBPOR2":
+      case "P_TB_TBPOR4":
+      case "P_TB_TBPOT1":
+      case "P_TB_TBROM1":
+      case "P_TB_TBROM4":
       case "P_TB_TBRUS1":
-      case "P_TB_TBURD1":
+      case "P_TB_TBRUS2":
+      case "P_TB_TBRUS4":
+      case "P_TB_TBSLE1":
+      case "P_TB_TBSLO1":
+      case "P_TB_TBSLO4":
       case "P_TB_TBSOM1":
+      case "P_TB_TBSOM4":
       case "P_TB_TBSPA1":
+      case "P_TB_TBSPA2":
+      case "P_TB_TBSWA1":
+      case "P_TB_TBSWA2":
+      case "P_TB_TBTAG1":
+      case "P_TB_TBTAM1":
+      case "P_TB_TBTHA1":
+      case "P_TB_TBTHA2":
+      case "P_TB_TBTET4":
+      case "P_TB_TBTIG1":
       case "P_TB_TBTUR1":
+      case "P_TB_TBUKR1":
       case "P_TB_TBULS4":
+      case "P_TB_TBURD1":
       case "P_TB_TBVIE1":
       case "P_TB_TBYSH1":
         return ActionType.P_TB_TBX;
