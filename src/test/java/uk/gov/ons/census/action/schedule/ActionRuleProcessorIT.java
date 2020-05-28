@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -176,9 +177,39 @@ public class ActionRuleProcessorIT {
     // Then
     List<CaseToProcess> queuedCases = caseToProcessRepository.findAll();
     assertThat(queuedCases.size()).isEqualTo(2);
-    if (queuedCases.get(0).getCaze().getCaseId().)
+    List<UUID> caseIds =
+        queuedCases.stream()
+            .map(CaseToProcess::getCaze)
+            .map(Case::getCaseId)
+            .collect(Collectors.toList());
+    assertThat(caseIds).containsOnly(unRefusedCase.getCaseId(), hardRefusalCase.getCaseId());
+  }
 
-//    assertThat(queuedCases.get(0).getCaze()).isEqualTo(randomCase);
+  @Test
+  public void testSetUpCasesWithFieldRule() throws InterruptedException {
+    // Given
+    ActionPlan actionPlan = setUpActionPlan();
+    Case unRefusedCase = setUpCase(actionPlan);
+    Case hardRefusalCase = setUpCase(actionPlan);
+    hardRefusalCase.setRefusalReceived(RefusalType.HARD_REFUSAL.toString());
+    caseRepository.saveAndFlush(hardRefusalCase);
+    Case extraordinaryRefusalCase = setUpCase(actionPlan);
+    extraordinaryRefusalCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL.toString());
+    caseRepository.saveAndFlush(extraordinaryRefusalCase);
+    setUpActionRule(ActionType.FIELD, actionPlan);
+
+    // When
+    Thread.sleep(2000);
+
+    // Then
+    List<CaseToProcess> queuedCases = caseToProcessRepository.findAll();
+    assertThat(queuedCases.size()).isEqualTo(1);
+    List<UUID> caseIds =
+        queuedCases.stream()
+            .map(CaseToProcess::getCaze)
+            .map(Case::getCaseId)
+            .collect(Collectors.toList());
+    assertThat(caseIds).containsOnly(unRefusedCase.getCaseId());
   }
 
   private ActionPlan setUpActionPlan() {

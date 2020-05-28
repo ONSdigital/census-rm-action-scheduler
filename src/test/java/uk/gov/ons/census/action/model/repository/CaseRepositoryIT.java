@@ -78,7 +78,6 @@ public class CaseRepositoryIT {
     assertThat(cases.size()).isEqualTo(expectedUnreceiptedCaseSize);
   }
 
-
   @Transactional
   @Test
   public void shouldRetrieveTenCasesWhenZeroReceiptedAndWithClassifiers() {
