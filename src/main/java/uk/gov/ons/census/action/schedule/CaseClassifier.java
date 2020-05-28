@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
 
@@ -36,7 +37,10 @@ public class CaseClassifier {
           "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
               + "caze_case_ref, ce_expected_capacity) SELECT ?, SUM(ce_expected_capacity) OVER(), ?, "
               + "case_ref, ce_expected_capacity FROM actionv2.cases "
-              + buildWhereClause(actionRule.getActionPlan().getId(), actionRule.getClassifiers())
+              + buildWhereClause(
+                  actionRule.getActionPlan().getId(),
+                  actionRule.getClassifiers(),
+                  actionRule.getActionType().getHandler())
               + " GROUP BY case_ref",
           batchId,
           actionRule.getId());
@@ -45,20 +49,29 @@ public class CaseClassifier {
           "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
               + "caze_case_ref) SELECT ?, COUNT(*) OVER (), ?, case_ref FROM "
               + "actionv2.cases "
-              + buildWhereClause(actionRule.getActionPlan().getId(), actionRule.getClassifiers()),
+              + buildWhereClause(
+                  actionRule.getActionPlan().getId(),
+                  actionRule.getClassifiers(),
+                  actionRule.getActionType().getHandler()),
           batchId,
           actionRule.getId());
     }
   }
 
-  private String buildWhereClause(UUID actionPlanId, Map<String, List<String>> classifiers) {
+  private String buildWhereClause(
+      UUID actionPlanId, Map<String, List<String>> classifiers, ActionHandler actionHandler) {
     StringBuilder whereClause = new StringBuilder();
     whereClause.append(String.format("WHERE action_plan_id='%s'", actionPlanId.toString()));
     whereClause.append(" AND receipt_received='f'");
-    whereClause.append(" AND refusal_received='f'");
     whereClause.append(" AND address_invalid='f'");
     whereClause.append(" AND case_type != 'HI'");
     whereClause.append(" AND skeleton='f'");
+
+    if (actionHandler == ActionHandler.PRINTER) {
+      whereClause.append(" AND (refusal_received IS NULL OR refusal_received='HARD_REFUSAL')");
+    } else {
+      whereClause.append(" AND refusal_received IS NULL");
+    }
 
     for (Map.Entry<String, List<String>> classifier : classifiers.entrySet()) {
       String inClauseValues =
