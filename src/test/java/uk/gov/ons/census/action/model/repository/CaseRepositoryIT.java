@@ -121,6 +121,20 @@ public class CaseRepositoryIT {
 
   @Transactional
   @Test
+  public void shouldRetrieveSevenCasesWhenThreeExtraordinaryCasesRefusedAndWithClassifiers() {
+    int expectedUnreceiptedCaseSize = 7;
+    setupTestCases(expectedUnreceiptedCaseSize, false, null);
+    setupTestCases(3, false, RefusalType.EXTRAORDINARY_REFUSAL.toString());
+
+    Specification<Case> expectedSpecification = getSpecificationWithClassifiers();
+
+    List<Case> cases = caseRepository.findAll(expectedSpecification);
+
+    assertThat(cases.size()).isEqualTo(expectedUnreceiptedCaseSize);
+  }
+
+  @Transactional
+  @Test
   public void shouldRetrieveSevenCasesWhenThreeHardCasesRefusedAndWithoutClassifiers() {
     int expectedNotRefusedCaseSize = 7;
     setupTestCases(expectedNotRefusedCaseSize, false, null);
