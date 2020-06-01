@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.census.action.model.dto.RefusalType;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -68,7 +69,10 @@ public class CaseClassifier {
     whereClause.append(" AND skeleton='f'");
 
     if (actionHandler == ActionHandler.PRINTER) {
-      whereClause.append(" AND (refusal_received IS NULL OR refusal_received='HARD_REFUSAL')");
+      whereClause.append(
+          " AND (refusal_received IS NULL OR refusal_received='"
+              + RefusalType.HARD_REFUSAL.toString()
+              + "')");
     } else {
       whereClause.append(" AND refusal_received IS NULL");
     }
