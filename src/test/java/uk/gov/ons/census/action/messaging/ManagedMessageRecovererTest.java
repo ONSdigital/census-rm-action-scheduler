@@ -3,7 +3,6 @@ package uk.gov.ons.census.action.messaging;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -12,11 +11,9 @@ import static org.mockito.Mockito.when;
 import java.util.Map;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import uk.gov.ons.census.action.client.ExceptionManagerClient;
 import uk.gov.ons.census.action.model.dto.ExceptionReportResponse;
@@ -31,16 +28,9 @@ public class ManagedMessageRecovererTest {
   public void testRecover() {
     // Given
     ExceptionManagerClient exceptionManagerClient = mock(ExceptionManagerClient.class);
-    RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
     ManagedMessageRecoverer underTest =
         new ManagedMessageRecoverer(
-            exceptionManagerClient,
-            Object.class,
-            false,
-            "test service",
-            "test queue",
-            "test quarantine exchange",
-            rabbitTemplate);
+            exceptionManagerClient, Object.class, false, "test service", "test queue");
 
     Message message = new Message("test message body".getBytes(), new MessageProperties());
     Throwable cause = new Exception(new RuntimeException());
@@ -73,16 +63,9 @@ public class ManagedMessageRecovererTest {
   public void testRecoverExceptionManagerUnavailable() {
     // Given
     ExceptionManagerClient exceptionManagerClient = mock(ExceptionManagerClient.class);
-    RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
     ManagedMessageRecoverer underTest =
         new ManagedMessageRecoverer(
-            exceptionManagerClient,
-            Object.class,
-            false,
-            "test service",
-            "test queue",
-            "test quarantine exchange",
-            rabbitTemplate);
+            exceptionManagerClient, Object.class, false, "test service", "test queue");
 
     Message message = new Message("test message body".getBytes(), new MessageProperties());
     Throwable cause = new Exception(new RuntimeException());
@@ -110,16 +93,9 @@ public class ManagedMessageRecovererTest {
   @Test
   public void testRecoverQuarantine() {
     ExceptionManagerClient exceptionManagerClient = mock(ExceptionManagerClient.class);
-    RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
     ManagedMessageRecoverer underTest =
         new ManagedMessageRecoverer(
-            exceptionManagerClient,
-            Object.class,
-            false,
-            "test service",
-            "test queue",
-            "test quarantine exchange",
-            rabbitTemplate);
+            exceptionManagerClient, Object.class, false, "test service", "test queue");
 
     MessageProperties messageProperties = new MessageProperties();
     messageProperties.setContentType("test content type");
@@ -143,12 +119,9 @@ public class ManagedMessageRecovererTest {
         .reportException(
             eq(MESSAGE_HASH), eq("test service"), eq("test queue"), eq(cause.getCause()));
 
-    InOrder inOrder = inOrder(exceptionManagerClient, rabbitTemplate);
-
     ArgumentCaptor<SkippedMessage> skippedMessageArgumentCaptor =
         ArgumentCaptor.forClass(SkippedMessage.class);
-    inOrder
-        .verify(exceptionManagerClient)
+    verify(exceptionManagerClient)
         .storeMessageBeforeSkipping(skippedMessageArgumentCaptor.capture());
     SkippedMessage actualSkippedMessage = skippedMessageArgumentCaptor.getValue();
     assertThat(actualSkippedMessage.getMessageHash()).isEqualTo(MESSAGE_HASH);
@@ -160,28 +133,16 @@ public class ManagedMessageRecovererTest {
     assertThat(actualSkippedMessage.getRoutingKey()).isEqualTo("test received routing key");
     assertThat(actualSkippedMessage.getService()).isEqualTo("test service");
 
-    inOrder
-        .verify(rabbitTemplate)
-        .send(eq("test quarantine exchange"), eq("test queue"), eq(message));
-
     verifyNoMoreInteractions(exceptionManagerClient);
-    verifyNoMoreInteractions(rabbitTemplate);
   }
 
   @Test(expected = AmqpRejectAndDontRequeueException.class)
   public void testRecoverPeek() {
     // Given
     ExceptionManagerClient exceptionManagerClient = mock(ExceptionManagerClient.class);
-    RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
     ManagedMessageRecoverer underTest =
         new ManagedMessageRecoverer(
-            exceptionManagerClient,
-            Object.class,
-            false,
-            "test service",
-            "test queue",
-            "test quarantine exchange",
-            rabbitTemplate);
+            exceptionManagerClient, Object.class, false, "test service", "test queue");
 
     MessageProperties messageProperties = new MessageProperties();
     messageProperties.setContentType("test content type");
