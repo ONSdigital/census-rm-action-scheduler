@@ -5,7 +5,6 @@ import java.util.Map;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,7 +24,6 @@ import uk.gov.ons.census.action.model.dto.ResponseManagementEvent;
 @Configuration
 public class MessageConsumerConfig {
   private final ExceptionManagerClient exceptionManagerClient;
-  private final RabbitTemplate rabbitTemplate;
   private final ConnectionFactory connectionFactory;
 
   @Value("${messagelogging.logstacktraces}")
@@ -40,9 +38,6 @@ public class MessageConsumerConfig {
   @Value("${queueconfig.retry-delay}")
   private int retryDelay;
 
-  @Value("${queueconfig.quarantine-exchange}")
-  private String quarantineExchange;
-
   @Value("${queueconfig.inbound-queue}")
   private String inboundQueue;
 
@@ -50,11 +45,8 @@ public class MessageConsumerConfig {
   private String actionFulfilmentQueue;
 
   public MessageConsumerConfig(
-      ExceptionManagerClient exceptionManagerClient,
-      RabbitTemplate rabbitTemplate,
-      ConnectionFactory connectionFactory) {
+      ExceptionManagerClient exceptionManagerClient, ConnectionFactory connectionFactory) {
     this.exceptionManagerClient = exceptionManagerClient;
-    this.rabbitTemplate = rabbitTemplate;
     this.connectionFactory = connectionFactory;
   }
 
@@ -104,9 +96,7 @@ public class MessageConsumerConfig {
             expectedMessageType,
             logStackTraces,
             "Action Scheduler",
-            queueName,
-            quarantineExchange,
-            rabbitTemplate);
+            queueName);
 
     RetryOperationsInterceptor retryOperationsInterceptor =
         RetryInterceptorBuilder.stateless()
