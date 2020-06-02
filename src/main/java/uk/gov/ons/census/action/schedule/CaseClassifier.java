@@ -70,9 +70,9 @@ public class CaseClassifier {
 
     if (actionHandler == ActionHandler.PRINTER) {
       whereClause.append(
-          " AND (refusal_received IS NULL OR refusal_received='"
-              + RefusalType.HARD_REFUSAL.toString()
-              + "')");
+          " AND refusal_received IS DISTINCT FROM '"
+              + RefusalType.EXTRAORDINARY_REFUSAL.toString()
+              + "'");
     } else {
       whereClause.append(" AND refusal_received IS NULL");
     }
