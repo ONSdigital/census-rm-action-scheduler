@@ -159,19 +159,20 @@ public class ActionRuleProcessorIT {
   }
 
   @Test
-  public void testSetUpCasesWithPrinterRule() throws InterruptedException {
+  public void testSetUpCasesWithPrinterRuleForRefusals() throws InterruptedException {
     // Given
     ActionPlan actionPlan = setUpActionPlan();
     Case unRefusedCase = setUpCase(actionPlan);
     Case hardRefusalCase = setUpCase(actionPlan);
-    hardRefusalCase.setRefusalReceived(RefusalType.HARD_REFUSAL.toString());
+    hardRefusalCase.setRefusalReceived(RefusalType.HARD_REFUSAL);
     caseRepository.saveAndFlush(hardRefusalCase);
     Case extraordinaryRefusalCase = setUpCase(actionPlan);
-    extraordinaryRefusalCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL.toString());
+    extraordinaryRefusalCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL);
     caseRepository.saveAndFlush(extraordinaryRefusalCase);
     setUpActionRule(ActionType.P_RL_1RL1_1, actionPlan);
 
     // When
+    // give polling time to fire
     Thread.sleep(2000);
 
     // Then
@@ -186,19 +187,20 @@ public class ActionRuleProcessorIT {
   }
 
   @Test
-  public void testSetUpCasesWithFieldRule() throws InterruptedException {
+  public void testSetUpCasesWithFieldRuleForRefusals() throws InterruptedException {
     // Given
     ActionPlan actionPlan = setUpActionPlan();
     Case unRefusedCase = setUpCase(actionPlan);
     Case hardRefusalCase = setUpCase(actionPlan);
-    hardRefusalCase.setRefusalReceived(RefusalType.HARD_REFUSAL.toString());
+    hardRefusalCase.setRefusalReceived(RefusalType.HARD_REFUSAL);
     caseRepository.saveAndFlush(hardRefusalCase);
     Case extraordinaryRefusalCase = setUpCase(actionPlan);
-    extraordinaryRefusalCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL.toString());
+    extraordinaryRefusalCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL);
     caseRepository.saveAndFlush(extraordinaryRefusalCase);
     setUpActionRule(ActionType.FIELD, actionPlan);
 
     // When
+    // give polling time to fire
     Thread.sleep(2000);
 
     // Then
@@ -285,7 +287,7 @@ public class ActionRuleProcessorIT {
         randomCase.setReceiptReceived(true);
         break;
       case "refusal":
-        randomCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL.toString());
+        randomCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL);
         break;
       case "invalid":
         randomCase.setAddressInvalid(true);
