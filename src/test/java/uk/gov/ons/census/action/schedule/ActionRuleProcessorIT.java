@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.ons.census.action.model.dto.RefusalType;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
@@ -156,6 +158,62 @@ public class ActionRuleProcessorIT {
     assertThat(queuedCases.size()).isEqualTo(1);
   }
 
+  @Test
+  public void testSetUpCasesWithPrinterRuleForRefusals() throws InterruptedException {
+    // Given
+    ActionPlan actionPlan = setUpActionPlan();
+    Case unRefusedCase = setUpCase(actionPlan);
+    Case hardRefusalCase = setUpCase(actionPlan);
+    hardRefusalCase.setRefusalReceived(RefusalType.HARD_REFUSAL);
+    caseRepository.saveAndFlush(hardRefusalCase);
+    Case extraordinaryRefusalCase = setUpCase(actionPlan);
+    extraordinaryRefusalCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL);
+    caseRepository.saveAndFlush(extraordinaryRefusalCase);
+    setUpActionRule(ActionType.P_RL_1RL1_1, actionPlan);
+
+    // When
+    // give polling time to fire
+    Thread.sleep(2000);
+
+    // Then
+    List<CaseToProcess> queuedCases = caseToProcessRepository.findAll();
+    assertThat(queuedCases.size()).isEqualTo(2);
+    List<UUID> caseIds =
+        queuedCases.stream()
+            .map(CaseToProcess::getCaze)
+            .map(Case::getCaseId)
+            .collect(Collectors.toList());
+    assertThat(caseIds).containsOnly(unRefusedCase.getCaseId(), hardRefusalCase.getCaseId());
+  }
+
+  @Test
+  public void testSetUpCasesWithFieldRuleForRefusals() throws InterruptedException {
+    // Given
+    ActionPlan actionPlan = setUpActionPlan();
+    Case unRefusedCase = setUpCase(actionPlan);
+    Case hardRefusalCase = setUpCase(actionPlan);
+    hardRefusalCase.setRefusalReceived(RefusalType.HARD_REFUSAL);
+    caseRepository.saveAndFlush(hardRefusalCase);
+    Case extraordinaryRefusalCase = setUpCase(actionPlan);
+    extraordinaryRefusalCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL);
+    caseRepository.saveAndFlush(extraordinaryRefusalCase);
+    setUpActionRule(ActionType.FIELD, actionPlan);
+
+    // When
+    // give polling time to fire
+    Thread.sleep(2000);
+
+    // Then
+    List<CaseToProcess> queuedCases = caseToProcessRepository.findAll();
+    assertThat(queuedCases.size()).isEqualTo(1);
+    List<UUID> caseIds =
+        queuedCases.stream()
+            .map(CaseToProcess::getCaze)
+            .map(Case::getCaseId)
+            .collect(Collectors.toList());
+    assertThat(caseIds).containsOnly(unRefusedCase.getCaseId());
+  }
+
   private ActionPlan setUpActionPlan() {
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
@@ -184,7 +242,7 @@ public class ActionRuleProcessorIT {
     Case randomCase = easyRandom.nextObject(Case.class);
     randomCase.setActionPlanId(actionPlan.getId().toString());
     randomCase.setReceiptReceived(false);
-    randomCase.setRefusalReceived(false);
+    randomCase.setRefusalReceived(null);
     randomCase.setAddressInvalid(false);
     randomCase.setSkeleton(false);
     randomCase.setTreatmentCode("HH_LF2R1E");
@@ -196,7 +254,7 @@ public class ActionRuleProcessorIT {
     Case randomCase = easyRandom.nextObject(Case.class);
     randomCase.setActionPlanId(actionPlan.getId().toString());
     randomCase.setReceiptReceived(false);
-    randomCase.setRefusalReceived(false);
+    randomCase.setRefusalReceived(null);
     randomCase.setAddressInvalid(false);
     randomCase.setSkeleton(false);
     randomCase.setTreatmentCode("HH_LF2R1E");
@@ -208,7 +266,7 @@ public class ActionRuleProcessorIT {
     Case randomCase = easyRandom.nextObject(Case.class);
     randomCase.setActionPlanId(actionPlan.getId().toString());
     randomCase.setReceiptReceived(false);
-    randomCase.setRefusalReceived(false);
+    randomCase.setRefusalReceived(null);
     randomCase.setAddressInvalid(false);
     randomCase.setSkeleton(false);
     randomCase.setTreatmentCode("CE_LDIEE");
@@ -221,7 +279,7 @@ public class ActionRuleProcessorIT {
     Case randomCase = easyRandom.nextObject(Case.class);
     randomCase.setActionPlanId(actionPlan.getId().toString());
     randomCase.setReceiptReceived(false);
-    randomCase.setRefusalReceived(false);
+    randomCase.setRefusalReceived(null);
     randomCase.setAddressInvalid(false);
     randomCase.setSkeleton(false);
     switch (flag) {
@@ -229,7 +287,7 @@ public class ActionRuleProcessorIT {
         randomCase.setReceiptReceived(true);
         break;
       case "refusal":
-        randomCase.setRefusalReceived(true);
+        randomCase.setRefusalReceived(RefusalType.EXTRAORDINARY_REFUSAL);
         break;
       case "invalid":
         randomCase.setAddressInvalid(true);

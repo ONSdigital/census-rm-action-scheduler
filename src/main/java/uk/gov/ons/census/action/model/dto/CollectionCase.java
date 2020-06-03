@@ -26,7 +26,7 @@ public class CollectionCase {
   private Integer ceExpectedCapacity;
   private Integer ceActualResponses;
   private Boolean receiptReceived;
-  private Boolean refusalReceived;
+  private RefusalType refusalReceived;
   private Boolean addressInvalid;
   private boolean handDelivery;
   private boolean skeleton;

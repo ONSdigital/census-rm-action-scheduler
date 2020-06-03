@@ -353,7 +353,7 @@ public class CaseAndUacReceiverTest {
         .setId("d09ac28e-d62f-4cdd-a5f9-e366e05f0fcd");
     responseManagementEvent.getPayload().getUac().setQuestionnaireId("123");
     responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
-    responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
+    responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(null);
     return responseManagementEvent;
   }
 
@@ -368,7 +368,7 @@ public class CaseAndUacReceiverTest {
         .setId("d09ac28e-d62f-4cdd-a5f9-e366e05f0fcd");
     responseManagementEvent.getPayload().getUac().setQuestionnaireId("123");
     responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
-    responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(false);
+    responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(null);
     CaseMetadata metadata = new CaseMetadata();
     metadata.setSecureEstablishment(true);
     responseManagementEvent.getPayload().getCollectionCase().setMetadata(metadata);
