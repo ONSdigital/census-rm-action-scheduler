@@ -26,8 +26,8 @@ public class FulfilmentProcessor {
     fulfilmentCodes.forEach(
         fulfilmentCode -> {
           jdbcTemplate.update(
-              "UPDATE actionv2.fulfilment_to_send "
-                  + "SET quantity = (SELECT COUNT(*) FROM actionv2.fulfilment_to_send "
+              "UPDATE actionv2.fulfilment_to_process "
+                  + "SET quantity = (SELECT COUNT(*) FROM actionv2.fulfilment_to_process "
                   + "WHERE fulfilment_code = ?), batch_id = ? WHERE fulfilment_code = ?",
               fulfilmentCode,
               UUID.randomUUID(),

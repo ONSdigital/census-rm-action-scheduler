@@ -9,26 +9,26 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.model.dto.PrintFileDto;
-import uk.gov.ons.census.action.model.entity.FulfilmentToSend;
+import uk.gov.ons.census.action.model.entity.Case;
+import uk.gov.ons.census.action.model.entity.FulfilmentToProcess;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
+import uk.gov.ons.census.action.model.repository.CaseToProcessRepository;
 import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @ContextConfiguration
 @SpringBootTest
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FulfilmentProcessorIT {
 
-  @Autowired FulfilmentToSendRepository fulfilmentToSendRepository;
-  @Autowired FulfilmentProcessor fulfilmentProcessor;
-  @Autowired CaseRepository caseRepository;
+  @Autowired private FulfilmentToSendRepository fulfilmentToSendRepository;
+  @Autowired private CaseToProcessRepository caseToProcessRepository;
+  @Autowired private FulfilmentProcessor fulfilmentProcessor;
+  @Autowired private CaseRepository caseRepository;
 
   private static final Map<String, Integer> fulfilmentQuantity =
       new HashMap<>() {
@@ -44,6 +44,7 @@ public class FulfilmentProcessorIT {
   @Transactional
   public void setUp() {
     fulfilmentToSendRepository.deleteAll();
+    caseToProcessRepository.deleteAllInBatch();
   }
 
   @Test
@@ -57,16 +58,16 @@ public class FulfilmentProcessorIT {
 
     // Then
 
-    List<FulfilmentToSend> fulfilmentsToSend = fulfilmentToSendRepository.findAll();
+    List<FulfilmentToProcess> fulfilmentsToSend = fulfilmentToSendRepository.findAll();
     fulfilmentsToSend.forEach((this::AssertQuantityandBatchIdAreCorrect));
   }
 
-  private void AssertQuantityandBatchIdAreCorrect(FulfilmentToSend fulfilmentToSend) {
+  private void AssertQuantityandBatchIdAreCorrect(FulfilmentToProcess fulfilmentToProcess) {
     fulfilmentQuantity.forEach(
         (fulfilment, quantity) -> {
-          if (fulfilment.equals(fulfilmentToSend.getFulfilmentCode())) {
-            assertThat(fulfilmentToSend.getQuantity()).isEqualTo(quantity);
-            assertThat(fulfilmentToSend.getBatchId()).isNotNull();
+          if (fulfilment.equals(fulfilmentToProcess.getFulfilmentCode())) {
+            assertThat(fulfilmentToProcess.getQuantity()).isEqualTo(quantity);
+            assertThat(fulfilmentToProcess.getBatchId()).isNotNull();
           }
         });
   }
@@ -79,11 +80,16 @@ public class FulfilmentProcessorIT {
 
   private void saveFulfilmentToTable(String fulfilment_code) {
     EasyRandom easyRandom = new EasyRandom();
-    PrintFileDto printFileDto = easyRandom.nextObject(PrintFileDto.class);
-    FulfilmentToSend fulfilmentsBeforeQuantityAndBatchId = new FulfilmentToSend();
+    Case caze = easyRandom.nextObject(Case.class);
+    caze = caseRepository.saveAndFlush(caze);
+
+    FulfilmentToProcess fulfilmentsBeforeQuantityAndBatchId =
+        easyRandom.nextObject(FulfilmentToProcess.class);
+    fulfilmentsBeforeQuantityAndBatchId.setCaze(caze);
+    fulfilmentsBeforeQuantityAndBatchId.setQuantity(null);
+    fulfilmentsBeforeQuantityAndBatchId.setBatchId(null);
 
     fulfilmentsBeforeQuantityAndBatchId.setFulfilmentCode(fulfilment_code);
-    fulfilmentsBeforeQuantityAndBatchId.setMessageData(printFileDto);
 
     fulfilmentToSendRepository.saveAndFlush(fulfilmentsBeforeQuantityAndBatchId);
   }

@@ -14,26 +14,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.ons.census.action.model.dto.RefusalType;
 import uk.gov.ons.census.action.model.entity.ActionPlan;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
 import uk.gov.ons.census.action.model.entity.Case;
 import uk.gov.ons.census.action.model.entity.CaseToProcess;
+import uk.gov.ons.census.action.model.entity.RefusalType;
 import uk.gov.ons.census.action.model.repository.ActionPlanRepository;
 import uk.gov.ons.census.action.model.repository.ActionRuleRepository;
 import uk.gov.ons.census.action.model.repository.CaseRepository;
 import uk.gov.ons.census.action.model.repository.CaseToProcessRepository;
+import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @ContextConfiguration
 @SpringBootTest
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ActionRuleProcessorIT {
 
@@ -41,12 +40,14 @@ public class ActionRuleProcessorIT {
   @Autowired private ActionRuleRepository actionRuleRepository;
   @Autowired private ActionPlanRepository actionPlanRepository;
   @Autowired private CaseToProcessRepository caseToProcessRepository;
+  @Autowired private FulfilmentToSendRepository fulfilmentToSendRepository;
 
   private static final EasyRandom easyRandom = new EasyRandom();
 
   @Before
   @Transactional
   public void setUp() {
+    fulfilmentToSendRepository.deleteAllInBatch();
     caseToProcessRepository.deleteAllInBatch();
     caseRepository.deleteAllInBatch();
     actionRuleRepository.deleteAllInBatch();
