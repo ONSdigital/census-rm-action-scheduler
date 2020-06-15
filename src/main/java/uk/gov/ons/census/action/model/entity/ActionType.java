@@ -76,7 +76,13 @@ public enum ActionType {
   P_RD_2RL1_2(ActionHandler.PRINTER), // Response driven reminder group 2 English
   P_RD_2RL2B_2(ActionHandler.PRINTER), // Response driven reminder group 2 Welsh
   P_RD_2RL1_3(ActionHandler.PRINTER), // Response driven reminder group 3 English
-  P_RD_2RL2B_3(ActionHandler.PRINTER); // Response driven reminder group 3 Welsh
+  P_RD_2RL2B_3(ActionHandler.PRINTER), // Response driven reminder group 3 Welsh
+
+  // response driven reminders for survey launched, no new UACs needed
+  P_RL_1RL1A(ActionHandler.PRINTER),
+  P_RL_1RL2BA(ActionHandler.PRINTER),
+  P_RL_2RL1A(ActionHandler.PRINTER),
+  P_RL_2RL2BA(ActionHandler.PRINTER);
 
   private final ActionHandler handler;
   private final String packCode;

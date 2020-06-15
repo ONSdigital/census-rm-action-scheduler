@@ -32,4 +32,5 @@ public class CollectionCase {
   private boolean skeleton;
   private CaseMetadata metadata;
   private String printBatch;
+  private boolean surveyLaunched;
 }

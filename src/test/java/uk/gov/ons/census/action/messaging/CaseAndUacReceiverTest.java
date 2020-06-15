@@ -354,6 +354,7 @@ public class CaseAndUacReceiverTest {
     responseManagementEvent.getPayload().getUac().setQuestionnaireId("123");
     responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(null);
+    responseManagementEvent.getPayload().getCollectionCase().setSurveyLaunched(false);
     return responseManagementEvent;
   }
 
@@ -369,6 +370,7 @@ public class CaseAndUacReceiverTest {
     responseManagementEvent.getPayload().getUac().setQuestionnaireId("123");
     responseManagementEvent.getPayload().getCollectionCase().setReceiptReceived(false);
     responseManagementEvent.getPayload().getCollectionCase().setRefusalReceived(null);
+    responseManagementEvent.getPayload().getCollectionCase().setSurveyLaunched(false);
     CaseMetadata metadata = new CaseMetadata();
     metadata.setSecureEstablishment(true);
     responseManagementEvent.getPayload().getCollectionCase().setMetadata(metadata);
