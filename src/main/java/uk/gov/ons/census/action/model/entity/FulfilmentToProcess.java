@@ -35,6 +35,10 @@ public class FulfilmentToProcess {
   @Column private String forename;
   @Column private String surname;
 
+  @Column private String fieldCoordinatorId;
+  @Column private String fieldOfficerId;
+  @Column private String organisationName;
+
   @Column private Integer quantity;
 
   @Column private UUID batchId;
