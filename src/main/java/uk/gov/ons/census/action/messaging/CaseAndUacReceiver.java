@@ -147,7 +147,7 @@ public class CaseAndUacReceiver {
     caseDetails.setMetadata(collectionCase.getMetadata());
     caseDetails.setSkeleton(collectionCase.isSkeleton());
     caseDetails.setPrintBatch(collectionCase.getPrintBatch());
-    caseDetails.setSurveyLaunched(collectionCase.getSurveyLaunched());
+    caseDetails.setSurveyLaunched(collectionCase.isSurveyLaunched());
     // Yep. Here is a good place to add new stuff.
   }
 
