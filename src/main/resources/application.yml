@@ -1,9 +1,6 @@
-server:
-  port: 8301
-
 info:
   app:
-    name: Action Processor
+    name: Action Scheduler
     version: 1.0
 
 spring:
