@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
+import uk.gov.ons.census.action.model.entity.RefusalType;
 
 @Component
 public class CaseClassifier {
@@ -68,7 +69,10 @@ public class CaseClassifier {
     whereClause.append(" AND skeleton='f'");
 
     if (actionHandler == ActionHandler.PRINTER) {
-      whereClause.append(" AND refusal_received IS DISTINCT FROM 'EXTRAORDINARY_REFUSAL'");
+      whereClause.append(
+          " AND refusal_received IS DISTINCT FROM '"
+              + RefusalType.EXTRAORDINARY_REFUSAL.name()
+              + "'");
     } else {
       whereClause.append(" AND refusal_received IS NULL");
     }
