@@ -7,7 +7,6 @@ import lombok.Data;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
-import uk.gov.ons.census.action.model.dto.RefusalType;
 
 @Data
 @Entity

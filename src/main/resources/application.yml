@@ -3,7 +3,7 @@ server:
 
 info:
   app:
-    name: Action Processor
+    name: Action Scheduler
     version: 1.0
 
 spring:
@@ -27,24 +27,6 @@ spring:
           lob:
             non_contextual_creation: true
 
-  rabbitmq:
-    username: guest
-    password: guest
-    host: localhost
-    port: 6672
-    virtualhost: /
-
-queueconfig:
-  inbound-queue: case.action
-  action-fulfilment-inbound-queue: action.fulfilment
-  events-exchange: events
-  outbound-printer-queue: Action.Printer
-  outbound-exchange: action-outbound-exchange
-  action-case-exchange: action-case-exchange
-  consumers: 50
-  retry-attempts: 3
-  retry-delay: 1000 #milliseconds
-
 healthcheck:
   frequency: 1000 #milliseconds
   filename: /tmp/action-scheduler-healthy
@@ -53,23 +35,10 @@ scheduler:
   frequency: 1000 #milliseconds
   chunksize: 1000
 
-caseapi:
-  host: caseapi
-  port: 8161
-
-exceptionmanager:
-  connection:
-    scheme: http
-    host: localhost
-    port: 8666
-
 fulfilment:
   batch:
     scheduled:
       time: "0 0 16 ? * *"
-
-messagelogging:
-  logstacktraces: false
 
 logging:
   level:
