@@ -1,3 +1,6 @@
+server:
+  port: 8301
+
 info:
   app:
     name: Action Scheduler
