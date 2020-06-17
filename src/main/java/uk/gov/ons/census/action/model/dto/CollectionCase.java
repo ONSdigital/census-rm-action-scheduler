@@ -3,6 +3,8 @@ package uk.gov.ons.census.action.model.dto;
 import lombok.Data;
 import uk.gov.ons.census.action.model.entity.CaseMetadata;
 
+import java.time.OffsetDateTime;
+
 @Data
 public class CollectionCase {
   private String id;
@@ -12,6 +14,9 @@ public class CollectionCase {
   private String collectionExerciseId;
   private Address address;
   private String actionableFrom;
+  private OffsetDateTime createdDateTime;
+  private OffsetDateTime lastUpdated;
+
   // Below this line is extra data potentially needed by Action Scheduler - can be ignored by RH
   private String actionPlanId;
   private String treatmentCode;
