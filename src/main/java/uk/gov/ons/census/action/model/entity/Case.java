@@ -114,10 +114,8 @@ public class Case {
   private boolean surveyLaunched;
 
   @Column(columnDefinition = "timestamp with time zone")
-  @CreationTimestamp
   private OffsetDateTime createdDateTime;
 
   @Column(columnDefinition = "timestamp with time zone")
-  @UpdateTimestamp
   private OffsetDateTime lastUpdated;
 }

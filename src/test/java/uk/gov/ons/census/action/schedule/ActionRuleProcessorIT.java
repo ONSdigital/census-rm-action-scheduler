@@ -12,6 +12,7 @@ import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -41,6 +42,7 @@ public class ActionRuleProcessorIT {
   @Autowired private ActionPlanRepository actionPlanRepository;
   @Autowired private CaseToProcessRepository caseToProcessRepository;
   @Autowired private FulfilmentToSendRepository fulfilmentToSendRepository;
+  @InjectMocks Case underTest;
 
   private static final EasyRandom easyRandom = new EasyRandom();
 
@@ -247,8 +249,9 @@ public class ActionRuleProcessorIT {
     randomCase.setAddressInvalid(false);
     randomCase.setSkeleton(false);
     randomCase.setTreatmentCode("HH_LF2R1E");
-    caseRepository.saveAndFlush(randomCase);
-    return randomCase;
+    randomCase.setCreatedDateTime(OffsetDateTime.now());
+    randomCase.setLastUpdated(OffsetDateTime.now());
+    return caseRepository.saveAndFlush(randomCase);
   }
 
   private void setUpIndividualCase(ActionPlan actionPlan) {
