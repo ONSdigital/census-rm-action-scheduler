@@ -12,7 +12,6 @@ import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -42,7 +41,6 @@ public class ActionRuleProcessorIT {
   @Autowired private ActionPlanRepository actionPlanRepository;
   @Autowired private CaseToProcessRepository caseToProcessRepository;
   @Autowired private FulfilmentToSendRepository fulfilmentToSendRepository;
-  @InjectMocks Case underTest;
 
   private static final EasyRandom easyRandom = new EasyRandom();
 
