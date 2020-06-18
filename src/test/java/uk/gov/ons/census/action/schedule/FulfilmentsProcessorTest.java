@@ -15,8 +15,8 @@ public class FulfilmentsProcessorTest {
       mock(FulfilmentToSendRepository.class);
 
   private final String EXPECTED_UPDATE_QUERY =
-      "UPDATE actionv2.fulfilment_to_send SET quantity = (SELECT COUNT(*) "
-          + "FROM actionv2.fulfilment_to_send WHERE fulfilment_code = ?), batch_id = ? "
+      "UPDATE actionv2.fulfilment_to_process SET quantity = (SELECT COUNT(*) "
+          + "FROM actionv2.fulfilment_to_process WHERE fulfilment_code = ?), batch_id = ? "
           + "WHERE fulfilment_code = ?";
 
   @Test

@@ -9,7 +9,6 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.*;
-import uk.gov.ons.census.action.model.dto.RefusalType;
 
 @Data
 @Entity

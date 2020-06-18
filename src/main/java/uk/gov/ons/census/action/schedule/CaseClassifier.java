@@ -7,10 +7,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import uk.gov.ons.census.action.model.dto.RefusalType;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
 import uk.gov.ons.census.action.model.entity.ActionRule;
 import uk.gov.ons.census.action.model.entity.ActionType;
+import uk.gov.ons.census.action.model.entity.RefusalType;
 
 @Component
 public class CaseClassifier {
@@ -71,7 +71,7 @@ public class CaseClassifier {
     if (actionHandler == ActionHandler.PRINTER) {
       whereClause.append(
           " AND refusal_received IS DISTINCT FROM '"
-              + RefusalType.EXTRAORDINARY_REFUSAL.toString()
+              + RefusalType.EXTRAORDINARY_REFUSAL.name()
               + "'");
     } else {
       whereClause.append(" AND refusal_received IS NULL");
