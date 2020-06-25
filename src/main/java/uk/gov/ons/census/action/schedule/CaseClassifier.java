@@ -37,7 +37,7 @@ public class CaseClassifier {
       jdbcTemplate.update(
           "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
               + "caze_case_ref, ce_expected_capacity) SELECT ?, SUM(ce_expected_capacity) OVER(), ?, "
-              + "case_ref, ce_expected_capacity FROM actionv2.cases "
+              + "case_ref, ce_expected_capacity FROM actionv2.cases, pg_sleep(300) "
               + buildWhereClause(
                   actionRule.getActionPlan().getId(),
                   actionRule.getClassifiers(),
@@ -49,7 +49,7 @@ public class CaseClassifier {
       jdbcTemplate.update(
           "INSERT INTO actionv2.case_to_process (batch_id, batch_quantity, action_rule_id, "
               + "caze_case_ref) SELECT ?, COUNT(*) OVER (), ?, case_ref FROM "
-              + "actionv2.cases "
+              + "actionv2.cases, pg_sleep(300) "
               + buildWhereClause(
                   actionRule.getActionPlan().getId(),
                   actionRule.getClassifiers(),
