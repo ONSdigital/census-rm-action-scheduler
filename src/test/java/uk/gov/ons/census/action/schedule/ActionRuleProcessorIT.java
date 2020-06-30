@@ -247,8 +247,9 @@ public class ActionRuleProcessorIT {
     randomCase.setAddressInvalid(false);
     randomCase.setSkeleton(false);
     randomCase.setTreatmentCode("HH_LF2R1E");
-    caseRepository.saveAndFlush(randomCase);
-    return randomCase;
+    randomCase.setCreatedDateTime(OffsetDateTime.now());
+    randomCase.setLastUpdated(OffsetDateTime.now());
+    return caseRepository.saveAndFlush(randomCase);
   }
 
   private void setUpIndividualCase(ActionPlan actionPlan) {

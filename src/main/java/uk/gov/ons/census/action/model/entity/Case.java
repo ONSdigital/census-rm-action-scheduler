@@ -1,6 +1,7 @@
 package uk.gov.ons.census.action.model.entity;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import javax.persistence.*;
 import lombok.Data;
@@ -110,4 +111,10 @@ public class Case {
 
   @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
   private boolean surveyLaunched;
+
+  @Column(columnDefinition = "timestamp with time zone")
+  private OffsetDateTime createdDateTime;
+
+  @Column(columnDefinition = "timestamp with time zone")
+  private OffsetDateTime lastUpdated;
 }
