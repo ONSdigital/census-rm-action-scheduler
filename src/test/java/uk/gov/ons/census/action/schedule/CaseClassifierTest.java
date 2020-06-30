@@ -5,9 +5,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,14 +20,14 @@ public class CaseClassifierTest {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
     CaseClassifier underTest = new CaseClassifier(jdbcTemplate);
-    Map<String, List<String>> classifiers = new HashMap<>();
-    classifiers.put("treatment_code", List.of("abc", "xyz"));
+    String userDefinedWhereClause = " AND treatment_code IN ('abc','xyz')";
+
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
     ActionRule actionRule = new ActionRule();
     actionRule.setId(UUID.randomUUID());
     actionRule.setActionPlan(actionPlan);
-    actionRule.setClassifiers(classifiers);
+    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
     actionRule.setActionType(ActionType.FIELD);
 
     // When
@@ -46,7 +43,7 @@ public class CaseClassifierTest {
     expectedSql.append(" AND address_invalid='f' AND case_type != 'HI'");
     expectedSql.append(" AND skeleton='f'");
     expectedSql.append(" AND refusal_received IS NULL");
-    expectedSql.append(" AND treatment_code IN ('abc','xyz')");
+    expectedSql.append("  AND treatment_code IN ('abc','xyz')");
     verify(jdbcTemplate)
         .update(eq(expectedSql.toString()), any(UUID.class), eq(actionRule.getId()));
   }
@@ -57,14 +54,13 @@ public class CaseClassifierTest {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
     CaseClassifier underTest = new CaseClassifier(jdbcTemplate);
-    Map<String, List<String>> classifiers = new HashMap<>();
-    classifiers.put("treatment_code", List.of("abc", "xyz"));
+    String userDefinedWhereClause = " AND treatment_code IN ('abc','xyz')";
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
     ActionRule actionRule = new ActionRule();
     actionRule.setId(UUID.randomUUID());
     actionRule.setActionPlan(actionPlan);
-    actionRule.setClassifiers(classifiers);
+    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
     // Action Type for Printed Reminder Letter
     actionRule.setActionType(ActionType.P_RL_1RL1_1);
 
@@ -81,7 +77,7 @@ public class CaseClassifierTest {
     expectedSql.append(" AND address_invalid='f' AND case_type != 'HI'");
     expectedSql.append(" AND skeleton='f'");
     expectedSql.append(" AND refusal_received IS DISTINCT FROM 'EXTRAORDINARY_REFUSAL'");
-    expectedSql.append(" AND treatment_code IN ('abc','xyz')");
+    expectedSql.append("  AND treatment_code IN ('abc','xyz')");
     verify(jdbcTemplate)
         .update(eq(expectedSql.toString()), any(UUID.class), eq(actionRule.getId()));
   }
@@ -92,14 +88,13 @@ public class CaseClassifierTest {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
     CaseClassifier underTest = new CaseClassifier(jdbcTemplate);
-    Map<String, List<String>> classifiers = new HashMap<>();
-    classifiers.put("treatment_code", List.of("abc", "xyz"));
+    String userDefinedWhereClause = " AND treatment_code IN ('abc','xyz')";
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
     ActionRule actionRule = new ActionRule();
     actionRule.setId(UUID.randomUUID());
     actionRule.setActionPlan(actionPlan);
-    actionRule.setClassifiers(classifiers);
+    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
     actionRule.setActionType(ActionType.CE_IC03);
 
     // When
@@ -117,7 +112,7 @@ public class CaseClassifierTest {
     expectedSql.append(" AND case_type != 'HI'");
     expectedSql.append(" AND skeleton='f'");
     expectedSql.append(" AND refusal_received IS DISTINCT FROM 'EXTRAORDINARY_REFUSAL'");
-    expectedSql.append(" AND treatment_code IN ('abc','xyz')");
+    expectedSql.append("  AND treatment_code IN ('abc','xyz')");
     expectedSql.append(" GROUP BY case_ref");
     verify(jdbcTemplate)
         .update(eq(expectedSql.toString()), any(UUID.class), eq(actionRule.getId()));

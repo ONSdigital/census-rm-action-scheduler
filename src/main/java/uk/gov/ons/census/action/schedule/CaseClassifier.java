@@ -1,10 +1,7 @@
 package uk.gov.ons.census.action.schedule;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.action.model.entity.ActionHandler;
@@ -42,7 +39,7 @@ public class CaseClassifier {
               + "case_ref, ce_expected_capacity FROM actionv2.cases "
               + buildWhereClause(
                   actionRule.getActionPlan().getId(),
-                  actionRule.getClassifiers(),
+                  actionRule.getUserDefinedWhereClause(),
                   actionRule.getActionType().getHandler())
               + " GROUP BY case_ref",
           batchId,
@@ -54,7 +51,7 @@ public class CaseClassifier {
               + "actionv2.cases "
               + buildWhereClause(
                   actionRule.getActionPlan().getId(),
-                  actionRule.getClassifiers(),
+                  actionRule.getUserDefinedWhereClause(),
                   actionRule.getActionType().getHandler()),
           batchId,
           actionRule.getId());
@@ -62,7 +59,7 @@ public class CaseClassifier {
   }
 
   private String buildWhereClause(
-      UUID actionPlanId, Map<String, List<String>> classifiers, ActionHandler actionHandler) {
+      UUID actionPlanId, String userDefinedWhereClause, ActionHandler actionHandler) {
     StringBuilder whereClause = new StringBuilder();
     whereClause.append(String.format("WHERE action_plan_id='%s'", actionPlanId.toString()));
     whereClause.append(" AND receipt_received='f'");
@@ -79,16 +76,9 @@ public class CaseClassifier {
       whereClause.append(" AND refusal_received IS NULL");
     }
 
-    for (Map.Entry<String, List<String>> classifier : classifiers.entrySet()) {
-      String inClauseValues =
-          String.join(
-              ",",
-              classifier.getValue().stream()
-                  .map(value -> ("'" + value + "'"))
-                  .collect(Collectors.toList()));
-
-      whereClause.append(String.format(" AND %s IN (%s)", classifier.getKey(), inClauseValues));
-    }
+    //    This appends the user defined SQL filter e.g. " AND treatment_code IN ('x', 'y', 'z')"
+    //    safety space put in front
+    whereClause.append(" ").append(userDefinedWhereClause);
 
     return whereClause.toString();
   }

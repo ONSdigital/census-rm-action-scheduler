@@ -6,11 +6,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -28,10 +23,8 @@ public class ActionRuleProcessorTest {
   public void testExecuteClassifiers() {
     // Given
     ActionRule actionRule = setUpActionRule(ActionType.ICL1E);
-    Map<String, List<String>> classifiers = new HashMap<>();
-    List<String> columnValues = Arrays.asList("a", "b", "c");
-    classifiers.put("A_Column", columnValues);
-    actionRule.setClassifiers(classifiers);
+    String userDefinedWhereClause = " AND treatment_code IN ('abc', 'xyz')";
+    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
 
     // when
     ActionRuleProcessor actionRuleProcessor =
@@ -55,10 +48,9 @@ public class ActionRuleProcessorTest {
     actionRule.setTriggerDateTime(OffsetDateTime.now());
     actionRule.setHasTriggered(false);
 
-    Map<String, List<String>> classifiers = new HashMap<>();
-    classifiers.put("A Key", new ArrayList<>());
+    String userDefinedWhereClause = " AND treatment_code IN ('abc', 'xyz')";
+    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
 
-    actionRule.setClassifiers(classifiers);
     actionRule.setActionType(actionType);
 
     ActionPlan actionPlan = new ActionPlan();
