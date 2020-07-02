@@ -76,9 +76,12 @@ public class CaseClassifier {
       whereClause.append(" AND refusal_received IS NULL");
     }
 
-    //    This appends the user defined SQL filter e.g. " AND treatment_code IN ('x', 'y', 'z')"
-    //    safety space put in front
-    whereClause.append(" ").append(userDefinedWhereClause);
+    /*
+     " AND " + userDefinedWhereClause, if there's no userDefinedWhereClause (it can't be null) it will cause an error,
+      as the SQL statement will end: " AND "
+      However this may not be bad behaviour, we would always want to a userDefinedWhereClause
+    */
+    whereClause.append(" AND ").append(userDefinedWhereClause);
 
     return whereClause.toString();
   }

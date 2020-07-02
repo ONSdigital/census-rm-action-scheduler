@@ -230,7 +230,7 @@ public class ActionRuleProcessorIT {
     actionRule.setHasTriggered(false);
     actionRule.setActionType(actionType);
     actionRule.setActionPlan(actionPlan);
-    actionRule.setUserDefinedWhereClause("");
+    actionRule.setUserDefinedWhereClause("1 = 1");
 
     return actionRuleRepository.saveAndFlush(actionRule);
   }

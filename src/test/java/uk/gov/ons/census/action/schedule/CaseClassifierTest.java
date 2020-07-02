@@ -20,7 +20,7 @@ public class CaseClassifierTest {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
     CaseClassifier underTest = new CaseClassifier(jdbcTemplate);
-    String userDefinedWhereClause = " AND treatment_code IN ('abc','xyz')";
+    String userDefinedWhereClause = "treatment_code IN ('abc','xyz')";
 
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
@@ -43,7 +43,7 @@ public class CaseClassifierTest {
     expectedSql.append(" AND address_invalid='f' AND case_type != 'HI'");
     expectedSql.append(" AND skeleton='f'");
     expectedSql.append(" AND refusal_received IS NULL");
-    expectedSql.append("  AND treatment_code IN ('abc','xyz')");
+    expectedSql.append(" AND treatment_code IN ('abc','xyz')");
     verify(jdbcTemplate)
         .update(eq(expectedSql.toString()), any(UUID.class), eq(actionRule.getId()));
   }
@@ -54,7 +54,7 @@ public class CaseClassifierTest {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
     CaseClassifier underTest = new CaseClassifier(jdbcTemplate);
-    String userDefinedWhereClause = " AND treatment_code IN ('abc','xyz')";
+    String userDefinedWhereClause = "treatment_code IN ('abc','xyz')";
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
     ActionRule actionRule = new ActionRule();
@@ -77,7 +77,7 @@ public class CaseClassifierTest {
     expectedSql.append(" AND address_invalid='f' AND case_type != 'HI'");
     expectedSql.append(" AND skeleton='f'");
     expectedSql.append(" AND refusal_received IS DISTINCT FROM 'EXTRAORDINARY_REFUSAL'");
-    expectedSql.append("  AND treatment_code IN ('abc','xyz')");
+    expectedSql.append(" AND treatment_code IN ('abc','xyz')");
     verify(jdbcTemplate)
         .update(eq(expectedSql.toString()), any(UUID.class), eq(actionRule.getId()));
   }
@@ -88,7 +88,7 @@ public class CaseClassifierTest {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
     CaseClassifier underTest = new CaseClassifier(jdbcTemplate);
-    String userDefinedWhereClause = " AND treatment_code IN ('abc','xyz')";
+    String userDefinedWhereClause = "treatment_code IN ('abc','xyz')";
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
     ActionRule actionRule = new ActionRule();
@@ -112,7 +112,7 @@ public class CaseClassifierTest {
     expectedSql.append(" AND case_type != 'HI'");
     expectedSql.append(" AND skeleton='f'");
     expectedSql.append(" AND refusal_received IS DISTINCT FROM 'EXTRAORDINARY_REFUSAL'");
-    expectedSql.append("  AND treatment_code IN ('abc','xyz')");
+    expectedSql.append(" AND treatment_code IN ('abc','xyz')");
     expectedSql.append(" GROUP BY case_ref");
     verify(jdbcTemplate)
         .update(eq(expectedSql.toString()), any(UUID.class), eq(actionRule.getId()));
