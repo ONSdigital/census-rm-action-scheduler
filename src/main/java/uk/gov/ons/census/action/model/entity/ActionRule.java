@@ -26,8 +26,7 @@ public class ActionRule {
   private OffsetDateTime triggerDateTime;
 
   @Column private Boolean hasTriggered;
-
-  // This will be set to varchar(max) in the ddl
+  
   @Column(nullable = false, length = 100000)
   private String userDefinedWhereClause;
 }
