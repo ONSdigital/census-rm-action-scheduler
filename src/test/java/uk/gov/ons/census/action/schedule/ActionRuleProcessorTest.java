@@ -23,7 +23,7 @@ public class ActionRuleProcessorTest {
   public void testExecuteClassifiers() {
     // Given
     ActionRule actionRule = setUpActionRule(ActionType.ICL1E);
-    String userDefinedWhereClause = " AND treatment_code IN ('abc', 'xyz')";
+    String userDefinedWhereClause = "treatment_code IN ('abc', 'xyz')";
     actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
 
     // when
