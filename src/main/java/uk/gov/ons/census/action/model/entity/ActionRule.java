@@ -1,6 +1,5 @@
 package uk.gov.ons.census.action.model.entity;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import javax.persistence.Column;
@@ -10,11 +9,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import lombok.Data;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
 @Entity
-@TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
 @Data
 public class ActionRule {
 
@@ -31,6 +27,7 @@ public class ActionRule {
 
   @Column private Boolean hasTriggered;
 
-  @Column(nullable = false)
+  // This will be set to varchar(max) in the ddl
+  @Column(nullable = false, length = 100000)
   private String userDefinedWhereClause;
 }
