@@ -40,7 +40,7 @@ public class CaseClassifierTest {
     expectedSql.append(" FROM actionv2.cases WHERE action_plan_id=");
     expectedSql.append("'" + actionPlan.getId().toString() + "'");
     expectedSql.append(" AND receipt_received='f'");
-    expectedSql.append(" AND address_invalid='f' AND case_type != 'HI'");
+    expectedSql.append(" AND address_invalid='f'");
     expectedSql.append(" AND skeleton='f'");
     expectedSql.append(" AND refusal_received IS NULL");
     expectedSql.append(" AND treatment_code IN ('abc','xyz')");
@@ -74,7 +74,7 @@ public class CaseClassifierTest {
     expectedSql.append(" FROM actionv2.cases WHERE action_plan_id=");
     expectedSql.append("'" + actionPlan.getId().toString() + "'");
     expectedSql.append(" AND receipt_received='f'");
-    expectedSql.append(" AND address_invalid='f' AND case_type != 'HI'");
+    expectedSql.append(" AND address_invalid='f'");
     expectedSql.append(" AND skeleton='f'");
     expectedSql.append(" AND refusal_received IS DISTINCT FROM 'EXTRAORDINARY_REFUSAL'");
     expectedSql.append(" AND treatment_code IN ('abc','xyz')");
@@ -109,7 +109,6 @@ public class CaseClassifierTest {
     expectedSql.append("'" + actionPlan.getId().toString() + "'");
     expectedSql.append(" AND receipt_received='f'");
     expectedSql.append(" AND address_invalid='f'");
-    expectedSql.append(" AND case_type != 'HI'");
     expectedSql.append(" AND skeleton='f'");
     expectedSql.append(" AND refusal_received IS DISTINCT FROM 'EXTRAORDINARY_REFUSAL'");
     expectedSql.append(" AND treatment_code IN ('abc','xyz')");

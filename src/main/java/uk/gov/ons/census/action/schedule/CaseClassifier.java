@@ -64,7 +64,6 @@ public class CaseClassifier {
     whereClause.append(String.format("WHERE action_plan_id='%s'", actionPlanId.toString()));
     whereClause.append(" AND receipt_received='f'");
     whereClause.append(" AND address_invalid='f'");
-    whereClause.append(" AND case_type != 'HI'");
     whereClause.append(" AND skeleton='f'");
 
     if (actionHandler == ActionHandler.PRINTER) {
