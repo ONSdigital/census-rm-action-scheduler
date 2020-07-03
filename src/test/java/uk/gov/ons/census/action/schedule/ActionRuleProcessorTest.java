@@ -23,8 +23,6 @@ public class ActionRuleProcessorTest {
   public void testExecuteClassifiers() {
     // Given
     ActionRule actionRule = setUpActionRule(ActionType.ICL1E);
-    String userDefinedWhereClause = "treatment_code IN ('abc', 'xyz')";
-    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
 
     // when
     ActionRuleProcessor actionRuleProcessor =
@@ -47,9 +45,6 @@ public class ActionRuleProcessorTest {
     actionRule.setId(actionRuleId);
     actionRule.setTriggerDateTime(OffsetDateTime.now());
     actionRule.setHasTriggered(false);
-
-    String userDefinedWhereClause = " treatment_code IN ('abc', 'xyz')";
-    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
 
     actionRule.setActionType(actionType);
 
