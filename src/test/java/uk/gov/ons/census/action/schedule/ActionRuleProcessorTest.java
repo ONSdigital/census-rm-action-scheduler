@@ -48,7 +48,7 @@ public class ActionRuleProcessorTest {
     actionRule.setTriggerDateTime(OffsetDateTime.now());
     actionRule.setHasTriggered(false);
 
-    String userDefinedWhereClause = " AND treatment_code IN ('abc', 'xyz')";
+    String userDefinedWhereClause = " treatment_code IN ('abc', 'xyz')";
     actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
 
     actionRule.setActionType(actionType);
