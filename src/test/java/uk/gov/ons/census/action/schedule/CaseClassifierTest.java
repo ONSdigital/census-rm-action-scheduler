@@ -20,14 +20,14 @@ public class CaseClassifierTest {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
     CaseClassifier underTest = new CaseClassifier(jdbcTemplate);
-    String userDefinedWhereClause = "treatment_code IN ('abc','xyz')";
+    String classifiersClause = "treatment_code IN ('abc','xyz')";
 
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
     ActionRule actionRule = new ActionRule();
     actionRule.setId(UUID.randomUUID());
     actionRule.setActionPlan(actionPlan);
-    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
+    actionRule.setClassifiersClause(classifiersClause);
     actionRule.setActionType(ActionType.FIELD);
 
     // When
@@ -54,13 +54,13 @@ public class CaseClassifierTest {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
     CaseClassifier underTest = new CaseClassifier(jdbcTemplate);
-    String userDefinedWhereClause = "treatment_code IN ('abc','xyz')";
+    String classifiersClause = "treatment_code IN ('abc','xyz')";
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
     ActionRule actionRule = new ActionRule();
     actionRule.setId(UUID.randomUUID());
     actionRule.setActionPlan(actionPlan);
-    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
+    actionRule.setClassifiersClause(classifiersClause);
     // Action Type for Printed Reminder Letter
     actionRule.setActionType(ActionType.P_RL_1RL1_1);
 
@@ -88,13 +88,13 @@ public class CaseClassifierTest {
     JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
 
     CaseClassifier underTest = new CaseClassifier(jdbcTemplate);
-    String userDefinedWhereClause = "treatment_code IN ('abc','xyz')";
+    String classifiersClause = "treatment_code IN ('abc','xyz')";
     ActionPlan actionPlan = new ActionPlan();
     actionPlan.setId(UUID.randomUUID());
     ActionRule actionRule = new ActionRule();
     actionRule.setId(UUID.randomUUID());
     actionRule.setActionPlan(actionPlan);
-    actionRule.setUserDefinedWhereClause(userDefinedWhereClause);
+    actionRule.setClassifiersClause(classifiersClause);
     actionRule.setActionType(ActionType.CE_IC03);
 
     // When

@@ -39,7 +39,7 @@ public class CaseClassifier {
               + "case_ref, ce_expected_capacity FROM actionv2.cases "
               + buildWhereClause(
                   actionRule.getActionPlan().getId(),
-                  actionRule.getUserDefinedWhereClause(),
+                  actionRule.getClassifiersClause(),
                   actionRule.getActionType().getHandler())
               + " GROUP BY case_ref",
           batchId,
@@ -51,7 +51,7 @@ public class CaseClassifier {
               + "actionv2.cases "
               + buildWhereClause(
                   actionRule.getActionPlan().getId(),
-                  actionRule.getUserDefinedWhereClause(),
+                  actionRule.getClassifiersClause(),
                   actionRule.getActionType().getHandler()),
           batchId,
           actionRule.getId());
@@ -59,7 +59,7 @@ public class CaseClassifier {
   }
 
   private String buildWhereClause(
-      UUID actionPlanId, String userDefinedWhereClause, ActionHandler actionHandler) {
+      UUID actionPlanId, String classifiersClause, ActionHandler actionHandler) {
     StringBuilder whereClause = new StringBuilder();
     whereClause.append(String.format("WHERE action_plan_id='%s'", actionPlanId.toString()));
     whereClause.append(" AND receipt_received='f'");
@@ -76,11 +76,11 @@ public class CaseClassifier {
     }
 
     /*
-     " AND " + userDefinedWhereClause, if there's no userDefinedWhereClause (it can't be null) it will cause an error,
+     " AND " + classifiersclause, if there's no classifiersclause (it can't be null) it will cause an error,
       as the SQL statement will end: " AND "
-      However this may not be bad behaviour, we would always want to a userDefinedWhereClause
+      However this may not be bad behaviour, we would always want to a classifiersclause
     */
-    whereClause.append(" AND ").append(userDefinedWhereClause);
+    whereClause.append(" AND ").append(classifiersClause);
 
     return whereClause.toString();
   }
