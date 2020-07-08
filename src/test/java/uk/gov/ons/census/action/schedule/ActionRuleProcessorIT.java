@@ -3,9 +3,7 @@ package uk.gov.ons.census.action.schedule;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.OffsetDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jeasy.random.EasyRandom;
@@ -232,9 +230,7 @@ public class ActionRuleProcessorIT {
     actionRule.setHasTriggered(false);
     actionRule.setActionType(actionType);
     actionRule.setActionPlan(actionPlan);
-
-    Map<String, List<String>> classifiers = new HashMap<>();
-    actionRule.setClassifiers(classifiers);
+    actionRule.setClassifiersClause("case_type != 'HI'");
 
     return actionRuleRepository.saveAndFlush(actionRule);
   }
