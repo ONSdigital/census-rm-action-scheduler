@@ -8,7 +8,6 @@ This service schedules action rules and batches of fulfilments. The action rules
 
 The Action Scheduler is implemented with Java 11 & Spring Integration, it is schedule driven, reading & writing data to a SQL DB.
 
-rreigfefubferblahtest24
 # Testing
 
 To test this service locally use:
