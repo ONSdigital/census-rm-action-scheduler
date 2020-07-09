@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import lombok.Data;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Data
@@ -29,6 +30,15 @@ public class ActionRule {
   @Column private Boolean hasTriggered;
 
   @Lob
+  @Type(type = "org.hibernate.type.BinaryType")
   @Column(nullable = false)
-  private String classifiersClause;
+  private byte[] classifiersClause;
+
+  public void setClassifiersClause(String classifierClauseStr) {
+    classifiersClause = classifierClauseStr.getBytes();
+  }
+
+  public String getClassifiersClause() {
+    return new String(classifiersClause);
+  }
 }
