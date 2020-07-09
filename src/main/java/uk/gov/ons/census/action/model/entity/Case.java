@@ -83,9 +83,9 @@ public class Case {
 
   @Column private Integer ceActualResponses;
 
-  @Column private String collectionExerciseId;
+  @Column private UUID collectionExerciseId;
 
-  @Column private String actionPlanId;
+  @Column private UUID actionPlanId;
 
   @Column(name = "receipt_received", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
   private boolean receiptReceived;

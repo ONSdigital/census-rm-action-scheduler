@@ -241,7 +241,7 @@ public class ActionRuleProcessorIT {
 
   private Case setUpCase(ActionPlan actionPlan) {
     Case randomCase = easyRandom.nextObject(Case.class);
-    randomCase.setActionPlanId(actionPlan.getId().toString());
+    randomCase.setActionPlanId(actionPlan.getId());
     randomCase.setReceiptReceived(false);
     randomCase.setRefusalReceived(null);
     randomCase.setAddressInvalid(false);
@@ -254,7 +254,7 @@ public class ActionRuleProcessorIT {
 
   private void setUpIndividualCase(ActionPlan actionPlan) {
     Case randomCase = easyRandom.nextObject(Case.class);
-    randomCase.setActionPlanId(actionPlan.getId().toString());
+    randomCase.setActionPlanId(actionPlan.getId());
     randomCase.setReceiptReceived(false);
     randomCase.setRefusalReceived(null);
     randomCase.setAddressInvalid(false);
@@ -266,7 +266,7 @@ public class ActionRuleProcessorIT {
 
   private void setUpCeEstabCase(ActionPlan actionPlan, Integer ceExpectedCapacity) {
     Case randomCase = easyRandom.nextObject(Case.class);
-    randomCase.setActionPlanId(actionPlan.getId().toString());
+    randomCase.setActionPlanId(actionPlan.getId());
     randomCase.setReceiptReceived(false);
     randomCase.setRefusalReceived(null);
     randomCase.setAddressInvalid(false);
@@ -279,7 +279,7 @@ public class ActionRuleProcessorIT {
 
   private Case setUpCaseWithFlag(ActionPlan actionPlan, String flag) {
     Case randomCase = easyRandom.nextObject(Case.class);
-    randomCase.setActionPlanId(actionPlan.getId().toString());
+    randomCase.setActionPlanId(actionPlan.getId());
     randomCase.setReceiptReceived(false);
     randomCase.setRefusalReceived(null);
     randomCase.setAddressInvalid(false);
