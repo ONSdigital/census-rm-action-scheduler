@@ -64,6 +64,7 @@ public enum ActionType {
   // Ad hoc fulfilment requests
   P_OR_HX(ActionHandler.PRINTER), // Household questionnaires
   P_LP_HLX(ActionHandler.PRINTER), // Household questionnaires large print
+  P_LP_ILX(ActionHandler.PRINTER), // Individual questionnaires large print
   P_TB_TBX(ActionHandler.PRINTER), // Household translation booklets
 
   P_UAC_HX(ActionHandler.PRINTER), // Household Unique Access Codes via paper
