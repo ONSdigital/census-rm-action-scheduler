@@ -56,6 +56,24 @@ public enum ActionType {
   P_RL_2RL1_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for England addresses
   P_RL_2RL2B_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for Wales addresses
 
+  // Response driven interventions
+  P_RD_2RL1_1(ActionHandler.PRINTER), // Response driven reminder group 1 English
+  P_RD_2RL2B_1(ActionHandler.PRINTER), // Response driven reminder group 1 Welsh
+  P_RD_2RL1_2(ActionHandler.PRINTER), // Response driven reminder group 2 English
+  P_RD_2RL2B_2(ActionHandler.PRINTER), // Response driven reminder group 2 Welsh
+  P_RD_2RL1_3(ActionHandler.PRINTER), // Response driven reminder group 3 English
+  P_RD_2RL2B_3(ActionHandler.PRINTER), // Response driven reminder group 3 Welsh
+
+  // Response driven reminders for survey launched, no new UACs needed
+  P_RL_1RL1A(ActionHandler.PRINTER),
+  P_RL_1RL2BA(ActionHandler.PRINTER),
+  P_RL_2RL1A(ActionHandler.PRINTER),
+  P_RL_2RL2BA(ActionHandler.PRINTER),
+
+  // Individual response reminders
+  P_RL_1IRL1(ActionHandler.PRINTER),
+  P_RL_1IRL2B(ActionHandler.PRINTER),
+
   // Reminder questionnaires
   P_QU_H1(ActionHandler.PRINTER),
   P_QU_H2(ActionHandler.PRINTER),
@@ -64,6 +82,7 @@ public enum ActionType {
   // Ad hoc fulfilment requests
   P_OR_HX(ActionHandler.PRINTER), // Household questionnaires
   P_LP_HLX(ActionHandler.PRINTER), // Household questionnaires large print
+  P_LP_ILX(ActionHandler.PRINTER), // Individual questionnaires large print
   P_TB_TBX(ActionHandler.PRINTER), // Household translation booklets
 
   P_UAC_HX(ActionHandler.PRINTER), // Household Unique Access Codes via paper
@@ -72,21 +91,7 @@ public enum ActionType {
 
   P_UAC_IX(ActionHandler.PRINTER), // Individual response UAC print
 
-  P_ER_IL(ActionHandler.PRINTER), // Information leaflet
-
-  //  response driven interventions
-  P_RD_2RL1_1(ActionHandler.PRINTER), // Response driven reminder group 1 English
-  P_RD_2RL2B_1(ActionHandler.PRINTER), // Response driven reminder group 1 Welsh
-  P_RD_2RL1_2(ActionHandler.PRINTER), // Response driven reminder group 2 English
-  P_RD_2RL2B_2(ActionHandler.PRINTER), // Response driven reminder group 2 Welsh
-  P_RD_2RL1_3(ActionHandler.PRINTER), // Response driven reminder group 3 English
-  P_RD_2RL2B_3(ActionHandler.PRINTER), // Response driven reminder group 3 Welsh
-
-  // response driven reminders for survey launched, no new UACs needed
-  P_RL_1RL1A(ActionHandler.PRINTER),
-  P_RL_1RL2BA(ActionHandler.PRINTER),
-  P_RL_2RL1A(ActionHandler.PRINTER),
-  P_RL_2RL2BA(ActionHandler.PRINTER);
+  P_ER_IL(ActionHandler.PRINTER); // Information leaflet
 
   private final ActionHandler handler;
   private final String packCode;
