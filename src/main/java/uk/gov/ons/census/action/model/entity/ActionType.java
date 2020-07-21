@@ -74,6 +74,10 @@ public enum ActionType {
   P_RL_1IRL1(ActionHandler.PRINTER),
   P_RL_1IRL2B(ActionHandler.PRINTER),
 
+  // Reminder letters for paper first households who have not authenticated (nor submitted paper questionnaire)
+  P_RL_1RL1B(ActionHandler.PRINTER),
+  P_RL_1RL2BB(ActionHandler.PRINTER),
+
   // Reminder questionnaires
   P_QU_H1(ActionHandler.PRINTER),
   P_QU_H2(ActionHandler.PRINTER),
