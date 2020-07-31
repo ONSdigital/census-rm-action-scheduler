@@ -53,8 +53,12 @@ public enum ActionType {
   P_RL_1RL2B_2(
       ActionHandler
           .PRINTER), // 2nd Reminder, Letter - for Wales addresses (bilingual Welsh and English)
+  P_RL_2RL1(ActionHandler.PRINTER), // 2nd Reminder, Letter - for England addresses
+  P_RL_2RL4(ActionHandler.PRINTER), // 2nd Reminder, Letter - for Irish addresses
   P_RL_2RL1_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for England addresses
   P_RL_2RL2B_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for Wales addresses
+  P_RL_3RL1(ActionHandler.PRINTER), // 3rd Reminder, Letter - for England addresses
+  P_RL_3RL2B(ActionHandler.PRINTER), // 3rd Reminder, Letter - for Wales addresses
 
   // Response driven interventions
   P_RD_2RL1_1(ActionHandler.PRINTER), // Response driven reminder group 1 English
@@ -68,6 +72,7 @@ public enum ActionType {
   P_RL_1RL1A(ActionHandler.PRINTER),
   P_RL_1RL2BA(ActionHandler.PRINTER),
   P_RL_2RL1A(ActionHandler.PRINTER),
+  P_RL_2RL2B(ActionHandler.PRINTER),
   P_RL_2RL2BA(ActionHandler.PRINTER),
 
   // Individual response reminders
@@ -96,7 +101,9 @@ public enum ActionType {
 
   P_UAC_IX(ActionHandler.PRINTER), // Individual response UAC print
 
-  P_ER_IL(ActionHandler.PRINTER); // Information leaflet
+  P_ER_IL(ActionHandler.PRINTER), // Information leaflet
+
+  P_UAC_CX(ActionHandler.PRINTER); // CE Unique Access Codes via paper
 
   private final ActionHandler handler;
   private final String packCode;
