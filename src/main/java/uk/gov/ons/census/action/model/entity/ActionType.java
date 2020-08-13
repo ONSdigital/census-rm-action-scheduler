@@ -48,31 +48,16 @@ public enum ActionType {
   P_RL_1RL2B_1(
       ActionHandler
           .PRINTER), // 1st Reminder, Letter - for Wales addresses (bilingual Welsh and English)
-  P_RL_1RL4(ActionHandler.PRINTER), // 1st Reminder, Letter - for Ireland addresses
   P_RL_1RL1_2(ActionHandler.PRINTER), // 2nd Reminder, Letter - for England addresses
   P_RL_1RL2B_2(
       ActionHandler
           .PRINTER), // 2nd Reminder, Letter - for Wales addresses (bilingual Welsh and English)
+
+  P_RL_2RL1(ActionHandler.PRINTER), // 2nd Reminder, Letter - for England addresses
+  P_RL_2RL4(ActionHandler.PRINTER), // 2nd Reminder, Letter - for Irish addresses
+  P_RL_2RL2B(ActionHandler.PRINTER), // 2nd Reminder, Letter - for Wales addresses
   P_RL_2RL1_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for England addresses
   P_RL_2RL2B_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for Wales addresses
-
-  // Response driven interventions
-  P_RD_2RL1_1(ActionHandler.PRINTER), // Response driven reminder group 1 English
-  P_RD_2RL2B_1(ActionHandler.PRINTER), // Response driven reminder group 1 Welsh
-  P_RD_2RL1_2(ActionHandler.PRINTER), // Response driven reminder group 2 English
-  P_RD_2RL2B_2(ActionHandler.PRINTER), // Response driven reminder group 2 Welsh
-  P_RD_2RL1_3(ActionHandler.PRINTER), // Response driven reminder group 3 English
-  P_RD_2RL2B_3(ActionHandler.PRINTER), // Response driven reminder group 3 Welsh
-
-  // Response driven reminders for survey launched, no new UACs needed
-  P_RL_1RL1A(ActionHandler.PRINTER),
-  P_RL_1RL2BA(ActionHandler.PRINTER),
-  P_RL_2RL1A(ActionHandler.PRINTER),
-  P_RL_2RL2BA(ActionHandler.PRINTER),
-
-  // Individual response reminders
-  P_RL_1IRL1(ActionHandler.PRINTER),
-  P_RL_1IRL2B(ActionHandler.PRINTER),
 
   // Reminder questionnaires
   P_QU_H1(ActionHandler.PRINTER),
@@ -93,7 +78,35 @@ public enum ActionType {
 
   P_ER_IL(ActionHandler.PRINTER), // Information leaflet
 
-  P_UAC_CX(ActionHandler.PRINTER); // CE Unique Access Codes via paper
+  P_UAC_CX(ActionHandler.PRINTER), // CE Unique Access Codes via paper
+
+  P_RL_3RL1(ActionHandler.PRINTER), // 3rd Reminder, Letter - for England addresses
+  P_RL_3RL2B(ActionHandler.PRINTER), // 3rd Reminder, Letter - for Wales addresses
+
+  // Response driven interventions
+  P_RD_2RL1_1(ActionHandler.PRINTER), // Response driven reminder group 1 English
+  P_RD_2RL2B_1(ActionHandler.PRINTER), // Response driven reminder group 1 Welsh
+  P_RD_2RL1_2(ActionHandler.PRINTER), // Response driven reminder group 2 English
+  P_RD_2RL2B_2(ActionHandler.PRINTER), // Response driven reminder group 2 Welsh
+  P_RD_2RL1_3(ActionHandler.PRINTER), // Response driven reminder group 3 English
+  P_RD_2RL2B_3(ActionHandler.PRINTER), // Response driven reminder group 3 Welsh
+
+  // Reminders for survey launched, no new UACs needed
+  P_RL_1RL4(ActionHandler.PRINTER), // 1st Reminder, Letter - for Ireland addresses
+  P_RL_1RL1A(ActionHandler.PRINTER),
+  P_RL_1RL2BA(ActionHandler.PRINTER),
+  P_RL_2RL1A(ActionHandler.PRINTER),
+  P_RL_2RL2BA(ActionHandler.PRINTER),
+
+  // Individual response reminders
+  P_RL_1IRL1(ActionHandler.PRINTER),
+  P_RL_1IRL2B(ActionHandler.PRINTER),
+
+  // Reminder letters for paper first households who have not EQ authenticated (nor submitted paper
+  // questionnaire)
+  P_RL_1RL1B(ActionHandler.PRINTER), // paper first reminders for english households
+  P_RL_1RL2BB(ActionHandler.PRINTER), // paper first reminders for welsh households
+  P_RL_1RL4A(ActionHandler.PRINTER); // paper first reminders for irish households
 
   private final ActionHandler handler;
   private final String packCode;
