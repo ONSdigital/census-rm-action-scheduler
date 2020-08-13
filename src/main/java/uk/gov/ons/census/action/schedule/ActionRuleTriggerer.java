@@ -31,7 +31,7 @@ public class ActionRuleTriggerer {
         actionRuleProcessor.createScheduledActions(triggeredActionRule);
       } catch (Exception e) {
         log.with("action_rule_id", triggeredActionRule.getId())
-            .error("Stop putting untested SQL into production", e);
+            .error("Unexpected error while executing action rule - is classifier valid SQL?", e);
       }
     }
   }
