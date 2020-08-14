@@ -92,7 +92,7 @@ public enum ActionType {
   P_RD_2RL2B_3(ActionHandler.PRINTER), // Response driven reminder group 3 Welsh
 
   // Reminders for survey launched, no new UACs needed
-  P_RL_1RL4(ActionHandler.PRINTER), // 1st Reminder, Letter - for Ireland addresses
+  P_RL_1RL4A(ActionHandler.PRINTER), // R1a NI - first reminder, have launched EQ
   P_RL_1RL1A(ActionHandler.PRINTER),
   P_RL_1RL2BA(ActionHandler.PRINTER),
   P_RL_2RL1A(ActionHandler.PRINTER),
@@ -106,7 +106,7 @@ public enum ActionType {
   // questionnaire)
   P_RL_1RL1B(ActionHandler.PRINTER), // paper first reminders for english households
   P_RL_1RL2BB(ActionHandler.PRINTER), // paper first reminders for welsh households
-  P_RL_1RL4A(ActionHandler.PRINTER); // paper first reminders for irish households
+  P_RL_1RL4(ActionHandler.PRINTER); // R1b NI - first reminder, haven't launched EQ
 
   private final ActionHandler handler;
   private final String packCode;
