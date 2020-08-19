@@ -1,112 +1,103 @@
 package uk.gov.ons.census.action.model.entity;
 
 public enum ActionType {
-  // Initial contact letters
-  ICL1E(ActionHandler.PRINTER, "P_IC_ICL1"), // Census initial contact letter for England
-  ICL2W(ActionHandler.PRINTER, "P_IC_ICL2B"), // Census initial contact letter for Wales
-  ICL4N(ActionHandler.PRINTER, "P_IC_ICL4"), // Census initial contact letter for NI
+  // Initial contact pack for English households
+  ICL1E(ActionHandler.PRINTER, "P_IC_ICL1"),
+  // Initial contact pack for Welsh households
+  ICL2W(ActionHandler.PRINTER, "P_IC_ICL2B"),
+  // ICL with UAC HH (Post Out) Addressed Northern Ireland
+  ICL4N(ActionHandler.PRINTER, "P_IC_ICL4"),
 
-  // Initial contact questionnaires
-  ICHHQE(ActionHandler.PRINTER, "P_IC_H1"), // Census household questionnaire for England
-  ICHHQW(ActionHandler.PRINTER, "P_IC_H2"), // Census household questionnaire for Wales
-  ICHHQN(ActionHandler.PRINTER, "P_IC_H4"), // Census household questionnaire for NI
-  CE_IC08(ActionHandler.PRINTER, "D_FDCE_I4"), // Individual CE Estab questionnaire for NI
-  CE_IC09(ActionHandler.PRINTER, "D_FDCE_I1"), // Individual CE Estab questionnaire for England
-  CE_IC10(ActionHandler.PRINTER, "D_FDCE_I2"), // Individual CE Estab questionnaire for Wales
+  // Household Questionnaire for England
+  ICHHQE(ActionHandler.PRINTER, "P_IC_H1"),
+  // Household Questionnaire for Wales
+  ICHHQW(ActionHandler.PRINTER, "P_IC_H2"),
+  // Household Questionnaire for Wales
+  ICHHQN(ActionHandler.PRINTER, "P_IC_H4"),
+  // Individual Questionnaire for NI (Hand delivery) Addressed
+  CE_IC08(ActionHandler.PRINTER, "D_FDCE_I4"),
+  // Individual Questionnaire for England (Hand delivery) Addressed
+  CE_IC09(ActionHandler.PRINTER, "D_FDCE_I1"),
+  // Individual Questionnaire for Wales (Hand delivery) Addressed
+  CE_IC10(ActionHandler.PRINTER, "D_FDCE_I2"),
 
-  // CE1 for initial contact
+  // CE1 Packs (Hand Delivery) Addressed England
   CE1_IC01(ActionHandler.PRINTER, "D_CE1A_ICLCR1"),
+  // CE1 Packs (Hand Delivery) Addressed Wales
   CE1_IC02(ActionHandler.PRINTER, "D_CE1A_ICLCR2B"),
 
-  // Individual addressed initial contact letters for CE Estabs
+  // ICL with UAC Individual (Hand Delivery)  Addressed England
   CE_IC03(ActionHandler.PRINTER, "D_ICA_ICLR1"),
+  // ICL with UAC Individual (Hand Delivery) Addressed Wales
   CE_IC04(ActionHandler.PRINTER, "D_ICA_ICLR2B"),
+  // ICL with UAC Individual Resident (Hand Delivery) Addressed
   CE_IC05(ActionHandler.PRINTER, "D_CE4A_ICLR4"),
+  // ICL with UAC Individual Student (Hand Delivery) Addressed
   CE_IC06(ActionHandler.PRINTER, "D_CE4A_ICLS4"),
 
-  // Individual addressed initial contact letters for CE Units
-  CE_IC03_1(
-      ActionHandler.PRINTER,
-      "D_ICA_ICLR1"), // Individual ICL with UAC for England (Hand Delivery) Addressed
-  CE_IC04_1(
-      ActionHandler.PRINTER,
-      "D_ICA_ICLR2B"), // Individual ICL with UAC for Wales (Hand Delivery) Addressed
+  // ICL with UAC Individual (Hand Delivery)  Addressed England
+  CE_IC03_1(ActionHandler.PRINTER, "D_ICA_ICLR1"),
+  // ICL with UAC Individual (Hand Delivery) Addressed Wales
+  CE_IC04_1(ActionHandler.PRINTER, "D_ICA_ICLR2B"),
 
-  // Initial contact letters for SPGs
+  // ICL with UAC HH (Post Out) Addressed England
   SPG_IC11(ActionHandler.PRINTER, "P_ICCE_ICL1"),
+  // ICL with UAC HH (Post Out) Addressed Wales
   SPG_IC12(ActionHandler.PRINTER, "P_ICCE_ICL2B"),
 
-  // Initial contact SPG questionnaires
+  // Household Questionnaire for England (Hand delivery) Addressed
   SPG_IC13(ActionHandler.PRINTER, "D_FDCE_H1"),
+  // Household Questionnaire for Wales (Hand delivery) Addressed
   SPG_IC14(ActionHandler.PRINTER, "D_FDCE_H2"),
 
   // Generic actionType for use in Fieldwork followup action rules, tranches
   FIELD(ActionHandler.FIELD),
 
-  // Reminder letters
-  P_RL_1RL1_1(ActionHandler.PRINTER), // 1st Reminder, Letter - for England addresses
-  P_RL_1RL2B_1(
-      ActionHandler
-          .PRINTER), // 1st Reminder, Letter - for Wales addresses (bilingual Welsh and English)
-  P_RL_1RL1_2(ActionHandler.PRINTER), // 2nd Reminder, Letter - for England addresses
-  P_RL_1RL2B_2(
-      ActionHandler
-          .PRINTER), // 2nd Reminder, Letter - for Wales addresses (bilingual Welsh and English)
+  // R1e England-1st reminder, UAC first households,  haven't launched EQ - batch a, b, c, d, e
+  P_RL_1RL1_1(ActionHandler.PRINTER),
+  // R1e Wales-1st reminder, UAC first households,  haven't launched EQ - batch a, b, c, d, e
+  P_RL_1RL2B_1(ActionHandler.PRINTER),
+  // R2a England-2nd reminder, UAC first households,  haven't launched EQ - batch a, b, c, d, e
+  P_RL_2RL1(ActionHandler.PRINTER),
+  // R1B NI - reminder 3 letter
+  P_RL_2RL4(ActionHandler.PRINTER),
+  // R2a Wales- 2nd reminder, UAC first households,  haven't launched EQ - batch
+  P_RL_2RL2B(ActionHandler.PRINTER),
 
-  P_RL_2RL1(ActionHandler.PRINTER), // 2nd Reminder, Letter - for England addresses
-  P_RL_2RL4(ActionHandler.PRINTER), // 2nd Reminder, Letter - for Irish addresses
-  P_RL_2RL2B(ActionHandler.PRINTER), // 2nd Reminder, Letter - for Wales addresses
-  P_RL_2RL1_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for England addresses
-  P_RL_2RL2B_3a(ActionHandler.PRINTER), // 3rd Reminder, Letter - for Wales addresses
-
-  // Reminder questionnaires
+  // RP1 - England Paper questionnaire going to HtC willingness 4&5
   P_QU_H1(ActionHandler.PRINTER),
+  // RP1 - Wales Paper questionnaire going to HtC willingness 4&5
   P_QU_H2(ActionHandler.PRINTER),
+  // Reminder 2 NI PQ
   P_QU_H4(ActionHandler.PRINTER),
 
-  // Ad hoc fulfilment requests
-  P_OR_HX(ActionHandler.PRINTER), // Household questionnaires
-  P_LP_HLX(ActionHandler.PRINTER), // Household questionnaires large print
-  P_LP_ILX(ActionHandler.PRINTER), // Individual questionnaires large print
-  P_TB_TBX(ActionHandler.PRINTER), // Household translation booklets
+  // R3 - England   Third reminder letter going to anyone except those getting RP1/2/3
+  P_RL_3RL1(ActionHandler.PRINTER),
+  // R3 - Wales   Third reminder letter going to anyone except those getting RP1/2/3
+  P_RL_3RL2B(ActionHandler.PRINTER),
 
-  P_UAC_HX(ActionHandler.PRINTER), // Household Unique Access Codes via paper
-
-  P_OR_IX(ActionHandler.PRINTER), // Individual Response questionnaire print
-
-  P_UAC_IX(ActionHandler.PRINTER), // Individual response UAC print
-
-  P_ER_IL(ActionHandler.PRINTER), // Information leaflet
-
-  P_UAC_CX(ActionHandler.PRINTER), // CE Unique Access Codes via paper
-
-  P_RL_3RL1(ActionHandler.PRINTER), // 3rd Reminder, Letter - for England addresses
-  P_RL_3RL2B(ActionHandler.PRINTER), // 3rd Reminder, Letter - for Wales addresses
-
-  // Response driven interventions
-  P_RD_2RL1_1(ActionHandler.PRINTER), // Response driven reminder group 1 English
-  P_RD_2RL2B_1(ActionHandler.PRINTER), // Response driven reminder group 1 Welsh
-  P_RD_2RL1_2(ActionHandler.PRINTER), // Response driven reminder group 2 English
-  P_RD_2RL2B_2(ActionHandler.PRINTER), // Response driven reminder group 2 Welsh
-  P_RD_2RL1_3(ActionHandler.PRINTER), // Response driven reminder group 3 English
-  P_RD_2RL2B_3(ActionHandler.PRINTER), // Response driven reminder group 3 Welsh
-
-  // Reminders for survey launched, no new UACs needed
-  P_RL_1RL4A(ActionHandler.PRINTER), // R1a NI - first reminder, have launched EQ
+  // R1a NI - first reminder, have launched EQ
+  P_RL_1RL4A(ActionHandler.PRINTER),
+  // RU1 England- First reminder going to those who have launched EQ
   P_RL_1RL1A(ActionHandler.PRINTER),
+  // RU1 Wales- First reminder going to those who have launched EQ
   P_RL_1RL2BA(ActionHandler.PRINTER),
+  // RU2 England- First reminder going to those who have launched EQ
   P_RL_2RL1A(ActionHandler.PRINTER),
+  // RU2 Wales- First reminder going to those who have launched EQ
   P_RL_2RL2BA(ActionHandler.PRINTER),
 
-  // Individual response reminders
+  // IRL England - going to those who have requested an individual form via eQ only
   P_RL_1IRL1(ActionHandler.PRINTER),
+  // IRL Wales - going to those who have requested an individual form via eQ only
   P_RL_1IRL2B(ActionHandler.PRINTER),
 
-  // Reminder letters for paper first households who have not EQ authenticated (nor submitted paper
-  // questionnaire)
-  P_RL_1RL1B(ActionHandler.PRINTER), // paper first reminders for english households
-  P_RL_1RL2BB(ActionHandler.PRINTER), // paper first reminders for welsh households
-  P_RL_1RL4(ActionHandler.PRINTER); // R1b NI - first reminder, haven't launched EQ
+  // RPF1 England -First reminder going to paper first households,  haven't launched EQ
+  P_RL_1RL1B(ActionHandler.PRINTER),
+  // RPF1 Wales -First reminder going to paper first households, haven't launched EQ
+  P_RL_1RL2BB(ActionHandler.PRINTER),
+  // R1a NI - first reminder, have launched EQ
+  P_RL_1RL4(ActionHandler.PRINTER);
 
   private final ActionHandler handler;
   private final String packCode;
