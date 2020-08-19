@@ -12,7 +12,7 @@ public enum ActionType {
   ICHHQE(ActionHandler.PRINTER, "P_IC_H1"),
   // Household Questionnaire for Wales
   ICHHQW(ActionHandler.PRINTER, "P_IC_H2"),
-  // Household Questionnaire for Wales
+  // Household Questionnaire for Northern Ireland
   ICHHQN(ActionHandler.PRINTER, "P_IC_H4"),
   // Individual Questionnaire for NI (Hand delivery) Addressed
   CE_IC08(ActionHandler.PRINTER, "D_FDCE_I4"),
