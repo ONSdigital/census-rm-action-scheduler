@@ -35,11 +35,6 @@ public enum ActionType {
   // ICL with UAC Individual Student (Hand Delivery) Addressed
   CE_IC06(ActionHandler.PRINTER, "D_CE4A_ICLS4"),
 
-  // ICL with UAC Individual (Hand Delivery)  Addressed England
-  CE_IC03_1(ActionHandler.PRINTER, "D_ICA_ICLR1"),
-  // ICL with UAC Individual (Hand Delivery) Addressed Wales
-  CE_IC04_1(ActionHandler.PRINTER, "D_ICA_ICLR2B"),
-
   // ICL with UAC HH (Post Out) Addressed England
   SPG_IC11(ActionHandler.PRINTER, "P_ICCE_ICL1"),
   // ICL with UAC HH (Post Out) Addressed Wales
