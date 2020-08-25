@@ -19,7 +19,7 @@ public class FulfilmentToProcess {
 
   @Column
   @Enumerated(EnumType.STRING)
-  private ActionType actionType;
+  private FulfilmentType fulfilmentType;
 
   @Column private String addressLine1;
 
