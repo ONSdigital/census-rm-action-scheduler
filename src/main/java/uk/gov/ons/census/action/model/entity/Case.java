@@ -81,7 +81,8 @@ public class Case {
 
   @Column private Integer ceExpectedCapacity;
 
-  @Column private int ceActualResponses;
+  @Column(nullable = false)
+  private int ceActualResponses;
 
   @Column private UUID collectionExerciseId;
 
