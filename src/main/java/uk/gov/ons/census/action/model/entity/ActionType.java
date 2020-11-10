@@ -92,7 +92,26 @@ public enum ActionType {
   // RPF1 Wales -First reminder going to paper first households, haven't launched EQ
   P_RL_1RL2BB(ActionHandler.PRINTER),
   // R1a NI - first reminder, have launched EQ
-  P_RL_1RL4(ActionHandler.PRINTER);
+  P_RL_1RL4(ActionHandler.PRINTER),
+
+  // HERE BE DRAGONS
+  // RERUN ACTION TYPES
+  // The initial contact action rules were designed to use the UAC/QID's attached at sample load.
+  // However, this means we cannot ever re-run them. These types are to use as alternatives that
+  // circumvent that process and use new UAC/QID links so the rules can be re-run at any time.
+  // THESE SHOULD NOT BE USED UNDER ANY NORMAL CIRCUMSTANCES, ONLY WHEN FORCED TO RE-RUN A RULE.
+  ICHHQE_RERUN(ActionHandler.PRINTER, "P_IC_H1"),
+  ICHHQW_RERUN(ActionHandler.PRINTER, "P_IC_H2"),
+  ICHHQN_RERUN(ActionHandler.PRINTER, "P_IC_H4"),
+  ICL1E_RERUN(ActionHandler.PRINTER, "P_IC_ICL1"),
+  ICL2W_RERUN(ActionHandler.PRINTER, "P_IC_ICL2B"),
+  ICL4N_RERUN(ActionHandler.PRINTER, "P_IC_ICL4"),
+  CE1_IC01_RERUN(ActionHandler.PRINTER, "D_CE1A_ICLCR1"),
+  CE1_IC02_RERUN(ActionHandler.PRINTER, "D_CE1A_ICLCR2B"),
+  SPG_IC11_RERUN(ActionHandler.PRINTER, "P_ICCE_ICL1"),
+  SPG_IC12_RERUN(ActionHandler.PRINTER, "P_ICCE_ICL2B"),
+  SPG_IC13_RERUN(ActionHandler.PRINTER, "D_FDCE_H1"),
+  SPG_IC14_RERUN(ActionHandler.PRINTER, "D_FDCE_H2");
 
   private final ActionHandler handler;
   private final String packCode;
