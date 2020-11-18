@@ -71,6 +71,15 @@ public enum ActionType {
   // R3 - Wales   Third reminder letter going to anyone except those getting RP1/2/3
   P_RL_3RL2B(ActionHandler.PRINTER),
 
+  // RDR1 - England Response-driven reminder 1 going to worst performing areas
+  P_RD_RNP41(ActionHandler.PRINTER),
+  // RDR1 - Wales Response-driven reminder 1 going to worst performing areas
+  P_RD_RNP42B(ActionHandler.PRINTER),
+  // RDR2 - England Response-driven reminder 2 going to worst performing areas
+  P_RD_RNP51(ActionHandler.PRINTER),
+  // RDR2 - Wales Response-driven reminder 2 going to worst performing areas
+  P_RD_RNP52B(ActionHandler.PRINTER),
+
   // R1a NI - first reminder, have launched EQ
   P_RL_1RL4A(ActionHandler.PRINTER),
   // RU1 England- First reminder going to those who have launched EQ
