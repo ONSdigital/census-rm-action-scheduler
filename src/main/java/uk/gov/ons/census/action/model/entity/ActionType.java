@@ -92,7 +92,12 @@ public enum ActionType {
   // RPF1 Wales -First reminder going to paper first households, haven't launched EQ
   P_RL_1RL2BB(ActionHandler.PRINTER),
   // R1a NI - first reminder, have launched EQ
-  P_RL_1RL4(ActionHandler.PRINTER);
+  P_RL_1RL4(ActionHandler.PRINTER),
+
+  // Non-compliance letter - England
+  P_NC_NCLTA1(ActionHandler.PRINTER),
+  // Non-compliance letter - Wales
+  P_NC_NCLTA2B(ActionHandler.PRINTER);
 
   private final ActionHandler handler;
   private final String packCode;
