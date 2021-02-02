@@ -23,13 +23,15 @@ public class FulfilmentProcessor {
 
   @Transactional
   public void addFulfilmentBatchIdAndQuantity() {
-    UUID batchId = UUID.randomUUID();
-    log.with("batch_id", batchId).info("Fulfilments triggered");
-
     List<String> fulfilmentCodes = fulfilmentToSendRepository.findDistinctFulfilmentCode();
 
     fulfilmentCodes.forEach(
         fulfilmentCode -> {
+          UUID batchId = UUID.randomUUID();
+          log.with("batch_id", batchId)
+              .with("fulfilment_code", fulfilmentCode)
+              .info("Fulfilments triggered");
+
           jdbcTemplate.update(
               "UPDATE actionv2.fulfilment_to_process "
                   + "SET quantity = (SELECT COUNT(*) FROM actionv2.fulfilment_to_process "
