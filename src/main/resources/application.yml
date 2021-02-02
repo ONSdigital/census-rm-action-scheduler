@@ -48,3 +48,5 @@ fulfilment:
 logging:
   level:
     org.springframework.amqp.rabbit.listener.ConditionalRejectingErrorHandler: ERROR
+    uk.gov.ons.census.action.schedule.ActionRuleTriggerer: INFO
+    uk.gov.ons.census.action.schedule.FulfilmentProcessor: INFO

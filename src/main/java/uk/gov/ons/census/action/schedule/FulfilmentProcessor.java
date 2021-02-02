@@ -1,5 +1,7 @@
 package uk.gov.ons.census.action.schedule;
 
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import java.util.List;
 import java.util.UUID;
 import javax.transaction.Transactional;
@@ -9,7 +11,7 @@ import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @Component
 public class FulfilmentProcessor {
-
+  private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
   private JdbcTemplate jdbcTemplate;
   private FulfilmentToSendRepository fulfilmentToSendRepository;
 
@@ -21,6 +23,9 @@ public class FulfilmentProcessor {
 
   @Transactional
   public void addFulfilmentBatchIdAndQuantity() {
+    UUID batchId = UUID.randomUUID();
+    log.with("batch_id", batchId).info("Fulfilments triggered");
+
     List<String> fulfilmentCodes = fulfilmentToSendRepository.findDistinctFulfilmentCode();
 
     fulfilmentCodes.forEach(
@@ -30,7 +35,7 @@ public class FulfilmentProcessor {
                   + "SET quantity = (SELECT COUNT(*) FROM actionv2.fulfilment_to_process "
                   + "WHERE fulfilment_code = ?), batch_id = ? WHERE fulfilment_code = ?",
               fulfilmentCode,
-              UUID.randomUUID(),
+              batchId,
               fulfilmentCode);
         });
   }
