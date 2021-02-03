@@ -11,7 +11,7 @@ import uk.gov.ons.census.action.model.repository.FulfilmentToSendRepository;
 
 @Component
 public class FulfilmentProcessor {
-  private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
+  private static final Logger log = LoggerFactory.getLogger(FulfilmentProcessor.class);
   private JdbcTemplate jdbcTemplate;
   private FulfilmentToSendRepository fulfilmentToSendRepository;
 
