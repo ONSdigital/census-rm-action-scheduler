@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class FulfilmentScheduler {
   private final FulfilmentProcessor fulfilmentProcessor;
-  private static final Logger log = LoggerFactory.getLogger(ActionRuleScheduler.class);
+  private static final Logger log = LoggerFactory.getLogger(FulfilmentScheduler.class);
 
   public FulfilmentScheduler(FulfilmentProcessor fulfilmentProcessor) {
     this.fulfilmentProcessor = fulfilmentProcessor;

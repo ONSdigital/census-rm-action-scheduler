@@ -28,6 +28,7 @@ public class ActionRuleTriggerer {
 
     for (ActionRule triggeredActionRule : triggeredActionRules) {
       try {
+        log.with("action_rule_id", triggeredActionRule.getId()).info("Action rule triggered");
         actionRuleProcessor.createScheduledActions(triggeredActionRule);
       } catch (Exception e) {
         log.with("action_rule_id", triggeredActionRule.getId())
